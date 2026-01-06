@@ -7,16 +7,18 @@ import WhyChooseUs from "../components/WhyChooseUs";
 import StatsCounterDashboard from "../components/StatsCounterDashboard";
 import Hero from "../components/Hero";
 import Services from "../components/Services";
+import AboutUs from "../components/AboutUs";
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   return (
     <div>
       <Header activeSection={activeSection}/>
       <Hero setActiveSection={setActiveSection} />
-      <Services setActiveSection={setActiveSection} />
       <TrustIndicators />
+      <Services setActiveSection={setActiveSection} />
       <WhyChooseUs />
       <StatsCounterDashboard />
+      <AboutUs setActiveSection={setActiveSection} />
     </div>
   );
 }

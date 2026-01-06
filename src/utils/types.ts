@@ -1,5 +1,14 @@
 import { Dispatch, SetStateAction } from "react";
 
+export type TypeSecondaryButtonProps = {
+  tittle: string;
+  icon?: React.ReactNode;
+};
+export type TypePrimaryButtonProps = {
+  tittle: string;
+  icon?: React.ReactNode;
+};
+
 export type TypeSetActiveSection = {
   setActiveSection: Dispatch<SetStateAction<string>>
 }
