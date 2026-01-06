@@ -6,12 +6,14 @@ import TrustIndicators from "../components/TrustIndicator";
 import WhyChooseUs from "../components/WhyChooseUs";
 import StatsCounterDashboard from "../components/StatsCounterDashboard";
 import Hero from "../components/Hero";
+import Services from "../components/Services";
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   return (
     <div>
       <Header activeSection={activeSection}/>
       <Hero setActiveSection={setActiveSection} />
+      <Services setActiveSection={setActiveSection} />
       <TrustIndicators />
       <WhyChooseUs />
       <StatsCounterDashboard />
