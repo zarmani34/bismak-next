@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { useScrollInView } from "../utils/useScrollInView";
 
 const StatsCounterDashboard = () => {
-    type Counts = {
-  [key: string]: number;
-};
+  type Counts = {
+    [key: string]: number;
+  };
 
   const [counts, setCounts] = useState<Counts>({});
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  const [ ref, inView] = useScrollInView(0.5, true);
+  const [ref, inView] = useScrollInView(0.5, true);
 
   const stats = [
     { key: "years", target: 15, label: "Years of Excellence", suffix: "" },
@@ -25,7 +25,6 @@ const StatsCounterDashboard = () => {
       const duration = 2000;
       const intervals: Record<string, ReturnType<typeof setInterval>> = {};
 
-
       stats.forEach((stat, index) => {
         setTimeout(() => {
           let current = 0;
@@ -37,7 +36,7 @@ const StatsCounterDashboard = () => {
               current = stat.target;
               clearInterval(intervals[stat.key]);
             }
-            setCounts(prev => ({
+            setCounts((prev) => ({
               ...prev,
               [stat.key]: Math.floor(current),
             }));
@@ -57,13 +56,12 @@ const StatsCounterDashboard = () => {
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='white' stroke-width='1'/%3E%3C/svg%3E\")",
-       
         }}
       />
 
       <div className="relative max-w-6xl mx-auto px-6 z-10">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map(stat => (
+          {stats.map((stat) => (
             <div
               key={stat.key}
               className="text-center p-8 rounded-2xl border border-tetiary/10 bg-tetiary/5 backdrop-blur-md shadow-md hover:bg-tetiary/10 transition-transform hover:-translate-y-2 cursor-pointer"
