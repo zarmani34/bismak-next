@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { useEffect } from "react";
 import { useScrollInView } from "../utils/useScrollInView";
+import { TypeSetActiveSection } from "../utils/types";
 
 const services = [
   {
@@ -43,7 +44,7 @@ const services = [
   },
 ];
 
-const Services = ({setActiveSection}: {setActiveSection: React.Dispatch<React.SetStateAction<string>>}) => {
+const Services = ({setActiveSection}: TypeSetActiveSection) => {
   const [ref, inView] = useScrollInView();
   
     useEffect(() => {
@@ -70,12 +71,12 @@ const Services = ({setActiveSection}: {setActiveSection: React.Dispatch<React.Se
           {services.map((service, index) => (
             <div
               key={index}
-              className="flex-1 min-w-[300px] max-w-sm relative border border-border rounded-2xl overflow-hidden shadow-md bg-white h-full transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
+              className="flex-1 min-w-75 max-w-sm relative border border-border rounded-2xl overflow-hidden shadow-md bg-white h-full transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="absolute left-0 top-0 w-1 h-full bg-primary scale-y-0 group-hover:scale-y-100 transition-transform duration-300" />
               <div className="p-8">
                 {/* Icon */}
-                <div className="w-16 h-16 rounded-xl flex items-center justify-center text-light-gray text-2xl mb-6 bg-gradient-to-br from-primary to-primary-light">
+                <div className="w-16 h-16 rounded-xl flex items-center justify-center text-light-gray text-2xl mb-6 bg-linear-to-br from-primary to-primary-light">
                   {service.icon}
                 </div>
 

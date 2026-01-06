@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  FaArrowRight,
   FaBriefcase,
   FaCompass,
-  FaFolderOpen,
 } from "react-icons/fa6";
-import { FaCogs, FaPhoneAlt } from "react-icons/fa";
 import { motion, AnimatePresence } from "motion/react";
 import { useScrollInView } from "../utils/useScrollInView";
 import PrimaryButton from "./buttons/PrimaryButton";
 import SecondaryButton from "./buttons/SecondaryButton";
+import { TypeSetActiveSection } from "../utils/types";
 
-const Hero = ({setActiveSection}: {setActiveSection: React.Dispatch<React.SetStateAction<string>>}) => {
+const Hero = ({setActiveSection}: TypeSetActiveSection) => {
   const [ref, inView] = useScrollInView();
   const [currentImage, setCurrentImage] = useState(0);
   
