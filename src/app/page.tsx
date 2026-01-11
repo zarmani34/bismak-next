@@ -9,6 +9,7 @@ import Hero from "../components/Hero";
 import Services from "../components/Services";
 import AboutUs from "../components/AboutUs";
 import Contact from "../components/Contact";
+import Footer from "../components/Footer";
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   return (
@@ -21,6 +22,7 @@ export default function Home() {
       <StatsCounterDashboard />
       <AboutUs setActiveSection={setActiveSection} />
       <Contact setActiveSection={setActiveSection} />
+      <Footer />
     </div>
   );
 }

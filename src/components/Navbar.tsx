@@ -29,11 +29,11 @@ const Navbar = ({ showMenu, activeSection }: NavbarProps) => {
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
-              className={`text-tetiary font-medium hover:text-secondary-light uppercase transition-colors duration-3000`}
+              className={`text-tetiary font-medium hover:text-secondary-light uppercase transition-all duration-300 ease-in-out`}
               style={
                 activeSection === item.toLowerCase()
                   ? { color: "#e67d5f" }
-                  : { color: "#F6F5D9" }
+                  : undefined
               }
             >
               {item}
@@ -41,7 +41,7 @@ const Navbar = ({ showMenu, activeSection }: NavbarProps) => {
           ))}
           <Link
             href={"/portal/client/dashboard"}
-            className="text-tetiary font-medium hover:text--dark uppercase transition-colors duration-3000"
+            className="text-tetiary font-medium hover:text-secondary-light uppercase transition-colors duration-3000"
           >
             portal
           </Link>
