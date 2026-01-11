@@ -8,6 +8,10 @@ export type TypePrimaryButtonProps = {
   tittle: string;
   icon?: React.ReactNode;
 };
+export type TypeTetiaryButtonProps = {
+  tittle: string;
+  icon?: React.ReactNode;
+};
 
 export type TypeSetActiveSection = {
   setActiveSection: Dispatch<SetStateAction<string>>

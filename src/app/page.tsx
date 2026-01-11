@@ -8,6 +8,7 @@ import StatsCounterDashboard from "../components/StatsCounterDashboard";
 import Hero from "../components/Hero";
 import Services from "../components/Services";
 import AboutUs from "../components/AboutUs";
+import Contact from "../components/Contact";
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   return (
@@ -19,6 +20,7 @@ export default function Home() {
       <WhyChooseUs />
       <StatsCounterDashboard />
       <AboutUs setActiveSection={setActiveSection} />
+      <Contact setActiveSection={setActiveSection} />
     </div>
   );
 }
