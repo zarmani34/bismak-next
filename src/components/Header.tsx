@@ -27,7 +27,7 @@ export const Header = ({activeSection}: {activeSection: string}) => {
           <img
             src="/logo.jpg"
             alt="Logo"
-            className="w-full h-full object-cover"
+            className="w-full h-full"
           />
         </div>
         <div className="">
