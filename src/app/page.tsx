@@ -10,6 +10,7 @@ import Services from "../components/Services";
 import AboutUs from "../components/AboutUs";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
+import TrustedClients from "../components/TrustedClients";
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   return (
@@ -19,6 +20,7 @@ export default function Home() {
       <TrustIndicators />
       <Services setActiveSection={setActiveSection} />
       <WhyChooseUs />
+      <TrustedClients />
       <StatsCounterDashboard />
       <AboutUs setActiveSection={setActiveSection} />
       <Contact setActiveSection={setActiveSection} />

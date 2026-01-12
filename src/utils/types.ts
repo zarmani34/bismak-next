@@ -22,3 +22,9 @@ export type TypeScrollInView = [
   boolean
 ];
 
+export interface Client {
+  id: number;
+  name: string;
+  logo: string;
+  sector: string;
+}
