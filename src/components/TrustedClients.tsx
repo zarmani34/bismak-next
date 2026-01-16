@@ -1,64 +1,14 @@
 'use client';
 import { motion } from 'framer-motion';
 import { ClientCard } from './OurClientCard';
-import { Client } from '../utils/types';
+import { CLIENTS } from '../utils/constatnts';
 
 const TrustedClients = () => {
-  const clients: Client[] = [
-    { id: 1, name: 'Zim Gas LTD', logo: 'NNPC', sector: 'Oil & Gas' },
-    { id: 2, name: 'Maxwell International Venturs LTD', logo: 'SPDC', sector: 'Oil & Gas' },
-    { id: 3, name: 'Selai Gas Station LTD', logo: 'CVX', sector: 'Oil & Gas' },
-    { id: 4, name: 'Total Energies', logo: 'TTE', sector: 'Oil & Gas' },
-    { id: 5, name: 'ExxonMobil', logo: 'XOM', sector: 'Oil & Gas' },
-    { id: 6, name: 'Ameogo Gas Accurate Grace LTD', logo: 'SEP', sector: 'Oil & Gas' },
-    { id: 7, name: 'Oando Energy', logo: 'OAN', sector: 'Oil & Gas' },
-    { id: 8, name: 'Dangote Refinery', logo: 'DNG', sector: 'Refining' },
-    { id: 9, name: 'Dobum Nigeria LTD', logo: 'AIT', sector: 'Oil & Gas' },
-    { id: 10, name: 'Conoil', logo: 'CON', sector: 'Oil & Gas' },
-    { id: 11, name: 'NIPCO', logo: 'NPC', sector: 'Oil & Gas' },
-    { id: 12, name: 'Forte Oil', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 13, name: 'Emayh Nigeria LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 14, name: 'Hansreal Petroleum LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 15, name: 'Mikel Energy LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 16, name: 'Fowobi Nigeria Enterprises LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 17, name: 'Yerevan Oil and Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 18, name: 'DPL Limited Bisfun Petroleum LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 19, name: 'Sedabuk Oil and Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 20, name: 'Gate Link Oil and Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 21, name: 'Wheel Oil LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 22, name: '247 Finance Investment LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 23, name: 'Habod Gas Ltd', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 24, name: 'City Gas Ltd', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 25, name: 'Second Coming Nigeria Ltd', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 26, name: 'NNPC', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 27, name: 'Crown Flour Mill LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 28, name: 'Placid LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 29, name: 'Sweet Nutrition LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 30, name: 'Mohaz Oil and Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 31, name: 'Mikano International LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 32, name: 'Ade Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 33, name: 'Anchor Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 34, name: 'Gunon Oil and Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 35, name: 'VeeVee Products LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 36, name: 'Purechem Manfacturing LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 37, name: 'AshKash Nigeria LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 38, name: 'Matrix Energy LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 39, name: '11 Plc', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 40, name: 'BHR Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 41, name: 'Petrocam Gas LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 42, name: 'Messers Maxwell International Ventures LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 43, name: 'Mega Plastic LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 44, name: 'Gas Terminaling LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 45, name: 'Elesther Energy LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 46, name: 'Crown Deluxe LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 47, name: 'Fatgbems LTD', logo: 'FTO', sector: 'Oil & Gas' },
-    { id: 48, name: 'Biswal', logo: 'FTO', sector: 'Oil & Gas' },
-  ];
-
+  
   // Split clients into 3 rows
-  const row1 = clients.slice(0, 16);
-  const row2 = clients.slice(16, 32);
-  const row3 = clients.slice(32, 48);
+  const row1 = CLIENTS.slice(0, 16);
+  const row2 = CLIENTS.slice(16, 32);
+  const row3 = CLIENTS.slice(32, 48);
 
   return (
     <section className="py-20 bg-tetiary overflow-hidden">

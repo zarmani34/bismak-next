@@ -25,6 +25,6 @@ export type TypeScrollInView = [
 export interface Client {
   id: number;
   name: string;
-  logo: string;
-  sector: string;
+  abbreviation: string;
+  img?: string
 }

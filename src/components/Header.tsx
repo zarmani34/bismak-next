@@ -26,7 +26,7 @@ export const Header = ({activeSection}: {activeSection: string}) => {
         <div className="w-12 h-8 md:w-28 md:h-14 border-2 border-border">
           <img
             src="/logo.jpg"
-            alt="Logo"
+            alt="Bismak Logo"
             className="w-full h-full"
           />
         </div>
