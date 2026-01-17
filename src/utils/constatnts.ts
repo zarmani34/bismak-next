@@ -9,7 +9,7 @@ export const CLIENTS : Client[]= [
     { id: 6, name: 'Ameogo Gas Accurate Grace LTD', abbreviation: 'SEP' },
     { id: 7, name: 'Oando Energy', abbreviation: 'OAN', img: '/clients_logo/oando.png' },
     { id: 8, name: 'Dangote', abbreviation: 'DNG', img: '/clients_logo/dangote.png' },
-    { id: 9, name: 'Dobum Nigeria LTD', abbreviation: 'AIT' },
+    { id: 9, name: 'Dobum Nigeria LTD', abbreviation: 'DNL' },
     { id: 10, name: 'Conoil', abbreviation: 'CON', img: '/clients_logo/conoil.png' },
     { id: 11, name: 'NIPCO', abbreviation: 'NPC' },
     { id: 12, name: 'Forte Oil', abbreviation: 'FTO', img: '/clients_logo/forteoil.png' },

@@ -36,7 +36,7 @@ const TrustedClients = () => {
         <div className="absolute left-0 top-0 bottom-0 w-32 bg-linear-to-r from-tetiary to-transparent z-10 pointer-events-none"></div>
         <div className="absolute right-0 top-0 bottom-0 w-32 bg-linear-to-l from-tetiary to-transparent z-10 pointer-events-none"></div>
 
-        <div className="space-y-6">
+        <div className="space-y-2 md:space-y-6">
           <motion.div
             animate={{
               x: [0, -1920],
