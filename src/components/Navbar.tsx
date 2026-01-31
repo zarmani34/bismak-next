@@ -41,7 +41,7 @@ const Navbar = ({ showMenu, activeSection }: NavbarProps) => {
           ))}
           <Link
             href={"/portal"}
-            className="text-tetiary font-medium hover:text-secondary-light uppercase transition-colors duration-3000"
+            className="text-tetiary font-medium hover:text-secondary-light uppercase transition-colors duration-300"
           >
             portal
           </Link>

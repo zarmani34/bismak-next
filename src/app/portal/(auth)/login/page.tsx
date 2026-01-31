@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
+import { usePortal } from "../../context";
 
 
 const loginSchema = z.object({
@@ -24,8 +25,9 @@ interface LoginFormProps {
   portal: string;
 }
 
-export default function LoginForm({ portal }: LoginFormProps) {
+export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const { portal } = usePortal();
 
 
   const {
@@ -35,7 +37,7 @@ export default function LoginForm({ portal }: LoginFormProps) {
     setError,    
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema), 
-    mode: "onBlur", 
+    mode: "onBlur",
   });
 
   const onSubmit = async (data: LoginFormData) => {
