@@ -26,7 +26,7 @@ const notifications = [
 ];
   return (
     <header className="bg-linear-to-r from-primary-dark via-primary to-primary-dark  border-b border-tetiary/20 fixed top-0 left-0 w-full z-40">
-      <div className="flex items-center justify-between h-16 px-6">
+      <div className="flex items-center justify-between h-16 px-2 md:px-6">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
             <Link

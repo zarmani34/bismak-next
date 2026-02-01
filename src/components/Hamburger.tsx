@@ -16,7 +16,7 @@ const Harmburger = forwardRef<HTMLDivElement, HarmburgerProps>(({ showMenu, hand
       {/* Top bar */}
       <div
         className={`w-7 h-1  my-1.5 rounded-xl transition-all duration-300 ${
-          showMenu ? "bg-secondary-dark translate-y-2 rotate-[-45deg]" : "translate-y-0 rotate-0 bg-tetiary "
+          showMenu ? "bg-secondary-dark translate-y-2 -rotate-45" : "translate-y-0 rotate-0 bg-tetiary "
         }`}
       />
 
