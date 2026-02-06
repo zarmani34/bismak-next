@@ -6,7 +6,7 @@ import { FaLock, FaChartLine, FaBolt } from 'react-icons/fa';
 
 export default function Portal() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F6F5D9] via-white to-[#F6F5D9] flex items-center justify-center p-5 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-tetiary via-white to-tetiary flex items-center justify-center p-5 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -16,7 +16,7 @@ export default function Portal() {
             rotate: [0, 90, 0]
           }}
           transition={{ duration: 20, repeat: Infinity }}
-          className="absolute -top-32 -left-32 w-96 h-96 bg-[#37574a] rounded-full blur-3xl"
+          className="absolute -top-32 -left-32 w-96 h-96 bg-primary rounded-full blur-3xl"
         />
         <motion.div
           animate={{ 
@@ -35,7 +35,7 @@ export default function Portal() {
             rotate: [0, 180, 360]
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="absolute top-1/4 left-1/4 w-16 h-16 border-4 border-[#37574a]/20 rounded-lg"
+          className="absolute top-1/4 left-1/4 w-16 h-16 border-4 border-primary/20 rounded-lg"
         />
         <motion.div
           animate={{ 
@@ -52,10 +52,10 @@ export default function Portal() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative max-w-4xl w-full bg-white rounded-3xl shadow-2xl border-2 border-[#e0ddc7] p-12 md:p-16 text-center overflow-hidden"
+        className="relative max-w-4xl w-full bg-white rounded-3xl shadow-2xl border-2 border-border p-12 md:p-16 text-center overflow-hidden"
       >
         {/* Decorative top accent */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#37574a] via-[#D95C3E] to-[#37574a]" />
+        <div className="absolute top-0 left-0 right-0 h-2 bg-linear-to-r from-primary via-[#D95C3E] to-primary" />
         
         {/* Logo/Icon */}
         <motion.div
@@ -64,7 +64,7 @@ export default function Portal() {
           transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
           className="mb-8 inline-block"
         >
-          <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-[#37574a] to-[#4a6b5c] rounded-3xl flex items-center justify-center shadow-xl mx-auto relative">
+          <div className="w-24 h-24 md:w-32 md:h-32 bg-linear-to-br from-primary to-primary-light rounded-3xl flex items-center justify-center shadow-xl mx-auto relative">
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -83,7 +83,7 @@ export default function Portal() {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="text-4xl md:text-6xl font-bold text-[#333333] mb-4"
         >
-          Portal Under <span className="text-[#37574a]">Construction</span>
+          Portal Under <span className="text-primary">Construction</span>
         </motion.h1>
 
         {/* Subtitle */}
@@ -91,7 +91,7 @@ export default function Portal() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="text-lg md:text-xl text-[#4a4a4a] mb-8 max-w-2xl mx-auto"
+          className="text-lg md:text-xl text-body-text mb-8 max-w-2xl mx-auto"
         >
           We're working hard to bring you an enhanced portal experience. Our team is crafting something special for you.
         </motion.p>
@@ -108,22 +108,22 @@ export default function Portal() {
             <motion.span
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="text-sm font-bold text-[#37574a]"
+              className="text-sm font-bold text-primary"
             >
               75%
             </motion.span>
           </div>
-          <div className="max-w-md mx-auto h-3 bg-[#F6F5D9] rounded-full overflow-hidden border border-[#e0ddc7]">
+          <div className="max-w-md mx-auto h-3 bg-tetiary rounded-full overflow-hidden border border-border">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '75%' }}
               transition={{ delay: 0.8, duration: 1.5, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-[#37574a] to-[#4a6b5c] rounded-full relative overflow-hidden"
+              className="h-full bg-linear-to-r from-primary to-primary-light rounded-full relative overflow-hidden"
             >
               <motion.div
                 animate={{ x: ['-100%', '100%'] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent"
               />
             </motion.div>
           </div>
@@ -147,9 +147,9 @@ export default function Portal() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
               whileHover={{ scale: 1.05 }}
-              className="bg-[#F6F5D9] rounded-xl p-6 border border-[#e0ddc7] hover:border-[#37574a] transition-all"
+              className="bg-tetiary rounded-xl p-6 border border-border hover:border-primary transition-all"
             >
-              <div className="text-4xl mb-3 text-[#37574a] flex justify-center">
+              <div className="text-4xl mb-3 text-primary flex justify-center">
                 <feature.icon />
               </div>
               <h3 className="font-bold text-[#333333] mb-1">{feature.title}</h3>
@@ -165,19 +165,19 @@ export default function Portal() {
           transition={{ delay: 0.9, duration: 0.6 }}
           className="space-y-4"
         >
-          <p className="text-[#4a4a4a] font-medium">
+          <p className="text-body-text font-medium">
             Want to be notified when we launch?
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto">
             <input
               type="email"
               placeholder="Enter your email"
-              className="w-full px-6 py-4 rounded-xl border-2 border-[#e0ddc7] focus:border-[#37574a] focus:outline-none transition-colors text-[#333333] placeholder:text-[#8a8a8a]"
+              className="w-full px-6 py-4 rounded-xl border-2 border-border focus:border-primary focus:outline-none transition-colors text-[#333333] placeholder:text-[#8a8a8a]"
             />
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full sm:w-auto bg-[#D95C3E] hover:bg-[#c4512a] text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
+              className="w-full sm:w-auto bg-[#D95C3E] hover:bg-secondary-dark text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
             >
               Notify Me
             </motion.button>
@@ -189,15 +189,15 @@ export default function Portal() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.6 }}
-          className="mt-12 pt-8 border-t border-[#e0ddc7]"
+          className="mt-12 pt-8 border-t border-border"
         >
           <p className="text-sm text-[#8a8a8a] flex items-center justify-center gap-2">
-            <span className="w-2 h-2 bg-[#4a7c59] rounded-full animate-pulse" />
+            <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
             Expected launch: Q1 2026
           </p>
           <p className="text-xs text-[#8a8a8a] mt-2">
             Need immediate assistance? Contact us at{' '}
-            <a href="mailto:support@bismak.com" className="text-[#37574a] hover:text-[#D95C3E] font-semibold">
+            <a href="mailto:support@bismak.com" className="text-primary hover:text-[#D95C3E] font-semibold">
               support@bismak.com
             </a>
           </p>
