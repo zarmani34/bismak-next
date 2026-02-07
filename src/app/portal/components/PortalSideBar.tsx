@@ -75,7 +75,7 @@ const currentMenu = portalMenus[portalType];
           }`}
         >
           {/* {!isCollapsed ? ( */}
-          <h2 className="text-2xl font-medium uppercase">Client Portal</h2>
+          <h2 className="text-2xl font-medium uppercase">{portalType} Portal</h2>
           {/* // ) : ( */}
           {/* //   <div className="text-xl font-bold">CP</div> */}
           {/* // )} */}

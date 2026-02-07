@@ -4,12 +4,6 @@ import Image from "next/image";
 import UserMenu from "./UserMenu";
 
 export default function PortalHeader() {
-  const currentUser = {
-    name: "Bayo Ismail",
-    role: "client", // client, staff, admin
-    avatar: "/api/placeholder/40/40",
-    company: "TechCorp Industries",
-  };
   const notifications = [
     {
       id: 1,
@@ -30,15 +24,17 @@ export default function PortalHeader() {
         <div className="flex items-center space-x-3">
           <Link
             href="/"
-            className="w-24 md:w-36 h-12 bg-linear-to-r from-tetiary/60 to-tetiary/70 rounded-lg py-1 px-2 shadow-md"
+            className="font-bold text-tetiary text-lg bg-linear-to-r from-secondary to-secondary-dark rounded-lg py-1 px-2 shadow-md"
+            // className="w-24 md:w-36 h-12 bg-linear-to-r from-tetiary/60 to-tetiary/70 rounded-lg py-1 px-2 shadow-md"
           >
-            <Image
+            BISMAK EXCEL
+            {/* <Image
               src={"/Bismak.svg"}
               alt="Bismak logo"
               width={96}
               height={48}
               className="w-full h-full object-contain"
-            />
+            /> */}
           </Link>
         </div>
 

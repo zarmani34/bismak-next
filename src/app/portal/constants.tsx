@@ -18,11 +18,12 @@ type Stat ={
 
 type Project={
   id: number;
-    name: string;
-    status: string;
-    location: string;
-    nextAction: string;
-    dueDate: string;
+  owner: string;
+  name: string;
+  status: string;
+  location: string;
+  nextAction: string;
+  dueDate: string;
 }
 
 type Service={
@@ -53,7 +54,7 @@ export const CLIENTPORTALMENU = [
     icon: <FaRegClipboard className="w-5 h-5" />, // request form
   },
   {
-    key: "billing",
+    key: "billings",
     label: "Billing & Invoices",
     icon: <FaFileInvoiceDollar className="w-5 h-5" />, // billing
   },
@@ -157,6 +158,7 @@ export const dashboardStats: Stat[] = [
 export const PROJECT_REQUESTS:Project[] = [
   {
     id: 1,
+    owner: "Bayo Ismail",
     name: "Pressure Test",
     status: "in progress",
     location: "Lagos, Nigeria",
@@ -165,6 +167,7 @@ export const PROJECT_REQUESTS:Project[] = [
   },
   {
     id: 2,
+    owner: "Bayo Ismail",
     name: "Tank calibration",
     status: "Completed",
     location: "Port Harcourt",
@@ -173,6 +176,7 @@ export const PROJECT_REQUESTS:Project[] = [
   },
   {
     id: 3,
+    owner: "Bayo Ismail",
     name: "Pressure test",
     status: "planning",
     location: "Warri",
@@ -181,6 +185,7 @@ export const PROJECT_REQUESTS:Project[] = [
   },
   {
     id: 4,
+    owner: "Bayo Ismail",
     name: "Pressure Test",
     status: "in progress",
     location: "Lagos, Nigeria",
@@ -189,6 +194,7 @@ export const PROJECT_REQUESTS:Project[] = [
   },
   {
     id: 5,
+    owner: "Bayo Ismail",
     name: "Tank calibration",
     status: "Completed",
     location: "Port Harcourt",
@@ -197,6 +203,7 @@ export const PROJECT_REQUESTS:Project[] = [
   },
   {
     id: 6,
+    owner: "Bayo Ismail",
     name: "Pressure test",
     status: "planning",
     location: "Warri",
