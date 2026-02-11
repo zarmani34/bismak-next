@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ADMINPORTALMENU, CLIENTPORTALMENU, STAFFPORTALMENU } from "../constants";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import Navbar from "@/src/components/Navbar";
 import Harmburger from "@/src/components/Hamburger";
 
 const PortalSidebar = () => {
@@ -13,7 +12,7 @@ const PortalSidebar = () => {
   const pathname = usePathname();
 
   type PortalType = "client" | "staff" | "admin";
-  let portalType: PortalType = "client"; 
+  let portalType: PortalType = "staff"; 
 
 
 if (pathname.startsWith("/portal/client")) {
@@ -31,8 +30,6 @@ const portalMenus = {
 };
 
 const currentMenu = portalMenus[portalType];
-
-
 
   return (
     <>
@@ -93,7 +90,7 @@ const currentMenu = portalMenus[portalType];
             return (
             <li key={item.key}>
               <Link
-                href={`/portal/client/${item.key}`} //`/portal/client/${item.key}`}
+                href={`/portal/${portalType}/${item.key}`} //`/portal/client/${item.key}`}
                 className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-300 ease-in-out
           hover:bg-tetiary/10 hover:translate-x-1 group relative
           ${isActive ? 'bg-tetiary/20 translate-x-1 before:content-[""] before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-5 before:bg-secondary before:rounded-r': "bg-transparent translate-x-0"}
@@ -113,7 +110,6 @@ const currentMenu = portalMenus[portalType];
                 >
                   {item.label}
                 </span>
-                {/* {active === item.key && <span className="absolute top-1/2 left-0 w-1 h-1/3 -translate-y-1/2 transition-all duration-300 ease-in-out bg-secondary rounded-sm"></span>} */}
               </Link>
             </li>
           )})}

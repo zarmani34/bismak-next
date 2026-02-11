@@ -1,6 +1,24 @@
 import { ReactNode } from "react";
-import { FaChartLine, FaCog, FaFileInvoiceDollar, FaProjectDiagram, FaRegClipboard, FaRegWindowMaximize } from "react-icons/fa";
-import { FaBriefcase, FaClipboardCheck, FaCreditCard, FaFile, FaFileContract } from "react-icons/fa6";
+import {
+  FaCalendarAlt,
+  FaChartLine,
+  FaCheckCircle,
+  FaCog,
+  FaFileAlt,
+  FaFileInvoiceDollar,
+  FaProjectDiagram,
+  FaRegClipboard,
+  FaRegWindowMaximize,
+} from "react-icons/fa";
+import {
+  FaBriefcase,
+  FaClipboardCheck,
+  FaClipboardList,
+  FaCreditCard,
+  FaFile,
+  FaFileContract,
+  FaUser,
+} from "react-icons/fa6";
 
 export const currentUser = {
   name: "Bayo Ismail",
@@ -9,14 +27,14 @@ export const currentUser = {
   company: "TechCorp Industries",
 };
 
-type Stat ={
-        label: string;
-      value: string;
-      icon: ReactNode;
-      color: "primary" | "error" | "warning" | "info";
-}
+type Stat = {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  color: "primary" | "error" | "warning" | "info";
+};
 
-type Project={
+type Project = {
   id: number;
   owner: string;
   name: string;
@@ -24,18 +42,18 @@ type Project={
   location: string;
   nextAction: string;
   dueDate: string;
-}
+};
 
-type Service={
+type Service = {
   id: number;
-    type: string;
-    client: string;
-    priority: string;
-    status: string;
-    created: string;
-    description: string;
-    nextAction: string;
-}
+  type: string;
+  client: string;
+  priority: string;
+  status: string;
+  created: string;
+  description: string;
+  nextAction: string;
+};
 
 export const CLIENTPORTALMENU = [
   {
@@ -74,12 +92,17 @@ export const STAFFPORTALMENU = [
   {
     key: "dashboard",
     label: "Dashboard",
-    icon: <FaRegWindowMaximize className="w-5 h-5" />, // grid/dashboard   
+    icon: <FaRegWindowMaximize className="w-5 h-5" />, // grid/dashboard
   },
   {
     key: "projects",
     label: "Projects",
     icon: <FaProjectDiagram className="w-5 h-5" />, // project flows
+  },
+  {
+    key: "tools",
+    label: "Tools and Machines",
+    icon: <FaCog className="w-5 h-5" />, // tools/machines
   },
   {
     key: "reports",
@@ -94,10 +117,11 @@ export const STAFFPORTALMENU = [
   {
     key: "profile",
     label: "Profile",
-    icon: <FaCog className="w-5 h-5" />, // settings    
+    icon: <FaUser className="w-5 h-5" />, // settings
   },
 ];
-export const ADMINPORTALMENU = [{
+export const ADMINPORTALMENU = [
+  {
     key: "dashboard",
     label: "Dashboard",
     icon: <FaRegWindowMaximize className="w-5 h-5" />, // grid/dashboard
@@ -123,6 +147,11 @@ export const ADMINPORTALMENU = [{
     icon: <FaFileContract className="w-5 h-5" />, // documents/certs
   },
   {
+    key: "tools",
+    label: "Tools and Machines",
+    icon: <FaCog className="w-5 h-5" />, // tools/machines
+  },
+  {
     key: "reports",
     label: "Reports & Analytics",
     icon: <FaChartLine className="w-5 h-5" />, // analytics
@@ -131,7 +160,8 @@ export const ADMINPORTALMENU = [{
     key: "profile",
     label: "Profile",
     icon: <FaCog className="w-5 h-5" />, // settings
-},]
+  },
+];
 
 export const dashboardStats: Stat[] = [
   {
@@ -155,7 +185,60 @@ export const dashboardStats: Stat[] = [
   },
 ];
 
-export const PROJECT_REQUESTS:Project[] = [
+export const staffProjectStats: Stat[] = [
+  {
+    label: "Total Projects",
+    value: "20",
+    color: "primary",
+    icon: <FaProjectDiagram />,
+  },
+  { label: "Active", value: "6", color: "info", icon: <FaProjectDiagram /> },
+  {
+    label: "Completed",
+    value: "8",
+    color: "primary",
+    icon: <FaProjectDiagram />,
+  },
+  { label: "Overdue", value: "2", color: "error", icon: <FaProjectDiagram /> },
+];
+export const staffToolsStats: Stat[] = [
+  {
+    label: "Total Tools request",
+    value: "5",
+    color: "primary",
+    icon: <FaCog />,
+  },
+  { label: "Tools in Use", value: "3", color: "info", icon: <FaCog /> },
+  { label: "Tools Returned", value: "2", color: "warning", icon: <FaCog /> },
+];
+
+export const staffDasboardStats: Stat[] = [
+  {
+    label: "Jobs Assigned",
+    icon: <FaClipboardList />,
+    color: "primary",
+    value: "12",
+  },
+  {
+    label: "Jobs Completed",
+    icon: <FaCheckCircle />,
+    color: "info",
+    value: "8",
+  },
+  {
+    label: "Pending Reports",
+    icon: <FaFileAlt />,
+    color: "warning",
+    value: "4",
+  },
+  {
+    label: "Clients Referred",
+    icon: <FaCalendarAlt />,
+    color: "primary",
+    value: "3",
+  },
+];
+export const PROJECT_REQUESTS: Project[] = [
   {
     id: 1,
     owner: "Bayo Ismail",
@@ -212,7 +295,7 @@ export const PROJECT_REQUESTS:Project[] = [
   },
 ];
 
-export const SERVICE_REQUESTS:Service[] = [
+export const SERVICE_REQUESTS: Service[] = [
   {
     id: 1,
     type: "MITSDO",
@@ -245,7 +328,7 @@ export const SERVICE_REQUESTS:Service[] = [
   },
 ];
 
-export const getProgressPercentage = (status:string) => {
+export const getProgressPercentage = (status: string) => {
   switch (status.toLowerCase()) {
     case "planning":
       return "25";
@@ -260,7 +343,7 @@ export const getProgressPercentage = (status:string) => {
   }
 };
 
-export const getStatusColor = (status:string) => {
+export const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
     case "completed":
       return "bg-primary/20 text-primary";
@@ -273,7 +356,7 @@ export const getStatusColor = (status:string) => {
   }
 };
 
-export const getPriorityColor = (priority:string) => {
+export const getPriorityColor = (priority: string) => {
   switch (priority.toLowerCase()) {
     case "high":
       return "bg-error/40 text-error";
