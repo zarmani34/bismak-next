@@ -4,6 +4,7 @@ import {
   FaChartLine,
   FaCheckCircle,
   FaCog,
+  FaEdit,
   FaFileAlt,
   FaFileInvoiceDollar,
   FaProjectDiagram,
@@ -17,6 +18,7 @@ import {
   FaCreditCard,
   FaFile,
   FaFileContract,
+  FaPaperPlane,
   FaUser,
 } from "react-icons/fa6";
 
@@ -183,6 +185,18 @@ export const dashboardStats: Stat[] = [
     icon: <FaClipboardCheck />,
     color: "info",
   },
+];
+
+export const staffReportStats: Stat[] = [
+  {
+    label: "Total Reports",
+    value: "12",
+    color: "primary",
+    icon: <FaFileAlt />,
+  },
+  { label: "Drafts", value: "3", color: "info", icon: <FaEdit /> },
+  { label: "Submitted", value: "5", color: "warning", icon: <FaPaperPlane /> },
+  { label: "Approved", value: "4", color: "primary", icon: <FaCheckCircle /> },
 ];
 
 export const staffProjectStats: Stat[] = [
