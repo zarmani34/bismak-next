@@ -2,166 +2,209 @@
 
 import { useState } from 'react';
 import { 
-  FaPlus,
-  FaSearch,
-  FaFilter,
-  FaCalendarAlt,
+  FaTachometerAlt,
+  FaUsers,
+  FaClipboardList,
   FaFileAlt,
-  FaDownload,
+  FaCog,
+  FaBell,
+  FaSearch,
+  FaChartLine,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaClock,
+  FaUserTie,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaArrowUp,
+  FaArrowDown,
   FaEye,
   FaEdit,
   FaTrash,
-  FaCheckCircle,
-  FaClock,
-  FaExclamationTriangle,
+  FaPlus,
+  FaDownload,
+  FaFilter,
+  FaChevronRight,
+  FaBars,
   FaTimes,
-  FaChevronDown,
-  FaUpload,
-  FaCamera,
-  FaFilePdf,
-  FaFileWord,
-  FaFileImage,
-  FaClipboardList,
+  FaUserCircle,
+  FaHardHat,
+  FaTasks,
+  FaDollarSign,
   FaChartBar,
-  FaUser,
-  FaMapMarkerAlt,
-  FaBuilding,
-  FaPaperPlane
+  FaExclamationCircle
 } from 'react-icons/fa';
 
-interface Report {
+interface StaffMember {
   id: string;
-  title: string;
-  type: string;
-  project: string;
-  client: string;
+  name: string;
+  role: string;
+  activeJobs: number;
+  completedThisMonth: number;
+  status: 'active' | 'on-leave' | 'offline';
   location: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'pending-review';
+}
+
+interface PendingApproval {
+  id: string;
+  type: 'report' | 'timesheet' | 'expense' | 'leave';
+  title: string;
   submittedBy: string;
   submittedDate: string;
-  attachments: number;
   priority: 'low' | 'medium' | 'high' | 'urgent';
 }
 
-export default function ReportsPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'drafts' | 'submitted'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [showFilters, setShowFilters] = useState(false);
-  const [showNewReportModal, setShowNewReportModal] = useState(false);
+interface RecentActivity {
+  id: string;
+  action: string;
+  user: string;
+  details: string;
+  time: string;
+  type: 'project' | 'report' | 'user' | 'system';
+}
 
-  // Sample reports data
-  const reports: Report[] = [
-    {
-      id: 'RPT-001',
-      title: 'Safety Inspection Report - Platform 5',
-      type: 'Safety Inspection',
-      project: 'Offshore Platform Safety Inspection',
-      client: 'NNPC Limited',
-      location: 'Escravos Terminal',
-      status: 'submitted',
-      submittedBy: 'Ahmed Bello',
-      submittedDate: 'Feb 10, 2026',
-      attachments: 12,
-      priority: 'high'
+export default function AdminDashboard() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState('this-month');
+
+  // Dashboard stats
+  const stats = {
+    totalProjects: 24,
+    projectChange: '+12%',
+    activeStaff: 15,
+    staffChange: '+2',
+    pendingReports: 8,
+    reportChange: '-3',
+    revenue: '₦45.2M',
+    revenueChange: '+18%',
+    completedJobs: 142,
+    jobsChange: '+25',
+    clientSatisfaction: '94%',
+    satisfactionChange: '+2%',
+    overdueItems: 3,
+    overdueChange: '-1'
+  };
+
+  // Staff data
+  const staffMembers: StaffMember[] = [
+    { 
+      id: 'S001', 
+      name: 'Ahmed Bello', 
+      role: 'Field Engineer', 
+      activeJobs: 5, 
+      completedThisMonth: 12,
+      status: 'active',
+      location: 'Port Harcourt'
     },
-    {
-      id: 'RPT-002',
-      title: 'Pipeline Corrosion Assessment',
-      type: 'Technical Assessment',
-      project: 'Pipeline Integrity Assessment',
-      client: 'Shell Nigeria',
-      location: 'Port Harcourt',
-      status: 'approved',
-      submittedBy: 'Ahmed Bello',
-      submittedDate: 'Feb 8, 2026',
-      attachments: 8,
-      priority: 'urgent'
+    { 
+      id: 'S002', 
+      name: 'Chioma Okafor', 
+      role: 'Safety Inspector', 
+      activeJobs: 3, 
+      completedThisMonth: 15,
+      status: 'active',
+      location: 'Lagos'
     },
-    {
-      id: 'RPT-003',
-      title: 'Equipment Maintenance Log - Draft',
-      type: 'Maintenance',
-      project: 'Flow Station Equipment Maintenance',
-      client: 'Chevron Nigeria',
-      location: 'Warri',
-      status: 'draft',
-      submittedBy: 'Ahmed Bello',
-      submittedDate: 'Feb 10, 2026',
-      attachments: 3,
-      priority: 'medium'
+    { 
+      id: 'S003', 
+      name: 'Ibrahim Mohammed', 
+      role: 'Senior Technician', 
+      activeJobs: 4, 
+      completedThisMonth: 10,
+      status: 'on-leave',
+      location: 'Warri'
     },
-    {
-      id: 'RPT-004',
-      title: 'Tank Farm Safety Certification',
-      type: 'Certification',
-      project: 'Tank Farm Inspection',
-      client: 'TotalEnergies',
-      location: 'Lagos',
-      status: 'approved',
-      submittedBy: 'Ahmed Bello',
-      submittedDate: 'Feb 5, 2026',
-      attachments: 15,
-      priority: 'high'
-    },
-    {
-      id: 'RPT-005',
-      title: 'Wellhead Pressure Test Results',
-      type: 'Testing & Commissioning',
-      project: 'Wellhead Pressure Testing',
-      client: 'Seplat Energy',
-      location: 'Benin City',
-      status: 'pending-review',
-      submittedBy: 'Ahmed Bello',
-      submittedDate: 'Feb 9, 2026',
-      attachments: 6,
-      priority: 'urgent'
-    },
-    {
-      id: 'RPT-006',
-      title: 'Incident Report - Minor Spill',
-      type: 'Incident Report',
-      project: 'Pipeline Integrity Assessment',
-      client: 'Shell Nigeria',
-      location: 'Port Harcourt',
-      status: 'submitted',
-      submittedBy: 'Ahmed Bello',
-      submittedDate: 'Feb 7, 2026',
-      attachments: 10,
-      priority: 'urgent'
+    { 
+      id: 'S004', 
+      name: 'Grace Eze', 
+      role: 'Technical Lead', 
+      activeJobs: 6, 
+      completedThisMonth: 18,
+      status: 'active',
+      location: 'Benin City'
     }
   ];
 
-  const getStatusConfig = (status: string) => {
-    const configs = {
-      'approved': { 
-        label: 'Approved', 
-        color: 'text-[#4a7c59] bg-[#4a7c59]/10',
-        icon: FaCheckCircle 
-      },
-      'submitted': { 
-        label: 'Submitted', 
-        color: 'text-[#2b6cb0] bg-[#2b6cb0]/10',
-        icon: FaPaperPlane 
-      },
-      'draft': { 
-        label: 'Draft', 
-        color: 'text-[#8a8a8a] bg-[#8a8a8a]/10',
-        icon: FaEdit 
-      },
-      'pending-review': { 
-        label: 'Pending Review', 
-        color: 'text-[#D95C3E] bg-[#D95C3E]/10',
-        icon: FaClock 
-      },
-      'rejected': { 
-        label: 'Rejected', 
-        color: 'text-[#c53030] bg-[#c53030]/10',
-        icon: FaExclamationTriangle 
-      }
+  // Pending approvals
+  const pendingApprovals: PendingApproval[] = [
+    {
+      id: 'APP-001',
+      type: 'report',
+      title: 'Pipeline Integrity Assessment Report',
+      submittedBy: 'Ahmed Bello',
+      submittedDate: '2 hours ago',
+      priority: 'urgent'
+    },
+    {
+      id: 'APP-002',
+      type: 'report',
+      title: 'Safety Inspection - Offshore Platform',
+      submittedBy: 'Chioma Okafor',
+      submittedDate: '5 hours ago',
+      priority: 'high'
+    },
+    {
+      id: 'APP-003',
+      type: 'expense',
+      title: 'Equipment Purchase Request',
+      submittedBy: 'Ibrahim Mohammed',
+      submittedDate: '1 day ago',
+      priority: 'medium'
+    },
+    {
+      id: 'APP-004',
+      type: 'leave',
+      title: 'Annual Leave Request',
+      submittedBy: 'Grace Eze',
+      submittedDate: '2 days ago',
+      priority: 'low'
+    }
+  ];
+
+  // Recent activity
+  const recentActivity: RecentActivity[] = [
+    {
+      id: 'ACT-001',
+      action: 'Submitted report',
+      user: 'Ahmed Bello',
+      details: 'Pipeline Integrity Assessment Report',
+      time: '2 hours ago',
+      type: 'report'
+    },
+    {
+      id: 'ACT-002',
+      action: 'Completed project',
+      user: 'Chioma Okafor',
+      details: 'Tank Farm Inspection & Certification',
+      time: '5 hours ago',
+      type: 'project'
+    },
+    {
+      id: 'ACT-003',
+      action: 'New user registered',
+      user: 'System',
+      details: 'Tunde Adeyemi joined as Field Engineer',
+      time: '1 day ago',
+      type: 'user'
+    },
+    {
+      id: 'ACT-004',
+      action: 'Updated project status',
+      user: 'Grace Eze',
+      details: 'Flow Station Equipment Maintenance - In Progress',
+      time: '1 day ago',
+      type: 'project'
+    }
+  ];
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      'active': 'text-[#4a7c59] bg-[#4a7c59]/10',
+      'on-leave': 'text-[#D95C3E] bg-[#D95C3E]/10',
+      'offline': 'text-[#8a8a8a] bg-[#8a8a8a]/10'
     };
-    return configs[status as keyof typeof configs] || configs['draft'];
+    return colors[status as keyof typeof colors] || colors.offline;
   };
 
   const getPriorityColor = (priority: string) => {
@@ -174,427 +217,307 @@ export default function ReportsPage() {
     return colors[priority as keyof typeof colors] || colors.low;
   };
 
-  // Filter reports
-  const filteredReports = reports.filter(report => {
-    const matchesSearch = report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         report.project.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         report.client.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === 'all' || report.type === filterType;
-    const matchesStatus = filterStatus === 'all' || report.status === filterStatus;
-    const matchesTab = activeTab === 'all' || 
-                      (activeTab === 'drafts' && report.status === 'draft') ||
-                      (activeTab === 'submitted' && report.status !== 'draft');
-    return matchesSearch && matchesType && matchesStatus && matchesTab;
-  });
-
-  // Stats
-  const stats = {
-    total: reports.length,
-    drafts: reports.filter(r => r.status === 'draft').length,
-    submitted: reports.filter(r => r.status === 'submitted' || r.status === 'pending-review').length,
-    approved: reports.filter(r => r.status === 'approved').length
+  const getApprovalIcon = (type: string) => {
+    const icons = {
+      'report': FaFileAlt,
+      'timesheet': FaClock,
+      'expense': FaDollarSign,
+      'leave': FaCalendarAlt
+    };
+    return icons[type as keyof typeof icons] || FaFileAlt;
   };
 
-  const reportTemplates = [
-    { name: 'Safety Inspection', icon: FaClipboardList, color: 'bg-[#37574a]' },
-    { name: 'Incident Report', icon: FaExclamationTriangle, color: 'bg-[#c53030]' },
-    { name: 'Maintenance Log', icon: FaEdit, color: 'bg-[#2b6cb0]' },
-    { name: 'Technical Assessment', icon: FaChartBar, color: 'bg-[#D95C3E]' }
-  ];
+  const getActivityIcon = (type: string) => {
+    const icons = {
+      'project': FaClipboardList,
+      'report': FaFileAlt,
+      'user': FaUsers,
+      'system': FaCog
+    };
+    return icons[type as keyof typeof icons] || FaCog;
+  };
 
   return (
-    <div className="min-h-screen bg-[#F6F5D9]">
-      {/* Header */}
-      <div className="bg-white border-b border-[#e0ddc7]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-[#333333]">Reports</h1>
-              <p className="text-[#8a8a8a] mt-1">Create, manage, and submit field reports</p>
-            </div>
-            <button 
-              onClick={() => setShowNewReportModal(true)}
-              className="bg-[#D95C3E] text-white px-6 py-3 rounded-lg hover:bg-[#c4512a] transition-colors font-medium flex items-center gap-2 justify-center sm:w-auto shadow-lg"
-            >
-              <FaPlus size={16} />
-              New Report
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#F6F5D9] flex">
+      {/* Sidebar */}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[
-            { label: 'Total Reports', value: stats.total, color: 'bg-[#37574a]', icon: FaFileAlt },
-            { label: 'Drafts', value: stats.drafts, color: 'bg-[#8a8a8a]', icon: FaEdit },
-            { label: 'Submitted', value: stats.submitted, color: 'bg-[#2b6cb0]', icon: FaPaperPlane },
-            { label: 'Approved', value: stats.approved, color: 'bg-[#4a7c59]', icon: FaCheckCircle }
-          ].map((stat, index) => (
-            <div key={index} className="bg-white rounded-xl border border-[#e0ddc7] p-4 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className={`${stat.color} w-10 h-10 rounded-lg flex items-center justify-center text-white`}>
-                  <stat.icon size={20} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-[#333333]">{stat.value}</p>
-                  <p className="text-xs text-[#8a8a8a]">{stat.label}</p>
-                </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Bar */}
+        <header className="bg-white border-b border-[#e0ddc7] px-4 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden text-[#37574a]"
+              >
+                <FaBars size={24} />
+              </button>
+              <div>
+                <h2 className="text-xl font-bold text-[#333333]">Admin Dashboard</h2>
+                <p className="text-sm text-[#8a8a8a]">Tuesday, February 10, 2026</p>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Quick Templates */}
-        <div className="bg-white rounded-xl border border-[#e0ddc7] p-6 mb-6 shadow-sm">
-          <h3 className="text-lg font-bold text-[#333333] mb-4">Quick Start Templates</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {reportTemplates.map((template, index) => (
-              <button
-                key={index}
-                onClick={() => setShowNewReportModal(true)}
-                className={`${template.color} text-white p-4 rounded-lg hover:opacity-90 transition-opacity flex flex-col items-center gap-2`}
+            <div className="flex items-center gap-4">
+              {/* Period Selector */}
+              <select 
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="px-4 py-2 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg text-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#37574a]"
               >
-                <template.icon size={24} />
-                <span className="text-sm font-medium text-center">{template.name}</span>
+                <option value="today">Today</option>
+                <option value="this-week">This Week</option>
+                <option value="this-month">This Month</option>
+                <option value="this-year">This Year</option>
+              </select>
+              <button className="relative p-2 text-[#37574a] hover:bg-[#F6F5D9] rounded-lg transition-colors">
+                <FaBell size={20} />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#D95C3E] rounded-full"></span>
               </button>
-            ))}
+            </div>
           </div>
-        </div>
+        </header>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-t-xl border border-b-0 border-[#e0ddc7] shadow-sm">
-          <div className="flex border-b border-[#e0ddc7]">
+        {/* Dashboard Content */}
+        <main className="flex-1 overflow-auto p-4 lg:p-8">
+          {/* Key Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
-              { id: 'all', label: 'All Reports', count: reports.length },
-              { id: 'drafts', label: 'Drafts', count: stats.drafts },
-              { id: 'submitted', label: 'Submitted', count: reports.length - stats.drafts }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-6 py-4 font-medium transition-all relative ${
-                  activeTab === tab.id 
-                    ? 'text-[#37574a] border-b-2 border-[#37574a] bg-[#F6F5D9]' 
-                    : 'text-[#8a8a8a] hover:text-[#4a4a4a] hover:bg-[#f8f8f6]'
-                }`}
-              >
-                {tab.label}
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                  activeTab === tab.id 
-                    ? 'bg-[#37574a] text-white' 
-                    : 'bg-[#e0ddc7] text-[#8a8a8a]'
-                }`}>
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="bg-white border-x border-[#e0ddc7] p-4 shadow-sm">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Bar */}
-            <div className="flex-1 relative">
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#8a8a8a]" size={16} />
-              <input
-                type="text"
-                placeholder="Search reports by title, project, or client..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#37574a] text-[#333333]"
-              />
-            </div>
-
-            {/* Filter Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="px-6 py-3 border border-[#e0ddc7] rounded-lg hover:bg-[#F6F5D9] transition-colors flex items-center gap-2 justify-center text-[#333333] font-medium"
-            >
-              <FaFilter size={16} />
-              Filters
-              <FaChevronDown className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`} size={14} />
-            </button>
-          </div>
-
-          {/* Filter Options */}
-          {showFilters && (
-            <div className="mt-4 pt-4 border-t border-[#e0ddc7] grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Report Type</label>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full px-4 py-2 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#37574a] text-[#333333]"
-                >
-                  <option value="all">All Types</option>
-                  <option value="Safety Inspection">Safety Inspection</option>
-                  <option value="Technical Assessment">Technical Assessment</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Certification">Certification</option>
-                  <option value="Incident Report">Incident Report</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Status</label>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-4 py-2 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#37574a] text-[#333333]"
-                >
-                  <option value="all">All Status</option>
-                  <option value="draft">Draft</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="pending-review">Pending Review</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
-
-              <div className="flex items-end">
-                <button
-                  onClick={() => {
-                    setFilterType('all');
-                    setFilterStatus('all');
-                    setSearchQuery('');
-                  }}
-                  className="w-full px-4 py-2 border border-[#e0ddc7] rounded-lg hover:bg-[#F6F5D9] transition-colors text-[#333333] font-medium flex items-center gap-2 justify-center"
-                >
-                  <FaTimes size={14} />
-                  Clear Filters
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Results Count */}
-        <div className="bg-white border-x border-[#e0ddc7] px-4 py-3 shadow-sm">
-          <p className="text-sm text-[#8a8a8a]">
-            Showing <span className="font-semibold text-[#333333]">{filteredReports.length}</span> of {reports.length} reports
-          </p>
-        </div>
-
-        {/* Reports List */}
-        <div className="bg-white rounded-b-xl border border-[#e0ddc7] shadow-sm">
-          <div className="divide-y divide-[#e0ddc7]">
-            {filteredReports.map((report) => {
-              const statusConfig = getStatusConfig(report.status);
-              const StatusIcon = statusConfig.icon;
-              
-              return (
-                <div 
-                  key={report.id}
-                  className="p-6 hover:bg-[#F6F5D9] transition-colors cursor-pointer"
-                >
-                  <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                    {/* Left: Report Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-3 mb-2">
-                        <span className="text-xs font-bold text-[#8a8a8a]">{report.id}</span>
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityColor(report.priority)}`}>
-                          {report.priority.toUpperCase()}
-                        </span>
-                        <div className={`inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full font-medium ${statusConfig.color}`}>
-                          <StatusIcon size={12} />
-                          {statusConfig.label}
-                        </div>
-                      </div>
-                      <h3 className="font-bold text-[#333333] mb-2 text-lg">{report.title}</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm text-[#4a4a4a]">
-                        <div className="flex items-center gap-2">
-                          <FaClipboardList size={14} className="text-[#8a8a8a]" />
-                          <span className="truncate">{report.type}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FaBuilding size={14} className="text-[#8a8a8a]" />
-                          <span className="truncate">{report.client}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FaMapMarkerAlt size={14} className="text-[#8a8a8a]" />
-                          <span className="truncate">{report.location}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FaCalendarAlt size={14} className="text-[#8a8a8a]" />
-                          <span>{report.submittedDate}</span>
-                        </div>
-                      </div>
-                      <p className="text-sm text-[#8a8a8a] mt-2">
-                        Project: <span className="text-[#4a4a4a] font-medium">{report.project}</span>
-                      </p>
-                    </div>
-
-                    {/* Right: Actions */}
-                    <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:w-48">
-                      <div className="flex items-center gap-2 text-sm text-[#8a8a8a]">
-                        <FaCamera size={14} />
-                        <span>{report.attachments} attachments</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button className="flex-1 lg:w-full px-4 py-2 bg-[#37574a] text-white rounded-lg hover:bg-[#2a4238] transition-colors text-sm font-medium flex items-center justify-center gap-2">
-                          <FaEye size={14} />
-                          View
-                        </button>
-                        {report.status === 'draft' && (
-                          <button className="flex-1 lg:w-full px-4 py-2 border border-[#e0ddc7] text-[#333333] rounded-lg hover:bg-[#f8f8f6] transition-colors text-sm font-medium flex items-center justify-center gap-2">
-                            <FaEdit size={14} />
-                            Edit
-                          </button>
-                        )}
-                        {report.status !== 'draft' && (
-                          <button className="flex-1 lg:w-full px-4 py-2 border border-[#e0ddc7] text-[#333333] rounded-lg hover:bg-[#f8f8f6] transition-colors text-sm font-medium flex items-center justify-center gap-2">
-                            <FaDownload size={14} />
-                            Download
-                          </button>
-                        )}
-                      </div>
-                    </div>
+              { 
+                label: 'Active Projects', 
+                value: stats.totalProjects, 
+                change: stats.projectChange,
+                trend: 'up',
+                icon: FaClipboardList, 
+                color: 'bg-[#37574a]'
+              },
+              { 
+                label: 'Active Staff', 
+                value: stats.activeStaff, 
+                change: stats.staffChange,
+                trend: 'up',
+                icon: FaUserTie, 
+                color: 'bg-[#2b6cb0]'
+              },
+              { 
+                label: 'Pending Approvals', 
+                value: stats.pendingReports, 
+                change: stats.reportChange,
+                trend: 'down',
+                icon: FaExclamationCircle, 
+                color: 'bg-[#D95C3E]'
+              },
+              { 
+                label: 'Monthly Revenue', 
+                value: stats.revenue, 
+                change: stats.revenueChange,
+                trend: 'up',
+                icon: FaDollarSign, 
+                color: 'bg-[#4a7c59]'
+              }
+            ].map((metric, index) => (
+              <div key={index} className="bg-white rounded-xl border border-[#e0ddc7] p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`${metric.color} w-12 h-12 rounded-lg flex items-center justify-center text-white`}>
+                    <metric.icon size={24} />
+                  </div>
+                  <div className={`flex items-center gap-1 text-xs font-semibold ${
+                    metric.trend === 'up' ? 'text-[#4a7c59]' : 'text-[#c53030]'
+                  }`}>
+                    {metric.trend === 'up' ? <FaArrowUp size={10} /> : <FaArrowDown size={10} />}
+                    {metric.change}
                   </div>
                 </div>
-              );
-            })}
+                <h3 className="text-3xl font-bold text-[#333333] mb-1">{metric.value}</h3>
+                <p className="text-sm text-[#8a8a8a]">{metric.label}</p>
+              </div>
+            ))}
           </div>
-        </div>
 
-        {/* Empty State */}
-        {filteredReports.length === 0 && (
-          <div className="bg-white rounded-xl border border-[#e0ddc7] p-12 text-center shadow-sm">
-            <div className="w-16 h-16 bg-[#F6F5D9] rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaFileAlt size={32} className="text-[#8a8a8a]" />
-            </div>
-            <h3 className="text-xl font-bold text-[#333333] mb-2">No Reports Found</h3>
-            <p className="text-[#8a8a8a] mb-6">
-              Try adjusting your filters or create a new report
-            </p>
-            <button
-              onClick={() => setShowNewReportModal(true)}
-              className="px-6 py-3 bg-[#D95C3E] text-white rounded-lg hover:bg-[#c4512a] transition-colors font-medium inline-flex items-center gap-2"
-            >
-              <FaPlus size={16} />
-              Create New Report
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* New Report Modal */}
-      {showNewReportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-[#e0ddc7] flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="text-2xl font-bold text-[#333333]">Create New Report</h2>
-              <button 
-                onClick={() => setShowNewReportModal(false)}
-                className="text-[#8a8a8a] hover:text-[#333333] transition-colors"
-              >
-                <FaTimes size={24} />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              {/* Report Type */}
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Report Type *</label>
-                <select className="w-full px-4 py-3 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#37574a] text-[#333333]">
-                  <option>Select report type</option>
-                  <option>Safety Inspection</option>
-                  <option>Incident Report</option>
-                  <option>Maintenance Log</option>
-                  <option>Technical Assessment</option>
-                  <option>Certification Report</option>
-                </select>
-              </div>
-
-              {/* Report Title */}
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Report Title *</label>
-                <input
-                  type="text"
-                  placeholder="Enter report title"
-                  className="w-full px-4 py-3 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#37574a] text-[#333333]"
-                />
-              </div>
-
-              {/* Project Selection */}
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Associated Project *</label>
-                <select className="w-full px-4 py-3 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#37574a] text-[#333333]">
-                  <option>Select project</option>
-                  <option>Offshore Platform Safety Inspection</option>
-                  <option>Pipeline Integrity Assessment</option>
-                  <option>Flow Station Equipment Maintenance</option>
-                </select>
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Location *</label>
-                <input
-                  type="text"
-                  placeholder="Enter location"
-                  className="w-full px-4 py-3 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#37574a] text-[#333333]"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Description</label>
-                <textarea
-                  rows={4}
-                  placeholder="Provide report details and findings..."
-                  className="w-full px-4 py-3 bg-[#F6F5D9] border border-[#e0ddc7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#37574a] text-[#333333] resize-none"
-                />
-              </div>
-
-              {/* File Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Attachments</label>
-                <div className="border-2 border-dashed border-[#e0ddc7] rounded-lg p-8 text-center hover:border-[#37574a] transition-colors cursor-pointer">
-                  <FaUpload size={32} className="text-[#8a8a8a] mx-auto mb-3" />
-                  <p className="text-[#4a4a4a] font-medium mb-1">Click to upload or drag and drop</p>
-                  <p className="text-sm text-[#8a8a8a]">PDF, Word, Images (Max 10MB each)</p>
+          {/* Secondary Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {[
+              { label: 'Completed Jobs', value: stats.completedJobs, change: stats.jobsChange },
+              { label: 'Client Satisfaction', value: stats.clientSatisfaction, change: stats.satisfactionChange },
+              { label: 'Overdue Items', value: stats.overdueItems, change: stats.overdueChange },
+              { label: 'Active Clients', value: '18', change: '+3' }
+            ].map((stat, index) => (
+              <div key={index} className="bg-white rounded-xl border border-[#e0ddc7] p-4 shadow-sm">
+                <p className="text-sm text-[#8a8a8a] mb-1">{stat.label}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-[#333333]">{stat.value}</p>
+                  <span className="text-xs font-semibold text-[#4a7c59]">{stat.change}</span>
                 </div>
               </div>
+            ))}
+          </div>
 
-              {/* Priority */}
-              <div>
-                <label className="block text-sm font-semibold text-[#333333] mb-2">Priority</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {['low', 'medium', 'high', 'urgent'].map((priority) => (
-                    <button
-                      key={priority}
-                      className={`px-4 py-2 rounded-lg font-medium text-sm capitalize border-2 transition-all ${
-                        priority === 'medium'
-                          ? 'border-[#37574a] bg-[#37574a] text-white'
-                          : 'border-[#e0ddc7] text-[#333333] hover:border-[#37574a]'
-                      }`}
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Staff Overview - Takes 2 columns */}
+            <div className="lg:col-span-2 bg-white rounded-xl border border-[#e0ddc7] shadow-sm">
+              <div className="p-6 border-b border-[#e0ddc7]">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-[#333333]">Staff Overview</h3>
+                  <button className="text-sm text-[#37574a] hover:text-[#2a4238] font-medium flex items-center gap-1">
+                    View All
+                    <FaChevronRight size={12} />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {staffMembers.map((staff) => (
+                    <div 
+                      key={staff.id}
+                      className="border border-[#e0ddc7] rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
-                      {priority}
-                    </button>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="w-12 h-12 rounded-full bg-[#37574a] flex items-center justify-center text-white font-bold">
+                            {staff.name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-[#333333]">{staff.name}</h4>
+                              <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(staff.status)}`}>
+                                {staff.status.replace('-', ' ').toUpperCase()}
+                              </span>
+                            </div>
+                            <p className="text-sm text-[#8a8a8a]">{staff.role}</p>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-[#8a8a8a]">
+                              <FaMapMarkerAlt size={10} />
+                              {staff.location}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-6 text-center">
+                          <div>
+                            <p className="text-2xl font-bold text-[#37574a]">{staff.activeJobs}</p>
+                            <p className="text-xs text-[#8a8a8a]">Active</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-[#4a7c59]">{staff.completedThisMonth}</p>
+                            <p className="text-xs text-[#8a8a8a]">Completed</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="p-6 border-t border-[#e0ddc7] flex gap-3 sticky bottom-0 bg-white">
-              <button 
-                onClick={() => setShowNewReportModal(false)}
-                className="flex-1 px-6 py-3 border border-[#e0ddc7] text-[#333333] rounded-lg hover:bg-[#f8f8f6] transition-colors font-medium"
-              >
-                Save as Draft
-              </button>
-              <button className="flex-1 px-6 py-3 bg-[#D95C3E] text-white rounded-lg hover:bg-[#c4512a] transition-colors font-medium flex items-center justify-center gap-2">
-                <FaPaperPlane size={16} />
-                Submit Report
-              </button>
+            {/* Pending Approvals */}
+            <div className="lg:col-span-1 bg-white rounded-xl border border-[#e0ddc7] shadow-sm">
+              <div className="p-6 border-b border-[#e0ddc7]">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-[#333333]">Pending Approvals</h3>
+                  <span className="bg-[#D95C3E] text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {pendingApprovals.length}
+                  </span>
+                </div>
+              </div>
+              <div className="p-6 space-y-3 max-h-96 overflow-y-auto">
+                {pendingApprovals.map((approval) => {
+                  const Icon = getApprovalIcon(approval.type);
+                  return (
+                    <div 
+                      key={approval.id}
+                      className="border-l-4 border-[#D95C3E] bg-[#F6F5D9] p-4 rounded-r-lg hover:shadow-md transition-shadow cursor-pointer"
+                    >
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="w-8 h-8 bg-[#D95C3E] rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                          <Icon size={14} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityColor(approval.priority)} inline-block mb-1`}>
+                            {approval.priority.toUpperCase()}
+                          </span>
+                          <h4 className="font-semibold text-[#333333] text-sm mb-1 line-clamp-2">
+                            {approval.title}
+                          </h4>
+                          <p className="text-xs text-[#8a8a8a]">By: {approval.submittedBy}</p>
+                          <p className="text-xs text-[#8a8a8a]">{approval.submittedDate}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <button className="flex-1 px-3 py-1.5 bg-[#4a7c59] text-white rounded text-xs font-medium hover:bg-[#37574a] transition-colors">
+                          Approve
+                        </button>
+                        <button className="flex-1 px-3 py-1.5 border border-[#e0ddc7] text-[#333333] rounded text-xs font-medium hover:bg-white transition-colors">
+                          Review
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+
+          {/* Recent Activity & Quick Stats */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Activity */}
+            <div className="bg-white rounded-xl border border-[#e0ddc7] shadow-sm">
+              <div className="p-6 border-b border-[#e0ddc7]">
+                <h3 className="text-lg font-bold text-[#333333]">Recent Activity</h3>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {recentActivity.map((activity) => {
+                    const Icon = getActivityIcon(activity.type);
+                    return (
+                      <div key={activity.id} className="flex items-start gap-4 pb-4 border-b border-[#f8f8f6] last:border-0">
+                        <div className="w-10 h-10 rounded-full bg-[#F6F5D9] flex items-center justify-center flex-shrink-0">
+                          <Icon size={16} className="text-[#37574a]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-[#333333]">
+                            <span className="text-[#37574a]">{activity.user}</span> {activity.action}
+                          </p>
+                          <p className="text-sm text-[#4a4a4a] line-clamp-1">{activity.details}</p>
+                          <p className="text-xs text-[#8a8a8a] mt-1">{activity.time}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Performance Chart Placeholder */}
+            <div className="bg-white rounded-xl border border-[#e0ddc7] shadow-sm">
+              <div className="p-6 border-b border-[#e0ddc7]">
+                <h3 className="text-lg font-bold text-[#333333]">Project Completion Rate</h3>
+              </div>
+              <div className="p-6">
+                <div className="h-64 flex items-center justify-center bg-[#F6F5D9] rounded-lg">
+                  <div className="text-center">
+                    <FaChartBar size={48} className="text-[#8a8a8a] mx-auto mb-3" />
+                    <p className="text-[#8a8a8a]">Chart visualization</p>
+                    <p className="text-sm text-[#8a8a8a] mt-1">Connect analytics library</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mt-6">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-[#4a7c59]">87%</p>
+                    <p className="text-xs text-[#8a8a8a] mt-1">On Time</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-[#2b6cb0]">10%</p>
+                    <p className="text-xs text-[#8a8a8a] mt-1">Delayed</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-[#c53030]">3%</p>
+                    <p className="text-xs text-[#8a8a8a] mt-1">Overdue</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

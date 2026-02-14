@@ -10,12 +10,15 @@ import {
   FaProjectDiagram,
   FaRegClipboard,
   FaRegWindowMaximize,
+  FaUsers,
 } from "react-icons/fa";
 import {
   FaBriefcase,
+  FaCheck,
   FaClipboardCheck,
   FaClipboardList,
   FaCreditCard,
+  FaDollarSign,
   FaFile,
   FaFileContract,
   FaPaperPlane,
@@ -154,6 +157,11 @@ export const ADMINPORTALMENU = [
     icon: <FaCog className="w-5 h-5" />, // tools/machines
   },
   {
+    key: "invoice",
+    label: "Invoice generator",
+    icon: <FaFileInvoiceDollar className="w-5 h-5" />, // invoice generator
+  },
+  {
     key: "reports",
     label: "Reports & Analytics",
     icon: <FaChartLine className="w-5 h-5" />, // analytics
@@ -250,6 +258,87 @@ export const staffDasboardStats: Stat[] = [
     icon: <FaCalendarAlt />,
     color: "primary",
     value: "3",
+  },
+];
+
+export const adminDashboardStats: Stat[] = [
+  {
+    label: "Total Projects",
+    icon: <FaProjectDiagram />,
+    color: "primary",
+    value: "12",
+  },
+  {
+    label: "Completed Projects",
+    icon: <FaCheck />,
+    color: "warning", // warning  info
+    value: "8",
+  },
+  {
+    label: "Active Clients",
+    icon: <FaUsers />,
+    color: "warning", // warning  info
+    value: "54",
+  },
+  {
+    label: "Total Service Requests",
+    icon: <FaFile />,
+    color: "warning", // warning  info
+    value: "8",
+  },
+  {
+    label: "Overdue Invoices",
+    icon: <FaCreditCard />,
+    color: "error", // error
+    value: "3",
+  },
+  {
+    label: "Monthly Revenue",
+    icon: <FaDollarSign />,
+    color: "info", // info  primary 
+    value: "₦45,000,000",
+  },
+];
+
+export const adminProjectStats: Stat[] = [
+  {
+    label: "Total Projects",
+    icon: <FaProjectDiagram />,
+    color: "primary",
+    value: "12",
+  },
+  {
+    label: "Completed Projects",
+    icon: <FaCheck />,
+    color: "warning", // warning  info
+    value: "8",
+  },
+  {
+    label: "Outstanding Projects",
+    icon: <FaProjectDiagram />,
+    color: "info", // warning  info
+    value: "4",
+  },
+];
+
+export const adminRequestStats: Stat[] = [
+  {
+    label: "Total Requests",
+    icon: <FaFile />,
+    color: "primary",
+    value: "12",
+  },
+  {
+    label: "Pending Requests",
+    icon: <FaFile />,
+    color: "warning", // warning  info
+    value: "8",
+  },
+  {
+    label: "Completed Requests",
+    icon: <FaFile />,
+    color: "info", // warning  info
+    value: "4",   
   },
 ];
 export const PROJECT_REQUESTS: Project[] = [
