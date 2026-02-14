@@ -77,10 +77,10 @@ const currentMenu = portalMenus[portalType];
           </button>
         </div>
         <div
-          className={`w-full text-center p-4 border-b border-tetiary/20 mb-2 transition-all duration-300 px-8
+          className={`w-full text-center p-4 border-b border-tetiary/20 mb-2 transition-all duration-300 
           }`}
         >
-          <h2 className="text-2xl font-medium uppercase">{portalType} Portal</h2>
+          <h2 className={`font-medium uppercase ${isCollapsed ? "text-sm -ml-2" : "text-2xl"}`}>{portalType} Portal</h2>
         </div>
 
         {/* Navigation Menu */}
@@ -90,6 +90,7 @@ const currentMenu = portalMenus[portalType];
             return (
             <li key={item.key}>
               <Link
+              onClick={() => setShowMenu(false)}
                 href={`/portal/${portalType}/${item.key}`} //`/portal/client/${item.key}`}
                 className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-300 ease-in-out
           hover:bg-tetiary/10 hover:translate-x-1 group relative
