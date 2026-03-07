@@ -4,6 +4,7 @@ import Image from "next/image";
 import UserMenu from "./UserMenu";
 
 export default function PortalHeader() {
+  
   const notifications = [
     {
       id: 1,

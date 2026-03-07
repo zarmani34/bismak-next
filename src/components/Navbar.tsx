@@ -55,12 +55,11 @@ const Navbar = ({ showMenu, activeSection }: NavbarProps) => {
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
-              className={`text-tetiary font-medium hover:text-secondary-light uppercase transition-all duration-300 ease-in-out`}
-              style={
+              className={`text-tetiary font-medium uppercase transition-all duration-300 ease-in-out inline-flex items-center md:px-3 md:py-2 md:rounded-lg md:border ${
                 activeSection === item.toLowerCase()
-                  ? { color: "#e67d5f" }
-                  : undefined
-              }
+                  ? "text-secondary-light md:bg-white/5 md:border-secondary-light/20"
+                  : "md:border-transparent hover:text-secondary-light md:hover:border-secondary-light/20 md:hover:bg-white/5"
+              }`}
             >
               {item}
             </a>

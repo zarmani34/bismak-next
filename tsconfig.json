@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "src/app/portal/(auth)/login"  ],
+    "**/*.mts",
+    "src/app/portal/(auth)/sign-in"
+  ],
   "exclude": ["node_modules"]
 }

@@ -3,32 +3,20 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
-import { usePortal } from "../../context";
+import { LoginFormData, LoginSchema } from "@/schemas/auth";
+import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required") 
-    .email("Please enter a valid email address"), 
-  
-  password: z
-    .string()
-    .min(1, "Password is required") 
-    .min(8, "Password must be at least 8 characters"), 
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-interface LoginFormProps {
-  portal: string;
-}
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { portal } = usePortal();
+  const { login, isLoading, error } = useAuth();
+  const searchParams = useSearchParams();
 
+  const next = searchParams.get("next");
 
   const {
     register,    
@@ -36,40 +24,17 @@ export default function LoginForm() {
     formState: { errors, isSubmitting }, 
     setError,    
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema), 
+    resolver: zodResolver(LoginSchema), 
     mode: "onBlur",
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      console.log("Logging in to", portal, "with data:", data);
-      
-      // TODO: Replace this with API call
-      
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      // set error manually
-      // setError("root", {
-      //   message: "Invalid credentials"
-      // });
-      
-    } catch (error) {
-      // Handle network error
-      setError("root", {
-        message: "Something went wrong. Please try again.",
-      });
-    }
+    await login(data, next);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {errors.root && (
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-secondary-light border border-secondary-light">
-          {errors.root.message}
-        </div>
-      )}
-
+     
       <div>
         <label htmlFor="email" className="sr-only">
           Email Address
@@ -128,14 +93,21 @@ export default function LoginForm() {
           </p>
         )}
       </div>
+      {
+        error && (
+          <div className="p-3 rounded-lg text-sm bg-primary/10 text-secondary-light border border-secondary-light">
+            {error}
+          </div>
+        )
+      }
 
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isLoading}
         className="w-full py-3 bg-secondary text-tetiary rounded-lg font-semibold hover:bg-secondary-light transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "Signing in..." : "Sign In"}
+        {isLoading ? "Signing in..." : "Sign In"}
       </button>
     </form>
   );
