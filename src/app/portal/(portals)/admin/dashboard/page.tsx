@@ -2,19 +2,12 @@ import { FaChartBar } from "react-icons/fa";
 import DashboardStatsCard from "../../../components/DashBoardStatsCard";
 import QuickActions from "../../../components/QuickActions";
 import { adminDashboardStats } from "../../../constants";
+import DashboardWelcome from "@/src/components/DashboardWelcome";
 
 export default function AdminDashboardPortal() {
   return (
     <div>
-      <div className="flex flex-col md:flex-row items-center justify-between bg-linear-to-r from-primary/10 to-secondary/10 shadow-md hover:shadow-lg p-4 rounded-2xl w-full transition-all duration-300">
-        <h2 className="text-primary-dark text-2xl font-medium">
-          Welcome back
-          {/* , <span className="text-secondary-dark">Bayo</span> */}
-          <p className="text-secondary-text text-base">
-            Here's an overview of today's activities and updates.
-          </p>
-        </h2>
-      </div>
+      <DashboardWelcome text="Here's a quick overview of your projects and tasks." />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
         {adminDashboardStats.map((stat) => (
           <DashboardStatsCard key={stat.label} stat={stat} />

@@ -63,12 +63,12 @@ export default function AdminProfilePage() {
   const quickStats = [
     {
       label: "Account ID",
-      value: currentUser?.user_id ? `#${currentUser.user_id}` : "Loading...",
+      value: currentUser?.user_id ? `${currentUser.user_id}` : "Loading...",
       icon: <FaChartSimple className="w-4 h-4" />,
     },
     {
       label: "Role",
-      value: currentUser?.role,
+      value: currentUser?.role?.toLocaleUpperCase(),
       icon: <FaIdBadge className="w-4 h-4" />,
     },
     {

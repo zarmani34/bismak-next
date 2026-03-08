@@ -31,7 +31,7 @@ export function useAuth() {
         err.response?.result?.non_field_errors?.[0] ??
         err.response?.result?.detail ??
         "Invalid email or password";
-      setError(err.message);
+      setError(err.response?.data);
       return false;
     } finally {
       setIsLoading(false);

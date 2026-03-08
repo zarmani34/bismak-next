@@ -22,11 +22,19 @@ const roleDashboardMap: Record<string, string> = {
   client: "/portal/client/dashboard",
 };
 
-export default function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const accessToken = request.cookies.get("access-token")?.value;
-  const isAuthenticated = !!accessToken;
+  let accessToken = request.cookies.get("access-token")?.value;
+  const refreshToken = request.cookies.get("refresh-token")?.value;
+  const role = request.cookies.get("user-role")?.value;
+  
+  console.log("proxy running:", { 
+  pathname, 
+  accessToken: !!accessToken, 
+  refreshToken: !!refreshToken, 
+  role 
+});
 
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
@@ -35,6 +43,43 @@ export default function proxy(request: NextRequest) {
   const isProtectedRoute = Object.values(rolePortalMap).some((route) =>
     pathname.startsWith(route)
   );
+
+    if (!accessToken && refreshToken && isProtectedRoute) {
+      console.log("attempting silent refresh...")
+    try {
+      const refreshResponse = await fetch(
+        `${process.env.DJANGO_API_URL}/auth/token/refresh/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh: refreshToken }),
+        }
+      );
+
+      console.log("refresh status:", refreshResponse.status)
+      if (refreshResponse.ok) {
+        console.log("refresh successful")
+        const data = await refreshResponse.json();
+        accessToken = data.access;
+
+        const response = NextResponse.next();
+        response.cookies.set("access-token", data.access, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 60 * 15,
+          path: "/",
+        });
+        return response;
+      } else {
+      console.log("refresh failed:", await refreshResponse.text())
+    }
+  } catch (err) {
+    console.log("refresh error:", err)
+  }
+  }
+
+  const isAuthenticated = !!accessToken;
 
   // 1. Not authenticated + protected route → redirect to sign in
   if (isProtectedRoute && !isAuthenticated) {
