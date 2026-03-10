@@ -41,6 +41,7 @@ export async function logoutAction() {
   // manually delete both cookies from the browser
   cookieStore.delete("access-token");
   cookieStore.delete("refresh-token");
+  cookieStore.delete("user-role");
 
   await fetch(`${DJANGO_API}/auth/logout/`, {
     method: "POST",

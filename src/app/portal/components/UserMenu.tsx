@@ -18,16 +18,16 @@ export default function UserMenu() {
     .toUpperCase();
 
   return (
-    <div className="relative flex items-center space-x-3">
+    <div className="relative flex items-center space-x-2">
       <div
         onClick={() => setShowUserMenu(!showUserMenu)}
-        className="md:block cursor-pointer rounded-lg px-2 py-1 hover:bg-white/5 transition-colors"
+        className="cursor-pointer rounded-lg p-1 md:px-2 md:py-1 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-secondary text-tetiary text-xs font-semibold flex items-center justify-center">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-secondary text-tetiary text-xs font-semibold flex items-center justify-center">
             {isLoading ? "..." : initials}
           </div>
-          <div>
+          <div className="hidden md:block">
             <p className="text-sm md:text-base font-medium text-tetiary leading-none">
               {isLoading ? "Loading..." : fullName}
             </p>

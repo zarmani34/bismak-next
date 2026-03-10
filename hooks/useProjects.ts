@@ -1,0 +1,105 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/axios";
+import { CreateProjectData, UpdateProjectData, ProjectListItem, ProjectDetail } from "@/schemas/project";
+
+export const projectKeys = {
+  all: ["projects"] as const,
+  list: (filters?: Record<string, string>) =>
+    [...projectKeys.all, "list", filters] as const,
+  detail: (code: string) => [...projectKeys.all, "detail", code] as const,
+};
+
+
+type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
+/**
+ * FETCH PROJECTS LIST
+ */
+export function useProjects(filters?: Record<string, string>) {
+  return useQuery<PaginatedResponse<ProjectListItem>>({
+    queryKey: projectKeys.list(filters),
+    queryFn: async () => {
+      const { data } = await api.get("/projects/", { params: filters });
+      return data;
+    },
+  });
+}
+
+/**
+ * FETCH SINGLE PROJECT
+ */
+export function useProject(code: string) {
+  return useQuery<ProjectDetail>({
+    queryKey: projectKeys.detail(code),
+    queryFn: async () => {
+      const { data } = await api.get(`/projects/${code}/`);
+      return data;
+    },
+    enabled: !!code, // only runs if code is provided
+  });
+}
+
+/**
+ * CREATE PROJECT
+ * On success invalidates the projects list so it refetches fresh data
+ */
+export function useCreateProject() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (projectData: CreateProjectData) => {
+      const { data } = await api.post("/projects/", projectData);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectKeys.all });
+    },
+  });
+}
+
+/**
+ * UPDATE PROJECT (PATCH — partial update)
+ * On success updates the specific project in cache and refreshes list
+ */
+export function useUpdateProject(code: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (projectData: UpdateProjectData) => {
+      const { data } = await api.patch(`/projects/${code}/`, projectData);
+      return data;
+    },
+    onSuccess: (updatedProject) => {
+      // update the specific project detail in cache immediately
+      queryClient.setQueryData(projectKeys.detail(code), updatedProject);
+      // invalidate list so it refetches with updated data
+      queryClient.invalidateQueries({ queryKey: projectKeys.list() });
+    },
+  });
+}
+
+/**
+ * DELETE PROJECT
+ * remove project from cache and refreshes list on success
+ */
+export function useDeleteProject() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (code: string) => {
+      await api.delete(`/projects/${code}/`);
+      return code;
+    },
+    onSuccess: (code) => {
+      // remove from detail cache
+      queryClient.removeQueries({ queryKey: projectKeys.detail(code) });
+      // invalidate list
+      queryClient.invalidateQueries({ queryKey: projectKeys.list() });
+    },
+  });
+}

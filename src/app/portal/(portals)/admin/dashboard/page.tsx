@@ -5,9 +5,10 @@ import { adminDashboardStats } from "../../../constants";
 import DashboardWelcome from "@/src/components/DashboardWelcome";
 
 export default function AdminDashboardPortal() {
+
   return (
     <div>
-      <DashboardWelcome text="Here's a quick overview of your projects and tasks." />
+      <DashboardWelcome text="Here's a quick overview of your projects and tasks." /> 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
         {adminDashboardStats.map((stat) => (
           <DashboardStatsCard key={stat.label} stat={stat} />
