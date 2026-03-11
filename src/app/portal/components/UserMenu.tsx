@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UserMenuModal from "./UserMenuModal";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useAuth } from "@/hooks/useAuth";
 
 
 export default function UserMenu() {
-  const { data: currentUser, isLoading } = useCurrentUser();
+  const { data: currentUser, isLoading, isError, refetch } = useCurrentUser();
+  const { logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const fullName = currentUser?.full_name || "User";
@@ -17,6 +19,24 @@ export default function UserMenu() {
     .slice(0, 2)
     .toUpperCase();
 
+  useEffect(() => {
+    if (isError) {
+      logout();
+    }
+  }, [isError, logout]);
+
+  if (isError) {
+    return (
+      <div className="flex items-center text-xs md:text-sm text-secondary-text">
+        Unable to verify user details. Redirecting to login...
+      </div>
+    );
+  }
+
+  const displayName = isLoading ? "Loading..." : fullName;
+  const displayRole = currentUser?.role || "user";
+  const displayInitials = isLoading ? "..." : initials;
+
   return (
     <div className="relative flex items-center space-x-2">
       <div
@@ -25,14 +45,14 @@ export default function UserMenu() {
       >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-secondary text-tetiary text-xs font-semibold flex items-center justify-center">
-            {isLoading ? "..." : initials}
+            {displayInitials}
           </div>
           <div className="hidden md:block">
             <p className="text-sm md:text-base font-medium text-tetiary leading-none">
-              {isLoading ? "Loading..." : fullName}
+              {displayName}
             </p>
             <p className="text-xs md:text-sm text-secondary-text capitalize">
-              {currentUser?.role || "user"}
+              {displayRole}
             </p>
           </div>
         </div>
@@ -41,6 +61,8 @@ export default function UserMenu() {
         currentUser={currentUser ?? null}
         showUserMenu={showUserMenu}
         setShowUserMenu={setShowUserMenu}
+        isError={isError}
+        onRetry={() => refetch()}
       />
     </div>
   );

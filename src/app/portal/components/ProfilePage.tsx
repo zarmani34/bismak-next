@@ -2,14 +2,14 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { FaEnvelope, FaIdBadge, FaPhone, FaShieldAlt } from "react-icons/fa";
+import { FaIdBadge, FaShieldAlt } from "react-icons/fa";
 import {
   FaArrowRightFromBracket,
-  FaCalendarDays,
   FaChartSimple,
-  FaCircleCheck,
   FaPenToSquare,
 } from "react-icons/fa6";
+import ProfilePageInformation from "./profilePageInformation";
+import ErrorState from "./states/ErrorState";
 
 const formatDate = (value?: string) => {
   if (!value) return "Not available";
@@ -41,12 +41,26 @@ const toTitleCase = (value?: string) => {
 };
 
 export default function ProfilePage() {
-  const { data: currentUser, isLoading } = useCurrentUser();
+  const {
+    data: currentUser,
+    isLoading,
+    isError,
+    refetch,
+  } = useCurrentUser();
   const { logout } = useAuth();
+
+  if (isError) {
+    return (
+      <ErrorState
+        message="Unable to load profile data."
+        onRetry={() => refetch()}
+        className="m-4"
+      />
+    );
+  }
 
   const fullName = currentUser?.full_name || "Loading user...";
   const roleLabel = toTitleCase(currentUser?.role);
-  const portalLabel = toTitleCase(currentUser?.portal || currentUser?.role);
   const initials = fullName
     .split(" ")
     .map((name) => name[0])
@@ -54,21 +68,15 @@ export default function ProfilePage() {
     .slice(0, 2)
     .toUpperCase();
 
-  const accessScopeByRole: Record<"admin" | "client" | "staff", string> = {
-    admin: "Projects, Billing, Documents, Reports, Tools, User Management",
-    staff: "Projects, Tools, Reports, Profile",
-    client: "Projects, Requests, Billing, Documents, Profile",
-  };
-
   const quickStats = [
     {
       label: "Account ID",
-      value: currentUser?.user_id ? `${currentUser.user_id}` : "Loading...",
+      value: currentUser?.pk ? `#${currentUser.pk}` : "Loading...",
       icon: <FaChartSimple className="w-4 h-4" />,
     },
     {
       label: "Role",
-      value: currentUser?.role?.toLocaleUpperCase(),
+      value: currentUser?.role ? currentUser.role.toUpperCase() : "--",
       icon: <FaIdBadge className="w-4 h-4" />,
     },
     {
@@ -86,10 +94,6 @@ export default function ProfilePage() {
     {
       title: "Last login",
       time: formatDateTime(currentUser?.last_login),
-    },
-    {
-      title: "Portal assigned",
-      time: portalLabel,
     },
     {
       title: "Verification",
@@ -147,82 +151,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 space-y-6">
-          <div className="rounded-xl border border-border shadow-sm overflow-hidden">
-            <div className="bg-primary-light/40 px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-primary-dark">Personal Information</h2>
-            </div>
-            <div className="p-6 bg-primary-light/10 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-border bg-white/70 p-4">
-                <p className="text-xs text-secondary-text">Full Name</p>
-                <p className="text-sm font-medium text-primary-dark">{fullName}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-white/70 p-4">
-                <p className="text-xs text-secondary-text">Role</p>
-                <p className="text-sm font-medium text-primary-dark">{roleLabel}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-white/70 p-4 flex items-start gap-3">
-                <FaEnvelope className="w-4 h-4 text-secondary-text mt-0.5" />
-                <div>
-                  <p className="text-xs text-secondary-text">Email</p>
-                  <p className="text-sm font-medium text-primary-dark">
-                    {currentUser?.email || "Not available"}
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-lg border border-border bg-white/70 p-4 flex items-start gap-3">
-                <FaPhone className="w-4 h-4 text-secondary-text mt-0.5" />
-                <div>
-                  <p className="text-xs text-secondary-text">Phone</p>
-                  <p className="text-sm font-medium text-primary-dark">
-                    {currentUser?.phone_number || "Not available"}
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-lg border border-border bg-white/70 p-4 flex items-start gap-3 md:col-span-2">
-                <FaIdBadge className="w-4 h-4 text-secondary-text mt-0.5" />
-                <div>
-                  <p className="text-xs text-secondary-text">Portal</p>
-                  <p className="text-sm font-medium text-primary-dark">{portalLabel}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border shadow-sm overflow-hidden">
-            <div className="bg-primary-light/40 px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-primary-dark">Account & Access</h2>
-            </div>
-            <div className="p-6 bg-primary-light/10 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-border bg-white/70 p-4 flex items-start gap-3">
-                <FaCalendarDays className="w-4 h-4 text-secondary-text mt-0.5" />
-                <div>
-                  <p className="text-xs text-secondary-text">Joined</p>
-                  <p className="text-sm font-medium text-primary-dark">
-                    {formatDate(currentUser?.date_joined)}
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-lg border border-border bg-white/70 p-4 flex items-start gap-3">
-                <FaCircleCheck className="w-4 h-4 text-secondary-text mt-0.5" />
-                <div>
-                  <p className="text-xs text-secondary-text">Verification</p>
-                  <p className="text-sm font-medium text-primary-dark">
-                    {currentUser?.is_verified ? "Verified account" : "Unverified account"}
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-lg border border-border bg-white/70 p-4 md:col-span-2">
-                <p className="text-xs text-secondary-text">Access Scope</p>
-                <p className="text-sm font-medium text-primary-dark">
-                  {currentUser?.role
-                    ? accessScopeByRole[currentUser.role]
-                    : "Loading access scope..."}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProfilePageInformation currentUser={currentUser} />
 
         <div className="space-y-6">
           <div className="rounded-xl border border-border shadow-sm overflow-hidden">

@@ -9,6 +9,14 @@ export const projectKeys = {
   detail: (code: string) => [...projectKeys.all, "detail", code] as const,
 };
 
+type ProjectStats = {
+  total: number;
+  planning: number;
+  in_progress: number;
+  on_hold: number;
+  completed: number;
+  cancelled: number;
+};
 
 type PaginatedResponse<T> = {
   count: number;
@@ -100,6 +108,16 @@ export function useDeleteProject() {
       queryClient.removeQueries({ queryKey: projectKeys.detail(code) });
       // invalidate list
       queryClient.invalidateQueries({ queryKey: projectKeys.list() });
+    },
+  });
+}
+
+export function useProjectStats() {
+  return useQuery<ProjectStats>({
+    queryKey: [...projectKeys.all, "stats"],
+    queryFn: async () => {
+      const { data } = await api.get("/projects/stats/");
+      return data;
     },
   });
 }
