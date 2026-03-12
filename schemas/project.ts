@@ -57,10 +57,8 @@ export const CreateProjectSchema = z.object({
   name: z.string().min(1, "Project name is required"),
   company: z.string().min(1, "Company is required"),
   location: z.string().min(1, "Location is required"),
-  type: z.string().nullable().optional(),
-  due_date: z.string().nullable().optional(),
   description: z.string().optional(),
-  status: z.enum(["planning", "in_progress", "completed", "on_hold", "cancelled"]).default("planning"),
+  owner: z.string().min(1, "Client ID is required to create the project onbehalf of the client"), //user ID 
 });
 
 /**

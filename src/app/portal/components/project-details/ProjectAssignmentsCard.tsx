@@ -1,0 +1,149 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FaBuilding, FaClipboardList, FaUserTie } from "react-icons/fa6";
+import { useCreateProjectAssignment } from "@/hooks/useProjects";
+
+const AssignmentSchema = z.object({
+  assignee_id: z.string().min(1, "Assignee is required"),
+  assignment_role: z.string().min(1, "Assignment role is required"),
+});
+
+type AssignmentFormData = z.infer<typeof AssignmentSchema>;
+
+type ProjectAssignmentsCardProps = {
+  assignments?: any[];
+  company: string;
+  projectCode: string;
+};
+
+export default function ProjectAssignmentsCard({
+  assignments,
+  company,
+  projectCode,
+}: ProjectAssignmentsCardProps) {
+  const createAssignment = useCreateProjectAssignment(projectCode);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<AssignmentFormData>({
+    resolver: zodResolver(AssignmentSchema),
+    mode: "onBlur",
+  });
+
+  const onSubmit = async (data: AssignmentFormData) => {
+    await createAssignment.mutateAsync(data);
+    reset();
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-primary-light/20 p-6">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-semibold text-primary-dark">Assignments</h2>
+        {assignments?.length ? (
+          <span className="text-xs text-secondary-text">{assignments.length} items</span>
+        ) : null}
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border border-border bg-tetiary/80 p-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-secondary-text">Assign to</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-border px-3 py-2 bg-primary-light/20 text-primary-dark"
+              placeholder="User ID or email"
+              {...register("assignee_id")}
+            />
+            {errors.assignee_id && (
+              <p className="text-xs text-secondary-light mt-1">{errors.assignee_id.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-xs text-secondary-text">Assignment role</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-border px-3 py-2 bg-primary-light/20 text-primary-dark"
+              placeholder="e.g. Tank pressure test"
+              {...register("assignment_role")}
+            />
+            {errors.assignment_role && (
+              <p className="text-xs text-secondary-light mt-1">
+                {errors.assignment_role.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {createAssignment.error && (
+          <p className="text-xs text-secondary-light mt-2">
+            {(createAssignment.error as any)?.response?.data?.error ||
+              (createAssignment.error as Error).message ||
+              "Unable to assign project."}
+          </p>
+        )}
+
+        <div className="mt-3 flex items-center justify-end">
+          <button
+            type="submit"
+            disabled={isSubmitting || createAssignment.isPending}
+            className="px-4 py-2 rounded-xl bg-secondary text-tetiary text-sm font-medium hover:bg-secondary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {createAssignment.isPending ? "Assigning..." : "Assign"}
+          </button>
+        </div>
+      </form>
+
+      {assignments?.length ? (
+        <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
+          {assignments.map((assignment: any) => (
+            <div key={assignment.id} className="rounded-xl border border-border bg-tetiary/80 p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center gap-2 text-xs text-secondary-text">
+                    <FaUserTie className="w-4 h-4" />
+                    Assigned to
+                  </div>
+                  <p className="mt-2 text-sm font-semibold text-primary-dark">
+                    {assignment.assignee?.full_name || "Unassigned"}
+                  </p>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 text-xs text-secondary-text">
+                    <FaClipboardList className="w-4 h-4" />
+                    Role
+                  </div>
+                  <p className="mt-2 text-sm font-medium text-primary-dark">
+                    {assignment.assignment_role || "--"}
+                  </p>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 text-xs text-secondary-text">
+                    <FaBuilding className="w-4 h-4" />
+                    Company
+                  </div>
+                  <p className="mt-2 text-sm font-medium text-primary-dark">
+                    {assignment.company || company}
+                  </p>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 text-xs text-secondary-text">
+                    <FaUserTie className="w-4 h-4" />
+                    Assigned By
+                  </div>
+                  <p className="mt-2 text-xs text-secondary-text">
+                    {assignment.assigned_by || "--"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-secondary-text">No assignments yet.</p>
+      )}
+    </div>
+  );
+}

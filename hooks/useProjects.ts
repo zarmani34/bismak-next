@@ -18,6 +18,23 @@ type ProjectStats = {
   cancelled: number;
 };
 
+type CreateProjectAssignmentData = {
+  assignee_id: string;
+  assignment_role: string;
+};
+
+type CreateTimelineEventData = {
+  title: string;
+  description: string;
+};
+
+type StatusUpdateResponse = {
+  message: string;
+  old_status: string;
+  new_status: string;
+  allowed_transitions: string[];
+};
+
 type PaginatedResponse<T> = {
   count: number;
   next: string | null;
@@ -108,6 +125,74 @@ export function useDeleteProject() {
       queryClient.removeQueries({ queryKey: projectKeys.detail(code) });
       // invalidate list
       queryClient.invalidateQueries({ queryKey: projectKeys.list() });
+    },
+  });
+}
+
+/**
+ * UPDATE PROJECT STATUS
+ * On success refreshes detail + list to reflect new status
+ */
+export function useUpdateProjectStatus(code: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (status: string) => {
+      const { data } = await api.patch(`/projects/${code}/update-status/`, { status });
+      return data as StatusUpdateResponse;
+    },
+    onSuccess: (response) => {
+      queryClient.setQueryData<ProjectDetail>(
+        projectKeys.detail(code),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            status: response.new_status as ProjectDetail["status"],
+            status_display: response.new_status
+              .replace("_", " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase()),
+          };
+        }
+      );
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(code) });
+      queryClient.invalidateQueries({ queryKey: projectKeys.list() });
+    },
+  });
+}
+
+/**
+ * CREATE PROJECT ASSIGNMENT
+ * On success refreshes project details to show latest assignments
+ */
+export function useCreateProjectAssignment(code: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: CreateProjectAssignmentData) => {
+      const { data } = await api.post(`/projects/${code}/assignments/`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(code) });
+    },
+  });
+}
+
+/**
+ * CREATE PROJECT TIMELINE EVENT
+ * On success refreshes project details to show latest events
+ */
+export function useCreateProjectEvent(code: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: CreateTimelineEventData) => {
+      const { data } = await api.post(`/projects/${code}/events/`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(code) });
     },
   });
 }
