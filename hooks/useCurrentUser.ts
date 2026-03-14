@@ -14,3 +14,4 @@ export function useCurrentUser() {
     staleTime: Infinity,
   });
 }
+

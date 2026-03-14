@@ -4,14 +4,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaBuilding, FaClipboardList, FaUserTie } from "react-icons/fa6";
-import { useCreateProjectAssignment } from "@/hooks/useProjects";
+import { useCreateAssignment } from "@/hooks/useAssignment";
+import { useStaffList } from "@/hooks/useStaff";
+import { extractApiError } from "@/lib/errors";
+import { CreateAssignmentData, CreateAssignmentSchema } from "@/schemas/assignment";
 
-const AssignmentSchema = z.object({
-  assignee_id: z.string().min(1, "Assignee is required"),
-  assignment_role: z.string().min(1, "Assignment role is required"),
-});
 
-type AssignmentFormData = z.infer<typeof AssignmentSchema>;
 
 type ProjectAssignmentsCardProps = {
   assignments?: any[];
@@ -24,18 +22,19 @@ export default function ProjectAssignmentsCard({
   company,
   projectCode,
 }: ProjectAssignmentsCardProps) {
-  const createAssignment = useCreateProjectAssignment(projectCode);
+  const createAssignment = useCreateAssignment(projectCode);
+  const { data: staffList, isLoading: isStaffLoading, error: staffError } = useStaffList();
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<AssignmentFormData>({
-    resolver: zodResolver(AssignmentSchema),
+  } = useForm<CreateAssignmentData>({
+    resolver: zodResolver(CreateAssignmentSchema),
     mode: "onBlur",
   });
 
-  const onSubmit = async (data: AssignmentFormData) => {
+  const onSubmit = async (data: CreateAssignmentData) => {
     await createAssignment.mutateAsync(data);
     reset();
   };
@@ -43,7 +42,7 @@ export default function ProjectAssignmentsCard({
   return (
     <div className="rounded-2xl border border-border bg-primary-light/20 p-6">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold text-primary-dark">Assignments</h2>
+        <h2 className="text-lg font-semibold text-primary-dark">Assigned staffs</h2>
         {assignments?.length ? (
           <span className="text-xs text-secondary-text">{assignments.length} items</span>
         ) : null}
@@ -53,11 +52,25 @@ export default function ProjectAssignmentsCard({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="text-xs text-secondary-text">Assign to</label>
-            <input
+            <select
               className="mt-1 w-full rounded-lg border border-border px-3 py-2 bg-primary-light/20 text-primary-dark"
-              placeholder="User ID or email"
+              defaultValue=""
+              disabled={isStaffLoading || !!staffError}
               {...register("assignee_id")}
-            />
+            >
+              <option value="" disabled>
+                {isStaffLoading
+                  ? "Loading staff..."
+                  : staffError
+                  ? "Unable to load staff"
+                  : "Select staff"}
+              </option>
+              {staffList?.map((staff) => (
+                <option key={staff.user_id} value={staff.user_id}>
+                  {staff.full_name} · {staff.email}
+                </option>
+              ))}
+            </select>
             {errors.assignee_id && (
               <p className="text-xs text-secondary-light mt-1">{errors.assignee_id.message}</p>
             )}
@@ -79,9 +92,7 @@ export default function ProjectAssignmentsCard({
 
         {createAssignment.error && (
           <p className="text-xs text-secondary-light mt-2">
-            {(createAssignment.error as any)?.response?.data?.error ||
-              (createAssignment.error as Error).message ||
-              "Unable to assign project."}
+            {extractApiError(createAssignment.error)}
           </p>
         )}
 
@@ -100,7 +111,7 @@ export default function ProjectAssignmentsCard({
         <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
           {assignments.map((assignment: any) => (
             <div key={assignment.id} className="rounded-xl border border-border bg-tetiary/80 p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <div className="flex items-center gap-2 text-xs text-secondary-text">
                     <FaUserTie className="w-4 h-4" />
@@ -133,7 +144,7 @@ export default function ProjectAssignmentsCard({
                     <FaUserTie className="w-4 h-4" />
                     Assigned By
                   </div>
-                  <p className="mt-2 text-xs text-secondary-text">
+                  <p className="mt-2 text-xs text-primary-dark">
                     {assignment.assigned_by || "--"}
                   </p>
                 </div>

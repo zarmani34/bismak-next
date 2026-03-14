@@ -59,6 +59,9 @@ export const CreateProjectSchema = z.object({
   location: z.string().min(1, "Location is required"),
   description: z.string().optional(),
   owner: z.string().min(1, "Client ID is required to create the project onbehalf of the client"), //user ID 
+  type: z.enum(["Pressure_test", "Leak_test", "Calibration"], {
+    message: "Project type is required",
+  }),
 });
 
 /**

@@ -18,16 +18,6 @@ type ProjectStats = {
   cancelled: number;
 };
 
-type CreateProjectAssignmentData = {
-  assignee_id: string;
-  assignment_role: string;
-};
-
-type CreateTimelineEventData = {
-  title: string;
-  description: string;
-};
-
 type StatusUpdateResponse = {
   message: string;
   old_status: string;
@@ -157,42 +147,6 @@ export function useUpdateProjectStatus(code: string) {
       );
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(code) });
       queryClient.invalidateQueries({ queryKey: projectKeys.list() });
-    },
-  });
-}
-
-/**
- * CREATE PROJECT ASSIGNMENT
- * On success refreshes project details to show latest assignments
- */
-export function useCreateProjectAssignment(code: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (payload: CreateProjectAssignmentData) => {
-      const { data } = await api.post(`/projects/${code}/assignments/`, payload);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.detail(code) });
-    },
-  });
-}
-
-/**
- * CREATE PROJECT TIMELINE EVENT
- * On success refreshes project details to show latest events
- */
-export function useCreateProjectEvent(code: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (payload: CreateTimelineEventData) => {
-      const { data } = await api.post(`/projects/${code}/events/`, payload);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.detail(code) });
     },
   });
 }

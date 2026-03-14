@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateProjectEvent } from "@/hooks/useProjects";
+import { useCreateEvent } from "@/hooks/useEvent";
 
 const TimelineEventSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -31,7 +32,7 @@ type ProjectTimelineCardProps = {
 };
 
 export default function ProjectTimelineCard({ events, projectCode }: ProjectTimelineCardProps) {
-  const createEvent = useCreateProjectEvent(projectCode);
+  const createEvent = useCreateEvent(projectCode);
   const {
     register,
     handleSubmit,

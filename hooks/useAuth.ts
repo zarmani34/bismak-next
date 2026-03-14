@@ -7,6 +7,7 @@ import { logoutAction } from "@/actions/auth";
 import { LoginFormData } from "@/schemas/auth";
 import { currentUserKey } from "@/hooks/useCurrentUser";
 import api from "@/lib/axios";
+import { extractApiError } from "@/lib/errors";
 
 export function useAuth() {
   const router = useRouter();
@@ -27,11 +28,7 @@ export function useAuth() {
       router.push(next ?? `/${result.user.portal}`);
       return true;
     } catch (err: any) {
-      const message =
-        err.response?.result?.non_field_errors?.[0] ??
-        err.response?.result?.detail ??
-        "Invalid email or password";
-      setError(err.message || message);
+      setError(extractApiError(err));
       return false;
     } finally {
       setIsLoading(false);

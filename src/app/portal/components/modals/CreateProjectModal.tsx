@@ -7,6 +7,7 @@ import SecondaryButton from "@/src/components/buttons/SecondaryButton";
 import { FaXmark } from "react-icons/fa6";
 import { CreateProjectData, CreateProjectSchema } from "@/schemas/project";
 import { useCreateProject } from "@/hooks/useProjects";
+import { extractApiError } from "@/lib/errors";
 
 type CreateProjectModalProps = {
   open: boolean;
@@ -107,6 +108,24 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
                   <p className="text-xs text-secondary-light mt-1">{errors.owner.message}</p>
                 )}
               </div>
+              <div>
+                <label className="text-xs text-tetiary/60">Project Type</label>
+                <select
+                  className="mt-1 w-full rounded-2xl border border-border px-4 py-3 bg-tetiary/75 text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
+                  defaultValue=""
+                  {...register("type")}
+                >
+                  <option value="" disabled>
+                    Select type
+                  </option>
+                  <option className="" value="Pressure_test">Pressure Test</option>
+                  <option className="" value="Leak_test">Leak Test</option>
+                  <option className="" value="Calibration">Calibration</option>
+                </select>
+                {errors.type && (
+                  <p className="text-xs text-secondary-light mt-1">{errors.type.message}</p>
+                )}
+              </div>
             </div>
 
             <div>
@@ -121,18 +140,16 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
 
             {createProject.error && (
               <p className="text-xs text-secondary-light">
-                {(createProject.error as any)?.response?.data?.error ||
-                  (createProject.error as Error).message ||
-                  "Unable to create project."}
+                {extractApiError(createProject.error)}
               </p>
             )}
           </div>
 
-          <div className="p-6 pt-0 flex flex-col sm:flex-row gap-3">
-            <button type="submit" className="flex-1" disabled={isSubmitting || createProject.isPending}>
+          <div className="p-6 pt-0 flex flex-col sm:flex-row gap-3 items-center justify-center">
+            <button type="submit" className="flex justify-center  rounded-2xl" disabled={isSubmitting || createProject.isPending}>
               <PrimaryButton tittle={createProject.isPending ? "Saving..." : "Save Project"} />
             </button>
-            <button type="button" className="flex-1" onClick={onClose}>
+            <button type="button" className="flex justify-center bg-secondary rounded-2xl" onClick={onClose}>
               <SecondaryButton tittle="Cancel" />
             </button>
           </div>

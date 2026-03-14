@@ -56,12 +56,6 @@ export default function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {errors.root && (
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-secondary-light border border-secondary-light">
-          {errors.root.message}
-        </div>
-      )}
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="firstName" className="sr-only">
@@ -193,6 +187,12 @@ export default function SignUpForm() {
         )}
       </div>
 
+        {errors.root && (
+        <div className="p-3 rounded-lg text-sm bg-red-50 text-secondary-light border border-secondary-light">
+          {errors.root.message}
+        </div>
+      )}
+      
       <button
         type="submit"
         disabled={isSubmitting}
