@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateEvent } from "@/hooks/useEvent";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const TimelineEventSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -32,6 +33,8 @@ type ProjectTimelineCardProps = {
 
 export default function ProjectTimelineCard({ events, projectCode }: ProjectTimelineCardProps) {
   const createEvent = useCreateEvent(projectCode);
+  const { data: currentUser } = useCurrentUser();
+  const canCreateEvent = currentUser?.role === "admin" || currentUser?.role === "staff";
   const {
     register,
     handleSubmit,
@@ -56,70 +59,79 @@ export default function ProjectTimelineCard({ events, projectCode }: ProjectTime
         ) : null}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border border-border bg-tetiary/80 p-4 mb-4">
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs text-secondary-text">Title</label>
-            <input
-              className="mt-1 w-full rounded-lg border border-border px-3 py-2 bg-primary-light/20 text-primary-dark"
-              placeholder="e.g. Status Updated"
-              {...register("title")}
-            />
-            {errors.title && (
-              <p className="text-xs text-secondary-light mt-1">{errors.title.message}</p>
-            )}
+      {canCreateEvent ? (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="rounded-xl border border-border bg-tetiary/80 p-3 mb-4"
+        >
+          <div className="space-y-2">
+            <div>
+              <label className="text-xs text-secondary-text">Title</label>
+              <input
+                className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm bg-primary-light/20 text-primary-dark"
+                placeholder="e.g. Status Updated"
+                {...register("title")}
+              />
+              {errors.title && (
+                <p className="text-xs text-secondary-light mt-1">
+                  {errors.title.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="text-xs text-secondary-text">Description</label>
+              <textarea
+                rows={2}
+                className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm bg-primary-light/20 text-primary-dark"
+                placeholder="Short update description"
+                {...register("description")}
+              />
+              {errors.description && (
+                <p className="text-xs text-secondary-light mt-1">
+                  {errors.description.message}
+                </p>
+              )}
+            </div>
           </div>
-          <div>
-            <label className="text-xs text-secondary-text">Description</label>
-            <textarea
-              rows={3}
-              className="mt-1 w-full rounded-lg border border-border px-3 py-2 bg-primary-light/20 text-primary-dark"
-              placeholder="Short update description"
-              {...register("description")}
-            />
-            {errors.description && (
-              <p className="text-xs text-secondary-light mt-1">
-                {errors.description.message}
-              </p>
-            )}
+
+          {createEvent.error && (
+            <p className="text-xs text-secondary-light mt-2">
+              {(createEvent.error as any)?.response?.data?.error ||
+                (createEvent.error as Error).message ||
+                "Unable to add timeline event."}
+            </p>
+          )}
+
+          <div className="mt-2 flex items-center justify-end">
+            <button
+              type="submit"
+              disabled={isSubmitting || createEvent.isPending}
+              className="px-4 py-2 rounded-xl bg-secondary text-tetiary text-sm font-medium hover:bg-secondary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {createEvent.isPending ? "Saving..." : "Add Event"}
+            </button>
           </div>
-        </div>
-
-        {createEvent.error && (
-          <p className="text-xs text-secondary-light mt-2">
-            {(createEvent.error as any)?.response?.data?.error ||
-              (createEvent.error as Error).message ||
-              "Unable to add timeline event."}
-          </p>
-        )}
-
-        <div className="mt-3 flex items-center justify-end">
-          <button
-            type="submit"
-            disabled={isSubmitting || createEvent.isPending}
-            className="px-4 py-2 rounded-xl bg-secondary text-tetiary text-sm font-medium hover:bg-secondary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {createEvent.isPending ? "Saving..." : "Add Event"}
-          </button>
-        </div>
-      </form>
+        </form>
+      ) : null}
 
       {events?.length ? (
-        <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-          {events.map((event: any) => (
-            <div key={event.id} className="rounded-xl border border-border bg-tetiary/80 p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-primary-dark">{event.title}</p>
-                <p className="text-xs text-secondary-text">
-                  {formatDateTime(event.created_at)}
+        <div className="max-h-72 overflow-y-auto pr-2">
+          <div className="space-y-4">
+            {events.map((event: any) => (
+              <div key={event.id} className="rounded-xl border border-border bg-tetiary/80 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-primary-dark">{event.title}</p>
+                  <p className="text-xs text-secondary-text">
+                    {formatDateTime(event.created_at)}
+                  </p>
+                </div>
+                <p className="text-xs text-secondary-text mt-1">{event.description}</p>
+                <p className="text-xs text-secondary-text mt-1">
+                  By: {event.created_by?.full_name}
                 </p>
               </div>
-              <p className="text-xs text-secondary-text mt-1">{event.description}</p>
-              <p className="text-xs text-secondary-text mt-1">
-                By: {event.created_by?.full_name}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       ) : (
         <p className="text-sm text-secondary-text">No timeline events yet.</p>

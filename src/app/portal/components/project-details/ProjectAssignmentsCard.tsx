@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaBuilding, FaClipboardList, FaUserTie } from "react-icons/fa6";
 import { useCreateAssignment, useDeleteAssignment } from "@/hooks/useAssignment";
 import { useStaffList } from "@/hooks/useStaff";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { extractApiError } from "@/lib/errors";
 import { CreateAssignmentData, CreateAssignmentSchema } from "@/schemas/assignment";
 
@@ -26,7 +26,11 @@ export default function ProjectAssignmentsCard({
   const createAssignment = useCreateAssignment(projectCode);
   const deleteAssignment = useDeleteAssignment(projectCode);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
-  const { data: staffList, isLoading: isStaffLoading, error: staffError } = useStaffList();
+  const { data: currentUser } = useCurrentUser();
+  const canManageAssignments = currentUser?.role === "admin";
+  const { data: staffList, isLoading: isStaffLoading, error: staffError } = useStaffList({
+    enabled: canManageAssignments,
+  });
   const {
     register,
     handleSubmit,
@@ -57,11 +61,15 @@ export default function ProjectAssignmentsCard({
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold text-primary-dark">Assigned staffs</h2>
         {assignments?.length ? (
-          <span className="text-xs text-secondary-text">{assignments.length} items</span>
+          <span className="text-xs text-secondary-text">{assignments.length} assigned staff(s)</span>
         ) : null}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border border-border bg-tetiary/80 p-4 mb-4">
+      {canManageAssignments ? (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="rounded-xl border border-border bg-tetiary/80 p-4 mb-4"
+        >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="text-xs text-secondary-text">Assign to</label>
@@ -118,7 +126,8 @@ export default function ProjectAssignmentsCard({
             {createAssignment.isPending ? "Assigning..." : "Assign"}
           </button>
         </div>
-      </form>
+        </form>
+      ) : null}
 
       {assignments?.length ? (
         <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
@@ -126,13 +135,15 @@ export default function ProjectAssignmentsCard({
             <div key={assignment.id} className="rounded-xl border border-border bg-tetiary/80 p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-secondary-text">Assignment</span>
-                <button
-                  type="button"
-                  onClick={() => setConfirmingId(assignment.id)}
-                  className="text-xs px-3 py-1 rounded-full border border-secondary/50 text-secondary hover:bg-secondary/10 transition-colors font-semibold"
-                >
-                  Unassign
-                </button>
+                {canManageAssignments ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingId(assignment.id)}
+                    className="text-xs px-3 py-1 rounded-full border border-secondary/50 text-secondary hover:bg-secondary/10 transition-colors font-semibold"
+                  >
+                    Unassign
+                  </button>
+                ) : null}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -179,7 +190,7 @@ export default function ProjectAssignmentsCard({
         <p className="text-sm text-secondary-text">No assignments yet.</p>
       )}
 
-      {confirmingId && (
+      {canManageAssignments && confirmingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary-dark/40 backdrop-blur-[1px] p-4">
           <div className="w-full max-w-sm rounded-2xl border border-primary-light bg-tetiary/95 shadow-xl p-5">
             <h3 className="text-lg font-semibold text-primary-dark">Unassign staff?</h3>

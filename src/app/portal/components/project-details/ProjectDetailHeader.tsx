@@ -21,7 +21,7 @@ export default function ProjectDetailHeader({
           <h1 className="text-2xl font-bold text-primary-dark">{name}</h1>
           <p className="text-secondary-text text-sm">{code}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(statusDisplay)}`}>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium w-fit ${getStatusColor(statusDisplay)}`}>
           {statusDisplay}
         </span>
       </div>

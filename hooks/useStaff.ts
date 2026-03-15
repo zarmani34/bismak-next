@@ -3,7 +3,12 @@ import { User } from "@/schemas/user";
 import { useQuery } from "@tanstack/react-query";
 
 export const staffListKey = ["staffList"];
-export function useStaffList() {
+type StaffListOptions = {
+  enabled?: boolean;
+};
+
+export function useStaffList(options: StaffListOptions = {}) {
+  const { enabled = true } = options;
   return useQuery<User[]>({
     queryKey: staffListKey,
     queryFn: async () => {
@@ -11,5 +16,6 @@ export function useStaffList() {
       return data;
     },
     staleTime: Infinity,
+    enabled,
   });
 }
