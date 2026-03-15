@@ -118,9 +118,9 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
                   <option value="" disabled>
                     Select type
                   </option>
-                  <option className="" value="Pressure_test">Pressure Test</option>
-                  <option className="" value="Leak_test">Leak Test</option>
-                  <option className="" value="Calibration">Calibration</option>
+                  <option value="Pressure_test">Pressure Test</option>
+                  <option value="Leak_test">Leak Test</option>
+                  <option value="Calibration">Calibration</option>
                 </select>
                 {errors.type && (
                   <p className="text-xs text-secondary-light mt-1">{errors.type.message}</p>

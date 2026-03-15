@@ -4,7 +4,7 @@ import { getStatusColor } from "../../constants";
 import ProjectsTableSkeleton from "../skeletons/ProjectsTableSkeleton";
 import ErrorState from "../states/ErrorState";
 import { ProjectListItem } from "@/schemas/project";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Props = {
   projects: ProjectListItem[];
@@ -51,6 +51,12 @@ export default function ProjectsTable({
   emptyMessage = "No projects found.",
   basePath = "/portal/admin/projects",
 }: Props) {
+  const router = useRouter();
+
+  const handleRowClick = (code: string) => {
+    router.push(`${basePath}/${code}`);
+  };
+
   return (
     <table className="w-full">
       <thead className="bg-primary-light/40 border-b border-tetiary">
@@ -87,15 +93,23 @@ export default function ProjectsTable({
           {projects.map((project) => {
             const progress = getProgressValue(project.status);
             return (
-              <tr key={project.code} className="border-b border-tetiary hover:bg-primary/20">
+              <tr
+                key={project.code}
+                className="border-b border-tetiary hover:bg-primary/20 cursor-pointer"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleRowClick(project.code)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleRowClick(project.code);
+                  }
+                }}
+                aria-label={`View details for ${project.name}`}
+              >
                 <td className="p-4">
                   <div>
-                    <Link
-                      href={`${basePath}/${project.code}`}
-                      className="font-medium text-primary-dark hover:text-primary-light transition-colors"
-                    >
-                      {project.name}
-                    </Link>
+                    <p className="font-medium text-primary-dark">{project.name}</p>
                     <p className="text-sm text-secondary-text">
                       Due: {formatDate(project.due_date)}
                     </p>
@@ -110,8 +124,8 @@ export default function ProjectsTable({
                     {project.status_display}
                   </span>
                 </td>
-                <td className="p-4 text-body-text">{project.location}</td>
-                <td className="p-4 text-body-text">{project.owner}</td>
+                <td className="p-4 text-sm sm:text-base text-body-text">{project.location}</td>
+                <td className="p-4 text-sm sm:text-base text-body-text">{project.owner}</td>
                 <td className="p-4">
                   <div className="flex items-center space-x-2">
                     <div className="w-16 bg-secondary-light/80 rounded-full h-2">

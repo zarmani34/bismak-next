@@ -3,7 +3,6 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCreateProjectEvent } from "@/hooks/useProjects";
 import { useCreateEvent } from "@/hooks/useEvent";
 
 const TimelineEventSchema = z.object({
