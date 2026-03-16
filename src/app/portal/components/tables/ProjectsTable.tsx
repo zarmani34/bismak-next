@@ -68,7 +68,7 @@ export default function ProjectsTable({
 
   return (
     <>
-      <div className="flex items-center justify-between bg-primary-light/40 rounded-t-xl p-4">
+      <div className="flex items-center justify-between bg-primary-light/40 rounded-t-xl p-4 border border-primary-light/20 ">
         <h1 className="text-xl font-semibold text-primary-dark">
           All Projects
         </h1>
@@ -78,7 +78,7 @@ export default function ProjectsTable({
           </button>
         ) : null}
       </div>
-      <table className="w-full overflow-auto">
+      <table className="w-full overflow-auto border border-primary-light/20">
         <thead className="bg-primary-light/40 border-b border-tetiary">
           <tr>
             <th className="text-left p-4 text-xs font-bold text-primary-dark uppercase tracking-wider">
@@ -118,7 +118,7 @@ export default function ProjectsTable({
               return (
                 <tr
                   key={project.code}
-                  className="border-b border-tetiary hover:bg-primary/20 cursor-pointer"
+                  className="border-b border-tetiary hover:bg-primary/0 bg-primary-light/10 cursor-pointer"
                   role="button"
                   tabIndex={0}
                   onClick={() => handleRowClick(project.code)}

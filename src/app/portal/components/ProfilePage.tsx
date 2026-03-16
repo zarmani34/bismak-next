@@ -71,7 +71,7 @@ export default function ProfilePage() {
   const quickStats = [
     {
       label: "Account ID",
-      value: currentUser?.pk ? `#${currentUser.pk}` : "Loading...",
+      value: currentUser?.user_id ? `${currentUser.user_id}` : "Loading...",
       icon: <FaChartSimple className="w-4 h-4" />,
     },
     {

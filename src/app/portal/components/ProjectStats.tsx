@@ -1,0 +1,66 @@
+"use client";
+
+import { ReactNode } from "react";
+import { FaCheck, FaProjectDiagram } from "react-icons/fa";
+import { useProjectStats } from "@/hooks/useProjects";
+import DashboardStatsCard from "./DashBoardStatsCard";
+import StatsCardsSkeleton from "./skeletons/StatsCardsSkeleton";
+import ErrorState from "./states/ErrorState";
+
+type Stat = {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  color: "primary" | "error" | "warning" | "info";
+};
+
+export default function ProjectStats() {
+  const {
+    data: statsData,
+    isLoading: statsLoading,
+    isError,
+    refetch,
+  } = useProjectStats();
+  const totalProjects = statsData?.total ?? 0;
+  const completedProjects = statsData?.completed ?? 0;
+  const outstandingProjects = Math.max(totalProjects - completedProjects, 0);
+
+  const projectStats: Stat[] = [
+    {
+      label: "Total Projects",
+      icon: <FaProjectDiagram />,
+      color: "primary",
+      value: totalProjects.toString(),
+    },
+    {
+      label: "Completed Projects",
+      icon: <FaCheck />,
+      color: "warning",
+      value: completedProjects.toString(),
+    },
+    {
+      label: "Outstanding Projects",
+      icon: <FaProjectDiagram />,
+      color: "info",
+      value: outstandingProjects.toString(),
+    },
+  ];
+
+  if (statsLoading) {
+    return <StatsCardsSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <ErrorState message="Unable to load project stats." onRetry={() => refetch()} />
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-4">
+      {projectStats.map((stat) => (
+        <DashboardStatsCard key={stat.label} stat={stat} />
+      ))}
+    </div>
+  );
+}
