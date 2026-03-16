@@ -78,7 +78,7 @@ export default function ProjectsTable({
           </button>
         ) : null}
       </div>
-      <table className="w-full">
+      <table className="w-full overflow-auto">
         <thead className="bg-primary-light/40 border-b border-tetiary">
           <tr>
             <th className="text-left p-4 text-xs font-bold text-primary-dark uppercase tracking-wider">
