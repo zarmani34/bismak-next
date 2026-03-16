@@ -86,7 +86,9 @@ const currentMenu = portalMenus[portalType];
         {/* Navigation Menu */}
         <ul className="p-4 space-y-2">
           {currentMenu.map((item) => {
-             const isActive = pathname === `/portal/${portalType}/${item.key}`
+             const basePath = `/portal/${portalType}/${item.key}`;
+             const isActive =
+               pathname === basePath || (pathname?.startsWith(`${basePath}/`) ?? false);
             return (
             <li key={item.key}>
               <Link
