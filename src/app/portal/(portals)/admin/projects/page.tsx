@@ -1,8 +1,8 @@
 "use client";
 
 import { useProjects } from "@/hooks/useProjects";
-import AdminProjectStats from "../AdminProjectStats";
 import ProjectsTable from "../../../components/tables/ProjectsTable";
+import ProjectStats from "../../../components/ProjectStats";
 
 export default function AdminProjectsPage() {
   const {
@@ -15,7 +15,7 @@ export default function AdminProjectsPage() {
 
   return (
     <div className="space-y-8">
-      <AdminProjectStats />
+      <ProjectStats />
       <div className="">
         <ProjectsTable
           projects={projectList}

@@ -2,7 +2,6 @@
 
 import { useProjects } from "@/hooks/useProjects";
 import ProjectsTable from "../../../components/tables/ProjectsTable";
-import DashboardWelcome from "@/src/components/DashboardWelcome";
 import ProjectStats from "../../../components/ProjectStats";
 
 export default function StaffProjectsPage() {

@@ -1,4 +1,5 @@
 export function extractApiError(err: any): string {
+  console.log(err);
   const data = err.response?.data;
 
   if (!data) return err.message ?? "Something went wrong";

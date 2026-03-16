@@ -183,7 +183,7 @@ export default function ProjectsTable({
       </table>
       
       {canCreateProject ? (
-        <CreateProjectModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
+        <CreateProjectModal open={showCreateModal} onClose={() => setShowCreateModal(false)} role={currentUser?.role} />
       ) : null}
     </>
   );

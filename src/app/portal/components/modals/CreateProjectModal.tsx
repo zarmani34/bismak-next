@@ -12,9 +12,10 @@ import { extractApiError } from "@/lib/errors";
 type CreateProjectModalProps = {
   open: boolean;
   onClose: () => void;
+  role?: 'staff'|'admin'|'client'
 };
 
-export default function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
+export default function CreateProjectModal({ open, onClose, role }: CreateProjectModalProps) {
   const createProject = useCreateProject();
   const {
     register,
@@ -40,7 +41,7 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl max-h-3/4 rounded-2xl border border-primary-light bg-primary/95 shadow-xl overflow-auto"
+        className="w-full max-w-2xl max-h-3/4 rounded-2xl border border-primary-light bg-tetiary shadow-xl overflow-auto"
         role="dialog"
         aria-modal="true"
         onClick={(event) => event.stopPropagation()}
@@ -48,15 +49,15 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex items-center justify-between border-b border-border p-6">
             <div>
-              <h2 className="text-2xl font-bold text-tetiary/80">Create Project</h2>
-              <p className="text-sm text-tetiary/60">
+              <h2 className="text-2xl font-bold text-primary-dark/80">Create Project</h2>
+              <p className="text-sm text-primary/70">
                 Fill in the details below to create a new project.
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="text-tetiary/60 hover:text-secondary-dark transition-colors"
+              className="text-primary/60 hover:text-secondary-dark hover:scale-110 transition-colors"
             >
               <FaXmark className="w-5 h-5" />
             </button>
@@ -65,9 +66,9 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-tetiary/60">Project Name</label>
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">Project Name</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-tetiary/75 text-primary-dark"
+                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
                   placeholder="e.g. Pipeline Integrity Audit"
                   {...register("name")}
                 />
@@ -76,9 +77,9 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
                 )}
               </div>
               <div>
-                <label className="text-xs text-tetiary/60">Company</label>
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">Company</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-tetiary/75 text-primary-dark"
+                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
                   placeholder="Client company"
                   {...register("company")}
                 />
@@ -87,9 +88,9 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
                 )}
               </div>
               <div>
-                <label className="text-xs text-tetiary/60">Location</label>
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">Location</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-tetiary/75 text-primary-dark"
+                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
                   placeholder="Lagos"
                   {...register("location")}
                 />
@@ -97,21 +98,21 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
                   <p className="text-xs text-secondary-light mt-1">{errors.location.message}</p>
                 )}
               </div>
-              <div>
-                <label className="text-xs text-tetiary/60">Client User ID</label>
+              {role === 'admin' && <div>
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">Client User ID</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-tetiary/75 text-primary-dark"
+                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
                   placeholder="e.g. BE-CL-0001"
                   {...register("owner")}
                 />
                 {errors.owner && (
                   <p className="text-xs text-secondary-light mt-1">{errors.owner.message}</p>
                 )}
-              </div>
+              </div>}
               <div>
-                <label className="text-xs text-tetiary/60">Project Type</label>
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">Project Type</label>
                 <select
-                  className="mt-1 w-full rounded-2xl border border-border px-4 py-3 bg-tetiary/75 text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
+                  className="mt-1 w-full rounded-2xl border border-border px-4 py-3 bg-primary/20 text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
                   defaultValue=""
                   {...register("type")}
                 >
@@ -129,10 +130,10 @@ export default function CreateProjectModal({ open, onClose }: CreateProjectModal
             </div>
 
             <div>
-              <label className="text-xs text-tetiary/60">Description</label>
+              <label className="text-xs text-primary-dark font-semibold tracking-wide">Description</label>
               <textarea
                 rows={4}
-                className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-tetiary/75 text-primary-dark"
+                className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
                 placeholder="Short project description"
                 {...register("description")}
               />

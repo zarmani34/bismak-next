@@ -28,6 +28,7 @@ export function useAuth() {
       router.push(next ?? `/${result.user.portal}`);
       return true;
     } catch (err: any) {
+      console.log("Login error:", err);
       setError(extractApiError(err));
       return false;
     } finally {
