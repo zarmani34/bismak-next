@@ -2,20 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 const publicRoutes = ["/portal/sign-in", "/forgot-password", "/reset-password"];
 
-/**
- * Role to portal mapping
- * Defines which base path each role owns
- */
 const rolePortalMap: Record<string, string> = {
   admin: "/portal/admin",
   staff: "/portal/staff",
   client: "/portal/client",
 };
 
-/**
- * Role to default dashboard mapping
- * Where each role lands after login or when visiting their base path
- */
 const roleDashboardMap: Record<string, string> = {
   admin: "/portal/admin/dashboard",
   staff: "/portal/staff/dashboard",
@@ -28,13 +20,6 @@ export default async function proxy(request: NextRequest) {
   let accessToken = request.cookies.get("access-token")?.value;
   const refreshToken = request.cookies.get("refresh-token")?.value;
   const role = request.cookies.get("user-role")?.value;
-  
-  console.log("proxy running:", { 
-  pathname, 
-  accessToken: !!accessToken, 
-  refreshToken: !!refreshToken, 
-  role 
-});
 
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
@@ -44,8 +29,9 @@ export default async function proxy(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-    if (!accessToken && refreshToken && isProtectedRoute) {
-      console.log("attempting silent refresh...")
+  // SILENT REFRESH
+  // access-token expired but refresh-token still valid
+  if (!accessToken && refreshToken && isProtectedRoute) {
     try {
       const refreshResponse = await fetch(
         `${process.env.DJANGO_API_URL}/auth/token/refresh/`,
@@ -56,9 +42,7 @@ export default async function proxy(request: NextRequest) {
         }
       );
 
-      console.log("refresh status:", refreshResponse.status)
       if (refreshResponse.ok) {
-        console.log("refresh successful")
         const data = await refreshResponse.json();
         accessToken = data.access;
 
@@ -71,12 +55,10 @@ export default async function proxy(request: NextRequest) {
           path: "/",
         });
         return response;
-      } else {
-      console.log("refresh failed:", await refreshResponse.text())
+      }
+    } catch {
+      // refresh failed — fall through to redirect below
     }
-  } catch (err) {
-    console.log("refresh error:", err)
-  }
   }
 
   const isAuthenticated = !!accessToken;
@@ -88,36 +70,45 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Already authenticated + public route → redirect to their dashboard
+  // 2. Authenticated but role missing → logout and start fresh
+  // This handles returning users whose user-role cookie expired or was cleared
+  if (isAuthenticated && isProtectedRoute && !role) {
+    const response = NextResponse.redirect(
+      new URL("/portal/sign-in", request.url)
+    );
+    response.cookies.delete("access-token");
+    response.cookies.delete("refresh-token");
+    return response;
+  }
+
+  // 3. Already authenticated + public route → redirect to their dashboard
   if (isPublicRoute && isAuthenticated) {
-    const role = request.cookies.get("user-role")?.value ?? "admin";
-    const dashboard = roleDashboardMap[role] ?? "/portal/admin/dashboard";
+    const dashboard =
+      role && roleDashboardMap[role]
+        ? roleDashboardMap[role]
+        : "/portal/admin/dashboard";
     return NextResponse.redirect(new URL(dashboard, request.url));
   }
 
-  if (isAuthenticated) {
-    const role = request.cookies.get("user-role")?.value;
-
-    // 3. Visiting base portal path e.g /portal/admin → redirect to dashboard
-    const basePortal = role ? rolePortalMap[role] : null;
+  if (isAuthenticated && role) {
+    // 4. Visiting base portal path e.g /portal/admin → redirect to dashboard
+    const basePortal = rolePortalMap[role];
     if (basePortal && pathname === basePortal) {
       return NextResponse.redirect(
-        new URL(roleDashboardMap[role!], request.url)
+        new URL(roleDashboardMap[role], request.url)
       );
     }
 
-    // 4. Role-based access control
+    // 5. Role-based access control
     // e.g staff trying to access /portal/admin → redirect to their own portal
-    if (role) {
-      const ownPortal = rolePortalMap[role];
-      const isAccessingWrongPortal =
-        isProtectedRoute && !pathname.startsWith(ownPortal);
+    const ownPortal = rolePortalMap[role];
+    const isAccessingWrongPortal =
+      isProtectedRoute && !pathname.startsWith(ownPortal);
 
-      if (isAccessingWrongPortal) {
-        return NextResponse.redirect(
-          new URL(roleDashboardMap[role], request.url)
-        );
-      }
+    if (isAccessingWrongPortal) {
+      return NextResponse.redirect(
+        new URL(roleDashboardMap[role], request.url)
+      );
     }
   }
 

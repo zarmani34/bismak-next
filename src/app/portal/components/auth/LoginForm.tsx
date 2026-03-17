@@ -86,7 +86,7 @@ export default function LoginForm() {
       </div>
       {error && (
         <div className="p-3 rounded-lg text-sm bg-primary/10 text-secondary-light border border-secondary-light">
-          {extractApiError(error)}
+          {error}
         </div>
       )}
 
