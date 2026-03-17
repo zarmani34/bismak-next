@@ -31,16 +31,16 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.log("401 detected — attempting refresh")
+      console.log("401 detected — attempting refresh");
       try {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/token/refresh/`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
         return api(originalRequest); // retry original request
       } catch {
-        console.log("refresh failed — redirecting to login")
+        console.log("refresh failed — redirecting to login");
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
@@ -48,7 +48,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

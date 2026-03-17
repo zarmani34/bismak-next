@@ -51,18 +51,7 @@ export default function UserMenuModal({
         onClick={(e) => e.stopPropagation()}
         className="absolute right-0 top-[calc(100%+12px)] w-72 bg-tetiary rounded-xl shadow-xl border border-primary/20 overflow-hidden z-30"
       >
-        {isError ? (
-          <div className="p-4 space-y-3">
-            <ErrorState message="Unable to verify user details." onRetry={onRetry} />
-            <button
-              onClick={handleLogout}
-              className="w-full text-left px-3 py-2.5 text-sm rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
-            >
-              Login again
-            </button>
-          </div>
-        ) : (
-        <>
+        
         <div className="px-4 py-4 border-b border-primary-light/20 bg-primary-light/10">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-primary text-white text-sm font-semibold flex items-center justify-center">
@@ -70,7 +59,7 @@ export default function UserMenuModal({
             </div>
             <div>
               <p className="font-semibold text-primary-dark">{fullName}</p>
-              <p className="text-xs text-secondary-text">{currentUser?.email || "No email"}</p>
+              <p className="text-xs text-secondary-text">{currentUser?.user_id }</p>
               <div className="mt-1 inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-primary/15 text-primary uppercase">
                 <FaIdBadge className="w-3 h-3" />
                 {currentUser?.role || "user"}
@@ -108,8 +97,8 @@ export default function UserMenuModal({
             <FaArrowRightFromBracket className="w-4 h-4" />
             Sign Out
           </button>
-        </div></>
-        )}
+        </div>
+       
       </div>
     </>
   );
