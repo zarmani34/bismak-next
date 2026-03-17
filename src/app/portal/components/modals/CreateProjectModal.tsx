@@ -12,23 +12,35 @@ import { extractApiError } from "@/lib/errors";
 type CreateProjectModalProps = {
   open: boolean;
   onClose: () => void;
-  role?: 'staff'|'admin'|'client'
+  role?: "staff" | "admin" | "client";
 };
 
-export default function CreateProjectModal({ open, onClose, role }: CreateProjectModalProps) {
+type CreateProjectFormData = Omit<CreateProjectData, "owner"> & {
+  owner?: string;
+};
+
+export default function CreateProjectModal({
+  open,
+  onClose,
+  role,
+}: CreateProjectModalProps) {
   const createProject = useCreateProject();
+  const formSchema =
+    role === "admin" ? CreateProjectSchema : CreateProjectSchema.omit({ owner: true });
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<CreateProjectData>({
-    resolver: zodResolver(CreateProjectSchema),
+  } = useForm<CreateProjectFormData>({
+    resolver: zodResolver(formSchema),
     mode: "onBlur",
   });
 
-  const onSubmit = async (data: CreateProjectData) => {
-    await createProject.mutateAsync(data);
+  const onSubmit = async (data: CreateProjectFormData) => {
+    const payload =
+      role === "admin" ? data : (({ owner, ...rest }) => rest)(data);
+    await createProject.mutateAsync(payload as CreateProjectData);
     reset();
     onClose();
   };

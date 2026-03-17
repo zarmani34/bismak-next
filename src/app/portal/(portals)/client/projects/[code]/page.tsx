@@ -107,6 +107,9 @@ export default function ClientProjectDetailsPage() {
       <ProjectTestRecordsCard
         leakTest={project.leak_test}
         pressureTest={project.pressure_test}
+        projectCode={project.code}
+        projectType={project.type}
+        projectStatus={project.status}
       />
     </div>
   );

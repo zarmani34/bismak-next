@@ -25,6 +25,7 @@ export const ProjectListItemSchema = z.object({
   due_date: z.string().nullable(),
   owner: z.string(),
   created_at: z.string(),
+  type_display: z.string().optional(),
 });
 
 /**
@@ -48,6 +49,7 @@ export const ProjectDetailSchema = z.object({
   leak_test: z.unknown().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
+  type_display: z.string(),
 });
 
 /**
