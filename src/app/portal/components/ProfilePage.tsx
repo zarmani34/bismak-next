@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa6";
 import ProfilePageInformation from "./profilePageInformation";
 import ErrorState from "./states/ErrorState";
+import ProfilePageSkeleton from "./skeletons/ProfilePageSkeleton";
 
 const formatDate = (value?: string) => {
   if (!value) return "Not available";
@@ -48,6 +49,10 @@ export default function ProfilePage() {
     refetch,
   } = useCurrentUser();
   const { logout } = useAuth();
+
+  if (isLoading) {
+    return <ProfilePageSkeleton />;
+  }
 
   if (isError) {
     return (
