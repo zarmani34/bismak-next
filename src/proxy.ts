@@ -21,12 +21,19 @@ export default async function proxy(request: NextRequest) {
   const refreshToken = request.cookies.get("refresh-token")?.value;
   const role = request.cookies.get("user-role")?.value;
 
+  console.log("proxy running:", {
+    pathname,
+    accessToken: !!accessToken,
+    refreshToken: !!refreshToken,
+    role,
+  });
+
   const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   const isProtectedRoute = Object.values(rolePortalMap).some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   // SILENT REFRESH
@@ -39,7 +46,7 @@ export default async function proxy(request: NextRequest) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refresh: refreshToken }),
-        }
+        },
       );
 
       if (refreshResponse.ok) {
@@ -63,6 +70,28 @@ export default async function proxy(request: NextRequest) {
 
   const isAuthenticated = !!accessToken;
 
+  // add this after the role and token declarations
+  // Generic /portal redirect — sends user to their dashboard based on role
+  if (pathname === "/portal") {
+    if (!isAuthenticated) {
+      console.log("NOT AUTHENTICATED");
+      return NextResponse.redirect(new URL("/portal/sign-in", request.url));
+    }
+    if (role && roleDashboardMap[role]) {
+      console.log("ROLE DASHBOARD MAP", role, roleDashboardMap[role]);
+      return NextResponse.redirect(
+        new URL(roleDashboardMap[role], request.url),
+      );
+    }
+    // authenticated but no role — clear and redirect to sign in
+    const response = NextResponse.redirect(
+      new URL("/portal/sign-in", request.url),
+    );
+    response.cookies.delete("access-token");
+    response.cookies.delete("refresh-token");
+    return response;
+  }
+
   // 1. Not authenticated + protected route → redirect to sign in
   if (isProtectedRoute && !isAuthenticated) {
     const loginUrl = new URL("/portal/sign-in", request.url);
@@ -74,7 +103,7 @@ export default async function proxy(request: NextRequest) {
   // This handles returning users whose user-role cookie expired or was cleared
   if (isAuthenticated && isProtectedRoute && !role) {
     const response = NextResponse.redirect(
-      new URL("/portal/sign-in", request.url)
+      new URL("/portal/sign-in", request.url),
     );
     response.cookies.delete("access-token");
     response.cookies.delete("refresh-token");
@@ -95,7 +124,7 @@ export default async function proxy(request: NextRequest) {
     const basePortal = rolePortalMap[role];
     if (basePortal && pathname === basePortal) {
       return NextResponse.redirect(
-        new URL(roleDashboardMap[role], request.url)
+        new URL(roleDashboardMap[role], request.url),
       );
     }
 
@@ -107,7 +136,7 @@ export default async function proxy(request: NextRequest) {
 
     if (isAccessingWrongPortal) {
       return NextResponse.redirect(
-        new URL(roleDashboardMap[role], request.url)
+        new URL(roleDashboardMap[role], request.url),
       );
     }
   }
