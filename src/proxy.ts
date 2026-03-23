@@ -14,12 +14,50 @@ const roleDashboardMap: Record<string, string> = {
   client: "/portal/client/dashboard",
 };
 
+async function silentRefresh(
+  refreshToken: string,
+  response: NextResponse
+): Promise<string | null> {
+  try {
+    const refreshResponse = await fetch(
+      `${process.env.DJANGO_API_URL}/auth/token/refresh/`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh: refreshToken }),
+      }
+    );
+
+    if (refreshResponse.ok) {
+      const data = await refreshResponse.json();
+      // cookie set here inside ok check
+      response.cookies.set("access-token", data.access, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 15,
+        path: "/",
+      });
+      return data.access;  // return new token
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   let accessToken = request.cookies.get("access-token")?.value;
   const refreshToken = request.cookies.get("refresh-token")?.value;
   const role = request.cookies.get("user-role")?.value;
+  console.log("proxy running:", {
+    pathname,
+    accessToken: !!accessToken,
+    refreshToken: !!refreshToken,
+    role,
+  });
 
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route),
@@ -40,31 +78,11 @@ export default async function proxy(request: NextRequest) {
 
   // 2. Silent refresh
   if (!accessToken && refreshToken && isProtectedRoute) {
-    try {
-      const refreshResponse = await fetch(
-        `${process.env.DJANGO_API_URL}/auth/token/refresh/`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh: refreshToken }),
-        },
-      );
-
-      if (refreshResponse.ok) {
-        const data = await refreshResponse.json();
-        accessToken = data.access;
-        const response = NextResponse.next();
-        response.cookies.set("access-token", data.access, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: 60 * 15,
-          path: "/",
-        });
-        return response;
-      }
-    } catch {
-      // refresh failed — fall through
+    const response = NextResponse.next();
+    const newToken = await silentRefresh(refreshToken, response);
+    if (newToken) {
+      accessToken = newToken;
+      return response;
     }
   }
 
@@ -73,14 +91,23 @@ export default async function proxy(request: NextRequest) {
   // 3. Generic /portal entry point
   const portalBasePaths = ["/portal", ...Object.values(rolePortalMap)];
   if (portalBasePaths.some((path) => pathname === path)) {
-    if (!role || !isAuthenticated) {
-      const response = NextResponse.redirect(
-        new URL("/portal/sign-in", request.url),
+    if (!accessToken && refreshToken) {
+      const redirectResponse = NextResponse.redirect(
+        new URL(role ? roleDashboardMap[role] : "/portal/sign-in", request.url)
       );
+      const newToken = await silentRefresh(refreshToken, redirectResponse);
+      if (newToken && role) {
+        return redirectResponse;  // cookie already set inside silentRefresh
+      }
+    }
+
+    if (!isAuthenticated || !role) {
+      const response = NextResponse.redirect(new URL("/portal/sign-in", request.url));
       response.cookies.delete("access-token");
       response.cookies.delete("refresh-token");
       return response;
     }
+
     return NextResponse.redirect(new URL(roleDashboardMap[role], request.url));
   }
 
