@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import UserMenuModal from "./UserMenuModal";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useAuth } from "@/hooks/useAuth";
+import UserMenuSkeleton from "./skeletons/UserMenuSkeleton";
 
 
 export default function UserMenu() {
@@ -33,9 +34,11 @@ export default function UserMenu() {
     );
   }
 
-  const displayName = isLoading ? "Loading..." : fullName;
+  if (isLoading) {
+    return <UserMenuSkeleton />;
+  }
+
   const displayRole = currentUser?.role || "user";
-  const displayInitials = isLoading ? "..." : initials;
 
   return (
     <div className="relative flex items-center space-x-2">
@@ -45,11 +48,11 @@ export default function UserMenu() {
       >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-secondary text-tetiary text-xs font-semibold flex items-center justify-center">
-            {displayInitials}
+            {initials}
           </div>
           <div className="hidden md:block">
             <p className="text-sm md:text-base font-medium text-tetiary leading-none">
-              {displayName}
+              {fullName}
             </p>
             <p className="text-xs md:text-sm text-secondary-text capitalize">
               {displayRole}

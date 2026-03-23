@@ -7,7 +7,6 @@ import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { LoginFormData, LoginSchema } from "@/schemas/auth";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { extractApiError } from "@/lib/errors";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -84,6 +83,7 @@ export default function LoginForm() {
           </p>
         )}
       </div>
+      
       {error && (
         <div className="p-3 rounded-lg text-sm bg-primary/10 text-secondary-light border border-secondary-light">
           {error}

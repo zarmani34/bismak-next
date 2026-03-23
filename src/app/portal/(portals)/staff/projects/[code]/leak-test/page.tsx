@@ -93,10 +93,10 @@ export default function StaffLeakTestPage() {
   }, [leakTest, reset]);
 
   const onSubmit = async (data: CreateLeakTestData) => {
-    if (leakTest) {
-      await updateLeakTest.mutateAsync(data);
-      return;
-    }
+    // if (leakTest) {
+    //   await updateLeakTest.mutateAsync(data);
+    //   return;
+    // }
     await createLeakTest.mutateAsync(data);
   };
 
