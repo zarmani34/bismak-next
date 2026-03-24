@@ -1,9 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
-import {
-  LeakTest,
-  CreateLeakTestData,
-} from "@/schemas/leak_test";
+import { LeakTest, CreateLeakTestData } from "@/schemas/leak_test";
 import { projectKeys } from "@/hooks/useProjects";
 
 // ---- Query Keys ----
@@ -13,13 +10,23 @@ export const testKeys = {
     [...projectKeys.detail(projectCode), "leak-test"] as const,
 };
 
+export type LeakTestResponse =
+  | LeakTest
+  | {
+      results?: LeakTest[];
+      count?: number;
+      next?: string | null;
+      previous?: string | null;
+    }
+  | LeakTest[]
+  | null;
 
 export function useLeakTest(projectCode: string) {
-  return useQuery<LeakTest>({
+  return useQuery<LeakTestResponse>({
     queryKey: testKeys.leakTest(projectCode),
     queryFn: async () => {
       const { data } = await api.get(`/projects/${projectCode}/leak-test/`);
-      return data;
+      return data as LeakTestResponse;
     },
     enabled: !!projectCode,
   });
