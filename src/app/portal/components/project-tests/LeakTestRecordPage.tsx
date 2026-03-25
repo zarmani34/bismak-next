@@ -126,7 +126,7 @@ export default function LeakTestRecordPage({ role }: Props) {
   }
 
   return (
-    <div className="space-y-6 ">
+    <div className="space-y-6 print-page">
       <div className="flex items-center justify-between gap-3 no-print">
         <Link
           href={`/portal/${role}/projects/${code}`}
@@ -136,12 +136,14 @@ export default function LeakTestRecordPage({ role }: Props) {
           Back to Project
         </Link>
         <div className="flex items-center gap-2">
-          <Link
-            href={`/portal/${role}/projects/${code}/leak-test/record/edit`}
-            className="inline-flex items-center px-4 py-2 rounded-xl border border-secondary/40 text-secondary text-sm font-semibold hover:bg-secondary/10 transition-colors"
-          >
-            Edit Record
-          </Link>
+          {role === "admin" ? (
+            <Link
+              href={`/portal/${role}/projects/${code}/leak-test/record/edit`}
+              className="inline-flex items-center px-4 py-2 rounded-xl border border-secondary/40 text-secondary text-sm font-semibold hover:bg-secondary/10 transition-colors"
+            >
+              Edit Record
+            </Link>
+          ) : null}
           <button
             type="button"
             onClick={() => window.print()}
@@ -152,46 +154,52 @@ export default function LeakTestRecordPage({ role }: Props) {
         </div>
       </div>
 
-      <section className="certificate-sheet mx-auto w-full max-w-[900px] bg-white border border-[#d8d8d8] shadow-sm p-4 md:p-8 text-[#1f1f1f] print-container print:py-4">
+      <section className="certificate-sheet mx-auto w-full max-w-[900px] bg-white border border-[#d8d8d8] shadow-sm py-5 px-8 md:py-9 md:px-16 text-[#1f1f1f] print-container print:py-4">
         <div className="certificate-inner">
          
 
-          <div className="pt-5 md:pt-7 text-center">
+          <div className="pt-5 md:pt-7 text-center mt-24">
             <h1 className="text-[31px] md:text-[40px] leading-none font-black tracking-wide uppercase underline decoration-[1.5px] underline-offset-[5px]">
               Leak Test Certificate
             </h1>
           </div>
 
-          <p className="mt-5 text-[13px] leading-[1.5] text-left max-w-[760px]">
-            This is to certify that the leakage Detection Tests conducted on
-            fuel Storage tanks specified below have been found satisfactory. The
-            tanks are hereby safe for storage of Petroleum product until the next
-            test period.
+          <p className="mt-5 text-[14px] leading-[1.35] text-left max-w-[780px] tracking-[0.03em] font-semibold">
+            <span className="certificate-body-text">
+              This is to certify that the leakage Detection Tests conducted on (FOUR) 
+               specified below have been found satisfactory. The tanks
+              are hereby safe for storage of Petroleum product until the next test
+              period.
+            </span>
           </p>
 
-          <div className="mt-6 text-[13px]">
+          <div className="mt-6 text-[13px] space-y-12">
             <div className="w-full flex justify-end">
-              <p className="border-b border-black/60 inline-block min-w-[240px] uppercase tracking-wide">
+              <p className="uppercase tracking-wide">
                 <span className="font-bold">Date:</span> {formatDateHeading(leakTest.date_of_test)}
               </p>
             </div>
 
             <div>
-              <p className="mt-4 font-bold uppercase">Name of Station:</p>
-              <p className="mt-1 border-b border-black/60 inline-block min-w-[420px] uppercase tracking-wide">
-                {leakTest.station_name}
+              <p className="mt-4 uppercase tracking-wide flex gap-4">
+                <span className="font-bold">Name of Station:</span>{" "}
+                <span className="border-b border-black/60 inline-block">
+                  {leakTest.station_name}
+                </span>
               </p>
             </div>
 
             <div>
-              <p className="mt-4 font-bold uppercase">Location:</p>
-              <p className="mt-1 border-b border-black/60 inline-block min-w-[520px] uppercase tracking-wide">
-                {leakTest.location}
+              <p className="mt-4 uppercase tracking-wide flex gap-4">
+                <span className="font-bold">Location:</span>{" "}
+                <span className="border-b border-black/60 inline-block">
+                  {leakTest.location}
+                </span>
               </p>
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-[13px]">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-[13px] mt-6">
             <p>
               <span className="font-bold">Equipment Tested:</span> Underground Fuel
               Storage Tanks
@@ -202,7 +210,7 @@ export default function LeakTestRecordPage({ role }: Props) {
             </p>
           </div>
 
-          <div className="mt-3 overflow-x-auto">
+          <div className="mt-3 overflow-x-auto px-8">
             <table className="w-full border border-black text-[12px] leading-tight">
               <thead className="uppercase">
                 <tr>
@@ -245,26 +253,24 @@ export default function LeakTestRecordPage({ role }: Props) {
             </table>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 text-[12px]">
+          <div className="mt-8 signature-row grid grid-cols-1 md:grid-cols-2 gap-8 text-[12px]">
             <div>
               <p className="uppercase font-bold tracking-wide">
                 B.I AKINJOBI
               </p>
-              <p className="mt-4 border-t border-black pt-1">
+              <p className="mt-4 inline-block w-[240px] border-t border-black pt-1">
                 Name & Sign of Company&apos;s Engineering Officer
               </p>
             </div>
             <div className="md:text-right">
-              <p className="uppercase font-bold tracking-wide">
-                {project?.company ?? leakTest.station_name}
-              </p>
-              <p className="mt-4 border-t border-black pt-1">
+              
+              <p className="mt-8 inline-block w-[220px] border-t border-black pt-1">
                 Name of Client Representative
               </p>
             </div>
           </div>
 
-          <div className="mt-7 text-center text-[12px]">
+          <div className="my-12 text-center text-[12px]">
             <p className="inline-block min-w-[340px] border-t border-black pt-1">
               Name & Sign of NMDPRA Representative
             </p>
@@ -279,6 +285,10 @@ export default function LeakTestRecordPage({ role }: Props) {
           font-family: "Times New Roman", Times, serif;
         }
 
+        .certificate-body-text {
+          font-family: "Courier New", Courier, monospace;
+        }
+
         @media print {
           @page {
             size: A4 portrait;
@@ -287,9 +297,19 @@ export default function LeakTestRecordPage({ role }: Props) {
 
           body {
             background: #fff !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
 
           .no-print {
+            display: none !important;
+          }
+
+          header,
+          nav,
+          aside,
+          .tsqd-parent-container,
+          [class*="tsqd-"] {
             display: none !important;
           }
 
@@ -298,13 +318,32 @@ export default function LeakTestRecordPage({ role }: Props) {
             margin: 0 !important;
           }
 
+          .print-page,
+          main,
+          main > div {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+
           .certificate-sheet {
             max-width: none !important;
             width: 100% !important;
-            margin: 0 !important;
-            border: 1px solid #000 !important;
+            margin: 0 auto !important;
+            border: none !important;
             box-shadow: none !important;
             padding: 10mm !important;
+          }
+
+          .signature-row {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 24px !important;
+            align-items: end !important;
+          }
+
+          .signature-row > div:last-child {
+            text-align: right !important;
           }
         }
       `}</style>
