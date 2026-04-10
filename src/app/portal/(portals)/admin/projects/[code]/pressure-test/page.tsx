@@ -3,5 +3,5 @@
 import PressureTestFormPage from "../../../../../components/project-tests/PressureTestFormPage";
 
 export default function AdminPressureTestPage() {
-  return <PressureTestFormPage role="admin" />;
+  return <PressureTestFormPage role="admin" mode="create" />;
 }

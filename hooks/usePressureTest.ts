@@ -13,13 +13,23 @@ export const testKeys = {
     [...projectKeys.detail(projectCode), "pressure-test"] as const,
 };
 
+export type PressureTestResponse =
+  | PressureTest
+  | {
+      results?: PressureTest[];
+      count?: number;
+      next?: string | null;
+      previous?: string | null;
+    }
+  | PressureTest[]
+  | null;
 
 export function usePressureTest(projectCode: string) {
-  return useQuery<PressureTest>({
+  return useQuery<PressureTestResponse>({
     queryKey: testKeys.pressureTest(projectCode),
     queryFn: async () => {
       const { data } = await api.get(`/projects/${projectCode}/pressure-test/`);
-      return data;
+      return data as PressureTestResponse;
     },
     enabled: !!projectCode,
   });

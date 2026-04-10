@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaArrowLeft } from "react-icons/fa6";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/schemas/pressure_test";
 import {
   usePressureTest,
+  PressureTestResponse,
   useCreatePressureTest,
   useUpdatePressureTest,
 } from "@/hooks/usePressureTest";
@@ -22,6 +23,7 @@ import { extractApiError } from "@/lib/errors";
 
 type Props = {
   role: "admin" | "staff";
+  mode?: "create" | "edit";
 };
 
 type FieldConfig = {
@@ -136,12 +138,41 @@ const FIELDS: FieldConfig[] = [
   },
 ];
 
-export default function PressureTestFormPage({ role }: Props) {
+const isAxiosNotFoundError = (queryError: unknown) => {
+  if (!queryError || typeof queryError !== "object") return false;
+  if (!("response" in queryError)) return false;
+  const response = (queryError as { response?: { status?: number } }).response;
+  return response?.status === 404;
+};
+
+const resolvePressureTestRecord = (
+  data: PressureTestResponse,
+): PressureTest | null => {
+  if (!data) return null;
+
+  if (Array.isArray(data)) {
+    return data[0] ?? null;
+  }
+
+  if (typeof data === "object" && "results" in data) {
+    return Array.isArray(data.results) ? (data.results[0] ?? null) : null;
+  }
+
+  if (typeof data === "object" && "id" in data) {
+    return data as PressureTest;
+  }
+
+  return null;
+};
+
+export default function PressureTestFormPage({ role, mode = "create" }: Props) {
   const params = useParams();
+  const router = useRouter();
   const code = typeof params?.code === "string" ? params.code : "";
+  const isEditMode = mode === "edit";
   const { data: project } = useProject(code);
   const {
-    data: pressureTest,
+    data: pressureTestResponse,
     isLoading,
     isError,
     error,
@@ -149,12 +180,13 @@ export default function PressureTestFormPage({ role }: Props) {
   } = usePressureTest(code);
   const createPressureTest = useCreatePressureTest(code);
   const updatePressureTest = useUpdatePressureTest(code);
-  const isNotFound = (error as any)?.response?.status === 404;
+  const isNotFound = isAxiosNotFoundError(error);
+  const existingPressureTest = resolvePressureTestRecord(pressureTestResponse ?? null);
 
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     getValues,
     formState: { errors, isSubmitting },
@@ -165,12 +197,16 @@ export default function PressureTestFormPage({ role }: Props) {
     defaultValues: getDefaultPressureTestValues(),
   });
 
-  const dateOfTest = watch("date_of_test");
+  const dateOfTest = useWatch({
+    control,
+    name: "date_of_test",
+  });
 
   useEffect(() => {
-    if (!pressureTest) return;
-    reset(mapPressureTestToForm(pressureTest));
-  }, [pressureTest, reset]);
+    if (!isEditMode) return;
+    if (!existingPressureTest) return;
+    reset(mapPressureTestToForm(existingPressureTest));
+  }, [existingPressureTest, isEditMode, reset]);
 
   useEffect(() => {
     if (!project) return;
@@ -196,14 +232,17 @@ export default function PressureTestFormPage({ role }: Props) {
   }, [dateOfTest, setValue]);
 
   const onSubmit = async (data: CreatePressureTestData) => {
-    if (pressureTest) {
+    if (isEditMode) {
+      if (!existingPressureTest) return;
       await updatePressureTest.mutateAsync(data);
+      router.push(`/portal/${role}/projects/${code}/pressure-test/record`);
       return;
     }
     await createPressureTest.mutateAsync(data);
+    router.push(`/portal/${role}/projects/${code}/pressure-test/record`);
   };
 
-  if (isLoading) {
+  if (isEditMode && isLoading) {
     return (
       <div className="rounded-2xl border border-border bg-primary-light/20 p-6 text-secondary-text">
         Loading pressure test form...
@@ -211,10 +250,19 @@ export default function PressureTestFormPage({ role }: Props) {
     );
   }
 
-  if (isError && !isNotFound) {
+  if (isEditMode && isError && !isNotFound) {
     return (
       <ErrorState
         message="Unable to load pressure test details."
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  if (isEditMode && (isNotFound || !existingPressureTest)) {
+    return (
+      <ErrorState
+        message="No pressure test record found for this project yet."
         onRetry={() => refetch()}
       />
     );
@@ -244,8 +292,11 @@ export default function PressureTestFormPage({ role }: Props) {
           <h2 className="text-lg font-semibold text-primary-dark">Test Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {FIELDS.map((field) => {
-              const errorMessage = (errors as Record<string, any>)[field.name]
-                ?.message as string | undefined;
+              const fieldError = errors[field.name];
+              const errorMessage =
+                typeof fieldError?.message === "string"
+                  ? fieldError.message
+                  : undefined;
               const registerOptions =
                 field.type === "number" ? { valueAsNumber: true } : undefined;
 
@@ -279,9 +330,12 @@ export default function PressureTestFormPage({ role }: Props) {
           </div>
         </div>
 
-        {(createPressureTest.error || updatePressureTest.error) && (
+        {((!isEditMode && createPressureTest.error) ||
+          (isEditMode && updatePressureTest.error)) && (
           <p className="text-xs text-secondary-light">
-            {extractApiError(createPressureTest.error || updatePressureTest.error)}
+            {extractApiError(
+              isEditMode ? updatePressureTest.error : createPressureTest.error,
+            )}
           </p>
         )}
 
@@ -297,9 +351,9 @@ export default function PressureTestFormPage({ role }: Props) {
           >
             {updatePressureTest.isPending || createPressureTest.isPending
               ? "Saving..."
-              : pressureTest
+              : isEditMode
               ? "Update Pressure Test"
-              : "Save Pressure Test"}
+              : "Submit Pressure Test"}
           </button>
         </div>
       </form>
