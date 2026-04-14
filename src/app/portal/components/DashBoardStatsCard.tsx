@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 type stat ={
-    label: string;
+  label: string;
   value: string;
   icon: ReactNode;
   color: "primary" | "error" | "warning" | "info";

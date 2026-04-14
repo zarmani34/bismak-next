@@ -9,6 +9,7 @@ import {
   FaPlus,
 } from "react-icons/fa6";
 import DashboardStatsCard from "../DashBoardStatsCard";
+import ServiceStats from "../ServiceStats";
 
 type ServiceStatus =
   | "pending"
@@ -200,11 +201,7 @@ export default function ServiceRequestsWorkspace() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
-        {requestStats.map((stat) => (
-          <DashboardStatsCard key={stat.label} stat={stat} />
-        ))}
-      </div>
+      <ServiceStats />
 
       <div className="rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="bg-primary-light/40 px-6 py-4 border-b border-border flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
@@ -216,7 +213,7 @@ export default function ServiceRequestsWorkspace() {
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search by client, name or location"
-                className="pl-9 pr-3 py-2 rounded-lg border border-border bg-white text-sm text-primary-dark min-w-72 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="pl-9 pr-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary min-w-72 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </label>
             <select
@@ -224,7 +221,7 @@ export default function ServiceRequestsWorkspace() {
               onChange={(event) =>
                 setStatusFilter(event.target.value as ServiceStatus | "all")
               }
-              className="px-3 py-2 rounded-lg border border-border bg-white text-sm text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="px-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
