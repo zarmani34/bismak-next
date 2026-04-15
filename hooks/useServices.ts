@@ -9,6 +9,17 @@ export const serviceKeys = {
     [...serviceKeys.all, "list", filters] as const,
   detail: (code: string) => [...serviceKeys.all, "detail", code] as const,
 };
+
+export function useServiceRequests(filters?: Record<string, string>) {
+  return useQuery({
+    queryKey: serviceKeys.list(filters),
+    queryFn: async () => {
+      const { data } = await api.get("/services/", { params: filters });
+      return data;
+    },
+  });
+}
+
 export function useServiceStats() {
   return useQuery<ServiceStats>({
     queryKey: [...serviceKeys.all, "stats"],

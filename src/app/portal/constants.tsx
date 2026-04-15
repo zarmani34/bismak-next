@@ -72,7 +72,7 @@ export const CLIENTPORTALMENU = [
     icon: <FaProjectDiagram className="w-5 h-5" />, // project flows
   },
   {
-    key: "requests",
+    key: "services",
     label: "Service Requests",
     icon: <FaRegClipboard className="w-5 h-5" />, // request form
   },
@@ -137,7 +137,7 @@ export const ADMINPORTALMENU = [
     icon: <FaProjectDiagram className="w-5 h-5" />, // project flows
   },
   {
-    key: "requests",
+    key: "services",
     label: "Service Requests",
     icon: <FaRegClipboard className="w-5 h-5" />, // request form
   },
@@ -295,7 +295,7 @@ export const adminDashboardStats: Stat[] = [
   {
     label: "Monthly Revenue",
     icon: <FaDollarSign />,
-    color: "info", // info  primary 
+    color: "info", // info  primary
     value: "₦45,000,000",
   },
 ];
@@ -338,7 +338,7 @@ export const adminRequestStats: Stat[] = [
     label: "Completed Requests",
     icon: <FaFile />,
     color: "info", // warning  info
-    value: "4",   
+    value: "4",
   },
 ];
 export const PROJECT_REQUESTS: Project[] = [

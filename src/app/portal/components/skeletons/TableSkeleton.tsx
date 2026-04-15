@@ -2,7 +2,7 @@ type Props = {
   rows?: number;
 };
 
-export default function ProjectsTableSkeleton({ rows = 5 }: Props) {
+export default function TableSkeleton({ rows = 5 }: Props) {
   return (
     <tbody>
       {Array.from({ length: rows }).map((_, index) => (

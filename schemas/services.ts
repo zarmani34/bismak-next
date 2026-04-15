@@ -6,21 +6,18 @@ export const ServiceTypeSchema = z.object({
     name: z.string(),
     description: z.string().nullable(),
     is_active: z.string(),
-})
+  })
 
-export const ServiceRequestSchema = z.object({
+export const ServiceStatusSchema = z.enum(["pending", "reviewed", "quoted", "accepted", "rejected", "in_progress", "completed"])
+
+export const ServiceRequestListSchema = z.object({
   id: z.string(),
-  name: z.string(),
-  service_type: ServiceTypeSchema.nullable(),  // full object
-  custom_service: z.string().nullable(),
   service_name: z.string(),
   location: z.string(),
-  description: z.string(),
-  status: z.string(),
+  status: ServiceStatusSchema,
   status_display: z.string(),
-  owner: UserSchema,
+  owner_name: z.string(),
   created_at: z.string(),
-  updated_at: z.string(),
 })
 
 export const CreateServiceRequestSchema = z.object({
@@ -42,8 +39,9 @@ export const ServiceStats = z.object({
     completed : z.number(),
 })
 
+    
 
-export type ServiceRequest = z.infer<typeof ServiceRequestSchema>
+export type ServiceRequest = z.infer<typeof ServiceRequestListSchema>
 export type CreateServiceRequestData = z.infer<typeof CreateServiceRequestSchema>
 export type ServiceType = z.infer<typeof ServiceTypeSchema>
 export type ServiceStats = z.infer<typeof ServiceStats>

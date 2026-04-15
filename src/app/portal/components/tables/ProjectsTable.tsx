@@ -2,13 +2,13 @@
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getStatusColor } from "../../constants";
-import ProjectsTableSkeleton from "../skeletons/ProjectsTableSkeleton";
 import ErrorState from "../states/ErrorState";
 import { ProjectListItem } from "@/schemas/project";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import PrimaryButton from "@/src/components/buttons/PrimaryButton";
 import CreateProjectModal from "../modals/CreateProjectModal";
+import TableSkeleton from "../skeletons/TableSkeleton";
 
 type Props = {
   projects: ProjectListItem[];
@@ -102,7 +102,7 @@ export default function ProjectsTable({
             </tr>
           </thead>
           {isLoading ? (
-            <ProjectsTableSkeleton />
+            <TableSkeleton />
           ) : isError ? (
             <tbody>
               <tr>
