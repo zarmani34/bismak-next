@@ -1,11 +1,10 @@
 import { z } from "zod";
-import { UserSchema } from "./user";
 
 export const ServiceTypeSchema = z.object({
-    id: z.string(),
+    id: z.coerce.number(),
     name: z.string(),
     description: z.string().nullable(),
-    is_active: z.string(),
+    is_active: z.union([z.boolean(), z.string(), z.number()]),
   })
 
 export const ServiceStatusSchema = z.enum(["pending", "reviewed", "quoted", "accepted", "rejected", "in_progress", "completed"])
@@ -20,13 +19,41 @@ export const ServiceRequestListSchema = z.object({
   created_at: z.string(),
 })
 
-export const CreateServiceRequestSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+const CreateServiceRequestBaseSchema = z.object({
+  company_name: z.string().min(1, "Name is required"),
   service_type_id: z.number().nullable().optional(),  // ID only
   custom_service: z.string().nullable().optional(),
   location: z.string().min(1, "Location is required"),
   description: z.string().min(1, "Description is required"),
-})
+  owner: z.string().min(1, "Client ID is required for admin created requests"),
+});
+
+const withServiceSelectionValidation = <T extends z.ZodTypeAny>(schema: T) =>
+  schema.superRefine((data, context) => {
+  const hasServiceType =
+    (data as { service_type_id?: number | null }).service_type_id !== null &&
+    (data as { service_type_id?: number | null }).service_type_id !== undefined;
+  const hasCustomService = Boolean(
+    (data as { custom_service?: string | null }).custom_service?.trim(),
+  );
+
+  if (!hasServiceType && !hasCustomService) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["service_type_id"],
+      message: "Select a service type or enter a custom service",
+    });
+  }
+});
+
+export const CreateServiceRequestSchema = withServiceSelectionValidation(
+  CreateServiceRequestBaseSchema,
+);
+
+export const CreateServiceRequestWithoutOwnerSchema =
+  withServiceSelectionValidation(
+    CreateServiceRequestBaseSchema.omit({ owner: true }),
+  );
 
 export const ServiceStats = z.object({
     total : z.number(),

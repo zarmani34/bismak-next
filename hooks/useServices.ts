@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
-import { ServiceStats } from "@/schemas/services";
+import {
+  CreateServiceRequestData,
+  ServiceStats,
+  ServiceType,
+} from "@/schemas/services";
 
 
 export const serviceKeys = {
@@ -20,13 +24,38 @@ export function useServiceRequests(filters?: Record<string, string>) {
   });
 }
 
+export function useCreateServiceRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (serviceData: CreateServiceRequestData) => {
+      const { data } = await api.post("/services/", serviceData);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: serviceKeys.list() });
+    },
+  });
+}
+
 export function useServiceStats() {
   return useQuery<ServiceStats>({
     queryKey: [...serviceKeys.all, "stats"],
     queryFn: async () => {
       const { data } = await api.get("/services/stats/");
-      console.log("Fetched service stats:", data);
       return data;
     },
+  });
+}
+
+export function useServiceTypes() {
+  return useQuery<ServiceType[]>({
+    queryKey:  [...serviceKeys.all, "types"],
+    queryFn: async () => {
+      const { data } = await api.get("/service-types/");
+      console.log("Fetched service types:", data);
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
