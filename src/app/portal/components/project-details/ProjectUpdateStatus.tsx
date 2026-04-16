@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const STATUS_TRANSITIONS: Record<string, string[]> = {
   planning: ["in_progress", "cancelled"],
@@ -15,7 +15,7 @@ const formatStatusLabel = (status: string) =>
 
 type ProjectUpdateStatusProps = {
   currentStatus: string;
-  onUpdate: (status: string) => Promise<void> | void;
+  onUpdate: (status: string) => Promise<unknown> | void;
   isPending?: boolean;
   errorMessage?: string;
 };
@@ -28,22 +28,14 @@ export default function ProjectUpdateStatus({
 }: ProjectUpdateStatusProps) {
   const [nextStatus, setNextStatus] = useState("");
   const allowedTransitions = STATUS_TRANSITIONS[currentStatus] ?? [];
-  const transitionsKey = allowedTransitions.join("|");
-
-  useEffect(() => {
-    if (!allowedTransitions.length) {
-      setNextStatus("");
-      return;
-    }
-    if (!allowedTransitions.includes(nextStatus)) {
-      setNextStatus(allowedTransitions[0]);
-    }
-  }, [currentStatus, transitionsKey, nextStatus]);
+  const effectiveNextStatus = allowedTransitions.includes(nextStatus)
+    ? nextStatus
+    : allowedTransitions[0] ?? "";
 
   const handleUpdate = async () => {
-    if (!nextStatus || isPending) return;
+    if (!effectiveNextStatus || isPending) return;
     try {
-      await onUpdate(nextStatus);
+      await onUpdate(effectiveNextStatus);
     } catch {
       // handled by React Query
     }
@@ -77,7 +69,7 @@ export default function ProjectUpdateStatus({
                 onClick={() => setNextStatus(status)}
                 disabled={isPending}
                 className={`px-3 py-2 rounded-xl border text-sm transition-colors ${
-                  nextStatus === status
+                  effectiveNextStatus === status
                     ? "border-primary/60 bg-primary/10 text-primary-dark"
                     : "border-border bg-tetiary/80 text-secondary-text hover:text-primary-dark"
                 }`}
@@ -92,7 +84,7 @@ export default function ProjectUpdateStatus({
         <button
           className="px-4 py-2 rounded-xl bg-secondary text-tetiary hover:bg-secondary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           onClick={handleUpdate}
-          disabled={!nextStatus || isPending || !allowedTransitions.length}
+          disabled={!effectiveNextStatus || isPending || !allowedTransitions.length}
         >
           {isPending ? "Updating..." : "Update Status"}
         </button>

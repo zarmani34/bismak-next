@@ -1,4 +1,8 @@
 import { z } from "zod";
+import { AssignmentSchema } from "./assignment";
+import { EventSchema } from "./event";
+import { LeakTestSchema } from "./leak_test";
+import { PressureTestSchema } from "./pressure_test";
 
 /**
  * PROJECT OWNER SCHEMA
@@ -43,10 +47,10 @@ export const ProjectDetailSchema = z.object({
   due_date: z.string().nullable(),
   description: z.string().nullable(),
   owner: ProjectOwnerSchema,
-  assignments: z.array(z.unknown()),
-  events: z.array(z.unknown()),
-  pressure_test: z.unknown().nullable(),
-  leak_test: z.unknown().nullable(),
+  assignments: z.array(AssignmentSchema),
+  events: z.array(EventSchema),
+  pressure_test: PressureTestSchema.nullable(),
+  leak_test: LeakTestSchema.nullable(),
   created_at: z.string(),
   updated_at: z.string(),
   type_display: z.string(),

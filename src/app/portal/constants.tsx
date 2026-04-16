@@ -426,17 +426,19 @@ export const SERVICE_REQUESTS: Service[] = [
 ];
 
 export const getProgressPercentage = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status) {
     case "planning":
-      return "25";
-    case "pending":
-      return "50";
-    case "in progress":
-      return "75";
+      return 25;
+    case "in_progress":
+      return 75;
     case "completed":
-      return "100";
+      return 100;
+    case "on_hold":
+      return 50;
+    case "cancelled":
+      return 0;
     default:
-      return "0";
+      return 0;
   }
 };
 

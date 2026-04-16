@@ -31,6 +31,25 @@ const getProgressValue = (status: string) => {
   }
 };
 
+const getStatusUpdateErrorMessage = (error: unknown) => {
+  if (!error || typeof error !== "object") return undefined;
+
+  const responseData = (
+    error as {
+      response?: {
+        data?: {
+          error?: string;
+        };
+      };
+    }
+  ).response?.data;
+
+  if (responseData?.error) return responseData.error;
+
+  const message = (error as { message?: string }).message;
+  return typeof message === "string" ? message : undefined;
+};
+
 export default function AdminProjectDetailsPage() {
   const params = useParams();
   const code = typeof params?.code === "string" ? params.code : "";
@@ -53,9 +72,7 @@ export default function AdminProjectDetailsPage() {
   const progress = getProgressValue(project.status);
   const ownerName =
     typeof project.owner === "string" ? project.owner : project.owner.full_name;
-  const statusError =
-    (updateStatus.error as any)?.response?.data?.error ??
-    (updateStatus.error as Error | undefined)?.message;
+  const statusError = getStatusUpdateErrorMessage(updateStatus.error);
 
   return (
     <div className="space-y-6">
@@ -78,7 +95,7 @@ export default function AdminProjectDetailsPage() {
         />
         <ProjectUpdateStatus
           currentStatus={project.status}
-          onUpdate={(status) => {updateStatus.mutateAsync(status)}}
+          onUpdate={(status) => updateStatus.mutateAsync(status)}
           isPending={updateStatus.isPending}
           errorMessage={statusError}
         />
