@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const ServiceTypeSchema = z.object({
-    id: z.coerce.number(),
+    id: z.union([z.number(), z.string()]),
     name: z.string(),
     description: z.string().nullable(),
     is_active: z.union([z.boolean(), z.string(), z.number()]),
@@ -21,7 +21,7 @@ export const ServiceRequestListSchema = z.object({
 
 const CreateServiceRequestBaseSchema = z.object({
   company_name: z.string().min(1, "Name is required"),
-  service_type_id: z.number().nullable().optional(),  // ID only
+  service_type_id: z.union([z.number(), z.string()]).nullable().optional(),
   custom_service: z.string().nullable().optional(),
   location: z.string().min(1, "Location is required"),
   description: z.string().min(1, "Description is required"),
@@ -30,9 +30,12 @@ const CreateServiceRequestBaseSchema = z.object({
 
 const withServiceSelectionValidation = <T extends z.ZodTypeAny>(schema: T) =>
   schema.superRefine((data, context) => {
+  const serviceTypeId = (data as { service_type_id?: string | number | null })
+    .service_type_id;
   const hasServiceType =
-    (data as { service_type_id?: number | null }).service_type_id !== null &&
-    (data as { service_type_id?: number | null }).service_type_id !== undefined;
+    serviceTypeId !== null &&
+    serviceTypeId !== undefined &&
+    !(typeof serviceTypeId === "string" && serviceTypeId.trim() === "");
   const hasCustomService = Boolean(
     (data as { custom_service?: string | null }).custom_service?.trim(),
   );

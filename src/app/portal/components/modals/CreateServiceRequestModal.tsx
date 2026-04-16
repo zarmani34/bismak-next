@@ -77,8 +77,7 @@ export default function CreateServiceRequestModal({
       return;
     }
 
-    const parsedId = Number(value);
-    setValue("service_type_id", Number.isNaN(parsedId) ? null : parsedId, {
+    setValue("service_type_id", value, {
       shouldValidate: true,
     });
     setValue("custom_service", "", { shouldValidate: true });
@@ -91,11 +90,23 @@ export default function CreateServiceRequestModal({
   };
 
   const onSubmit = async (data: CreateServiceRequestFormData) => {
+    const normalizeServiceTypeId = (
+      value: CreateServiceRequestData["service_type_id"],
+    ) => {
+      if (value === null || value === undefined) return null;
+      if (typeof value === "number") return value;
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      return /^\d+$/.test(trimmed) ? Number(trimmed) : trimmed;
+    };
+
     const payload = {
       company_name: data.company_name,
       location: data.location,
       description: data.description,
-      service_type_id: requiresCustomService ? null : data.service_type_id ?? null,
+      service_type_id: requiresCustomService
+        ? null
+        : normalizeServiceTypeId(data.service_type_id),
       custom_service: requiresCustomService
         ? data.custom_service?.trim() || null
         : null,

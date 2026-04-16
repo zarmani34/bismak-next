@@ -34,6 +34,7 @@ export function useCreateServiceRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: serviceKeys.list() });
+      queryClient.invalidateQueries({ queryKey: [...serviceKeys.all, "stats"] });
     },
   });
 }
