@@ -3,14 +3,17 @@ import { Dispatch, SetStateAction } from "react";
 export type TypeSecondaryButtonProps = {
   tittle: string;
   icon?: React.ReactNode;
+  disabled?: boolean;
 };
 export type TypePrimaryButtonProps = {
   tittle: string;
   icon?: React.ReactNode;
+  disabled?: boolean;
 };
 export type TypeTetiaryButtonProps = {
   tittle: string;
   icon?: React.ReactNode;
+  disabled?: boolean;
 };
 
 export type TypeSetActiveSection = {

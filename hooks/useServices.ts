@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import {
   CreateServiceRequestData,
+  CreateServiceTypeData,
   ServiceStats,
   ServiceType,
 } from "@/schemas/services";
@@ -12,6 +13,7 @@ export const serviceKeys = {
   list: (filters?: Record<string, string>) =>
     [...serviceKeys.all, "list", filters] as const,
   detail: (code: string) => [...serviceKeys.all, "detail", code] as const,
+  types: () => [...serviceKeys.all, "types"] as const,
 };
 
 export function useServiceRequests(filters?: Record<string, string>) {
@@ -49,14 +51,43 @@ export function useServiceStats() {
   });
 }
 
-export function useServiceTypes() {
+export function useServiceTypes(options?: { enabled?: boolean }) {
   return useQuery<ServiceType[]>({
-    queryKey:  [...serviceKeys.all, "types"],
+    queryKey: serviceKeys.types(),
     queryFn: async () => {
       const { data } = await api.get("/service-types/");
-      console.log("Fetched service types:", data);
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.results)) return data.results;
+      return [];
+    },
+    enabled: options?.enabled ?? true,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useServiceType(id: number | string) {
+  return useQuery<ServiceType>({
+    queryKey: serviceKeys.detail(String(id)),
+    queryFn: async () => {
+      const { data } = await api.get(`/service-types/${id}/`);
+      return data;
+    } });
+}
+
+export function useCreateServiceType() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (serviceTypeData: CreateServiceTypeData) => {
+      const payload = {
+        ...serviceTypeData,
+        description: serviceTypeData.description?.trim() || null,
+      };
+      const { data } = await api.post("/service-types/", payload);
       return data;
     },
-    staleTime: 5 * 60 * 1000,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: serviceKeys.types() });
+    },
   });
 }

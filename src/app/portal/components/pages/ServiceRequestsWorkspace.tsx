@@ -6,12 +6,18 @@ import {
 } from "react-icons/fa6";
 import ServiceStats from "../ServiceStats";
 import ServiceRequestsTable from "../tables/ServiceRequestsTable";
-import { useServiceRequests } from "@/hooks/useServices";
+import { useServiceRequests, useServiceTypes } from "@/hooks/useServices";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import CreateServiceRequestModal from "../modals/CreateServiceRequestModal";
+import CreateServiceTypeModal from "../modals/CreateServiceTypeModal";
+import ServiceTypesPanel from "../ServiceTypesPanel";
+import PrimaryButton from "@/src/components/buttons/PrimaryButton";
+import SecondaryButton from "@/src/components/buttons/SecondaryButton";
 
 export default function ServiceRequestsWorkspace() {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateServiceTypeModal, setShowCreateServiceTypeModal] =
+    useState(false);
   const {
     data: serviceRequests,
     isLoading,
@@ -19,6 +25,13 @@ export default function ServiceRequestsWorkspace() {
     refetch,
   } = useServiceRequests();
   const { data: currentUser, isLoading: isCurrentUserLoading } = useCurrentUser();
+  const canCreateServiceType = currentUser?.role === "admin";
+  const {
+    data: serviceTypes = [],
+    isLoading: isServiceTypesLoading,
+    isError: isServiceTypesError,
+    refetch: refetchServiceTypes,
+  } = useServiceTypes({ enabled: canCreateServiceType });
   const serviceRequestList = Array.isArray(serviceRequests)
     ? serviceRequests
     : serviceRequests?.results ?? [];
@@ -33,15 +46,19 @@ export default function ServiceRequestsWorkspace() {
             intake to execution.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowCreateModal(true)}
-          disabled={isCurrentUserLoading || !currentUser?.role}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-        >
-          <FaPlus className="w-3 h-3" />
-          Create Request
-        </button>
+       <div className="flex items-center gap-2">
+          {canCreateServiceType ? (
+            <div onClick={() => setShowCreateServiceTypeModal(true)}>
+              <SecondaryButton tittle="Create service type" icon={<FaPlus />} disabled={isCurrentUserLoading} />
+            </div>
+          ) : null}
+
+          <div
+            onClick={() => setShowCreateModal(true)}
+          >
+            <PrimaryButton tittle="Create service request" icon={<FaPlus />} disabled={isCurrentUserLoading || !currentUser?.role} />
+          </div>
+        </div>
       </div>
 
       <ServiceStats />
@@ -53,10 +70,24 @@ export default function ServiceRequestsWorkspace() {
         onRetry={() => refetch()}
       />
 
+      {canCreateServiceType ? (
+        <ServiceTypesPanel
+          serviceTypes={serviceTypes}
+          isLoading={isServiceTypesLoading}
+          isError={isServiceTypesError}
+          onRetry={() => refetchServiceTypes()}
+        />
+      ) : null}
+      
       <CreateServiceRequestModal
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         role={currentUser?.role}
+      />
+
+      <CreateServiceTypeModal
+        open={showCreateServiceTypeModal}
+        onClose={() => setShowCreateServiceTypeModal(false)}
       />
     </div>
   );

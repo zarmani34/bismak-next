@@ -34,7 +34,7 @@ export default function CreateServiceRequestModal({
     data: serviceTypes = [],
     isLoading: isServiceTypesLoading,
     isError: isServiceTypesError,
-  } = useServiceTypes();
+  } = useServiceTypes({ enabled: open });
   const [selectedServiceOption, setSelectedServiceOption] = useState("");
 
   const formSchema = useMemo(

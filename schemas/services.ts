@@ -7,6 +7,12 @@ export const ServiceTypeSchema = z.object({
     is_active: z.union([z.boolean(), z.string(), z.number()]),
   })
 
+export const CreateServiceTypeSchema = z.object({
+  name: z.string().min(1, "Service type name is required"),
+  description: z.string().optional(),
+  is_active: z.boolean().default(true),
+});
+
 export const ServiceStatusSchema = z.enum(["pending", "reviewed", "quoted", "accepted", "rejected", "in_progress", "completed"])
 
 export const ServiceRequestListSchema = z.object({
@@ -74,5 +80,6 @@ export const ServiceStats = z.object({
 export type ServiceRequest = z.infer<typeof ServiceRequestListSchema>
 export type CreateServiceRequestData = z.infer<typeof CreateServiceRequestSchema>
 export type ServiceType = z.infer<typeof ServiceTypeSchema>
+export type CreateServiceTypeData = z.infer<typeof CreateServiceTypeSchema>
 export type ServiceStats = z.infer<typeof ServiceStats>
 export type ServiceStatus = z.infer<typeof ServiceStatusSchema> 
