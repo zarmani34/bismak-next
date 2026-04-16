@@ -7,27 +7,6 @@ import ServiceStats from "../ServiceStats";
 import ServiceRequestsTable from "../tables/ServiceRequestsTable";
 import { useServiceRequests } from "@/hooks/useServices";
 
-type ServiceStatus =
-  | "pending"
-  | "reviewed"
-  | "quoted"
-  | "accepted"
-  | "rejected"
-  | "in_progress"
-  | "completed";
-
-type ServiceRequestRow = {
-  id: string;
-  name: string;
-  service_name: string;
-  location: string;
-  status: ServiceStatus;
-  status_display: string;
-  owner_name: string;
-  created_at: string;
-  updated_at: string;
-};
-
 export default function ServiceRequestsWorkspace() {
   const {
     data: serviceRequests,
@@ -35,8 +14,10 @@ export default function ServiceRequestsWorkspace() {
     isError, 
     refetch,
   } = useServiceRequests();
-  const serviceRequestList = serviceRequests?.results ?? [];
-  {console.log("Service Requests:", serviceRequestList)} // Debug log
+  const serviceRequestList = Array.isArray(serviceRequests)
+    ? serviceRequests
+    : serviceRequests?.results ?? [];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

@@ -11,30 +11,7 @@ import {
 import ProfilePageInformation from "./profilePageInformation";
 import ErrorState from "./states/ErrorState";
 import ProfilePageSkeleton from "./skeletons/ProfilePageSkeleton";
-
-const formatDate = (value?: string) => {
-  if (!value) return "Not available";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-NG", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
-
-const formatDateTime = (value?: string) => {
-  if (!value) return "Not available";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-NG", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
+import { formatDate, formatDateTime } from "@/src/utils/date";
 
 const toTitleCase = (value?: string) => {
   if (!value) return "User";
@@ -94,11 +71,11 @@ export default function ProfilePage() {
   const activityFeed = [
     {
       title: "Account created",
-      time: formatDate(currentUser?.date_joined),
+      time: formatDate(currentUser?.date_joined, { fallback: "Not available" }),
     },
     {
       title: "Last login",
-      time: formatDateTime(currentUser?.last_login),
+      time: formatDateTime(currentUser?.last_login, { fallback: "Not available" }),
     },
     {
       title: "Verification",

@@ -8,46 +8,13 @@ import { usePressureTest, PressureTestResponse } from "@/hooks/usePressureTest";
 import { PressureTest } from "@/schemas/pressure_test";
 import { useProject } from "@/hooks/useProjects";
 import ErrorState from "../states/ErrorState";
+import {
+  formatCertificateDateHeading,
+  formatDateSlash,
+} from "@/src/utils/date";
 
 type Props = {
   role: "admin" | "staff";
-};
-
-const formatDateSlash = (value?: string | null) => {
-  if (!value) return "--/--/----";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-};
-
-const formatDateHeading = (value?: string | null) => {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  const day = date.getDate();
-  const lastDigit = day % 10;
-  const lastTwoDigits = day % 100;
-  const suffix =
-    lastTwoDigits >= 11 && lastTwoDigits <= 13
-      ? "TH"
-      : lastDigit === 1
-      ? "ST"
-      : lastDigit === 2
-      ? "ND"
-      : lastDigit === 3
-      ? "RD"
-      : "TH";
-  const month = new Intl.DateTimeFormat("en-GB", { month: "long" })
-    .format(date)
-    .toUpperCase();
-  const year = date.getFullYear();
-
-  return `${day}${suffix} ${month}, ${year}`;
 };
 
 const formatResult = (resultDisplay?: string, result?: string) => {
@@ -291,12 +258,12 @@ export default function PressureTestRecordPage({ role }: Props) {
               <p>
                 DATE OF TEST{" "}
                 <span className="inline-block w-3 text-center">-</span>{" "}
-                {formatDateHeading(pressureTest.date_of_test)}
+                {formatCertificateDateHeading(pressureTest.date_of_test)}
               </p>
               <p>
                 NEXT TEST DATE{" "}
                 <span className="inline-block w-3 text-center">-</span>{" "}
-                {formatDateHeading(pressureTest.next_test_date)}
+                {formatCertificateDateHeading(pressureTest.next_test_date)}
               </p>
             </div>
 
@@ -380,7 +347,10 @@ export default function PressureTestRecordPage({ role }: Props) {
                 </span>
               </p>
               <p>
-                DATE: <span className="underline">{formatDateHeading(pressureTest.date_of_test)}</span>
+                DATE:{" "}
+                <span className="underline">
+                  {formatCertificateDateHeading(pressureTest.date_of_test)}
+                </span>
               </p>
             </div>
 

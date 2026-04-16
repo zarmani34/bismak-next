@@ -5,6 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateEvent } from "@/hooks/useEvent";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { formatDateTime } from "@/src/utils/date";
 
 const TimelineEventSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -12,22 +13,18 @@ const TimelineEventSchema = z.object({
 });
 
 type TimelineEventFormData = z.infer<typeof TimelineEventSchema>;
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-NG", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
+type TimelineEvent = {
+  id: string;
+  title: string;
+  description: string;
+  created_at?: string | null;
+  created_by?: {
+    full_name?: string | null;
+  } | null;
 };
 
 type ProjectTimelineCardProps = {
-  events?: any[];
+  events?: TimelineEvent[];
   projectCode: string;
 };
 
@@ -49,6 +46,15 @@ export default function ProjectTimelineCard({ events, projectCode }: ProjectTime
     await createEvent.mutateAsync(data);
     reset();
   };
+
+  const errorMessage =
+    (
+      createEvent.error as
+        | { response?: { data?: { error?: string } } }
+        | undefined
+    )?.response?.data?.error ||
+    (createEvent.error as Error | undefined)?.message ||
+    "Unable to add timeline event.";
 
   return (
     <div className="rounded-2xl border border-border bg-primary-light/20 p-6">
@@ -96,9 +102,7 @@ export default function ProjectTimelineCard({ events, projectCode }: ProjectTime
 
           {createEvent.error && (
             <p className="text-xs text-secondary-light mt-2">
-              {(createEvent.error as any)?.response?.data?.error ||
-                (createEvent.error as Error).message ||
-                "Unable to add timeline event."}
+              {errorMessage}
             </p>
           )}
 
@@ -117,7 +121,7 @@ export default function ProjectTimelineCard({ events, projectCode }: ProjectTime
       {events?.length ? (
         <div className="max-h-72 overflow-y-auto pr-2">
           <div className="space-y-4">
-            {events.map((event: any) => (
+            {events.map((event) => (
               <div key={event.id} className="rounded-xl border border-border bg-tetiary/80 p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-primary-dark">{event.title}</p>

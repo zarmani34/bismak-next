@@ -1,17 +1,7 @@
 "use client";
 
 import { PressureTest } from "@/schemas/pressure_test";
-
-const formatDate = (value?: string | null) => {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-NG", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
+import { formatDate } from "@/src/utils/date";
 
 type PressureTestRecordSummaryProps = {
   pressureTest: PressureTest;
@@ -60,4 +50,3 @@ export default function PressureTestRecordSummary({
     </div>
   );
 }
-

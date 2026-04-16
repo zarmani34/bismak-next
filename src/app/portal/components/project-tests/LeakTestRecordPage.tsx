@@ -4,9 +4,12 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa6";
 import { useLeakTest, LeakTestResponse } from "@/hooks/useLeakTest";
-import { useProject } from "@/hooks/useProjects";
 import { LeakTest } from "@/schemas/leak_test";
 import ErrorState from "../states/ErrorState";
+import {
+  formatCertificateDateHeading,
+  formatDateSlash,
+} from "@/src/utils/date";
 
 type Props = {
   role: "admin" | "staff";
@@ -30,43 +33,6 @@ const resolveLeakTestRecord = (data: LeakTestResponse): LeakTest | null => {
   return null;
 };
 
-const formatDateSlash = (value?: string | null) => {
-  if (!value) return "--/--/----";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-};
-
-const formatDateHeading = (value?: string | null) => {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  const day = date.getDate();
-  const lastDigit = day % 10;
-  const lastTwoDigits = day % 100;
-  const suffix =
-    lastTwoDigits >= 11 && lastTwoDigits <= 13
-      ? "TH"
-      : lastDigit === 1
-      ? "ST"
-      : lastDigit === 2
-      ? "ND"
-      : lastDigit === 3
-      ? "RD"
-      : "TH";
-  const month = new Intl.DateTimeFormat("en-GB", { month: "long" })
-    .format(date)
-    .toUpperCase();
-  const year = date.getFullYear();
-
-  return `${day}${suffix} ${month}, ${year}`;
-};
-
 const formatRemark = (value?: string | null) => {
   if (!value) return "--";
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -82,7 +48,6 @@ export default function LeakTestRecordPage({ role }: Props) {
     error,
     refetch,
   } = useLeakTest(code);
-  const { data: project } = useProject(code);
   const leakTest = resolveLeakTestRecord(leakTestResponse ?? null);
 
   const isNotFound =
@@ -176,7 +141,8 @@ export default function LeakTestRecordPage({ role }: Props) {
           <div className="mt-6 text-[13px] space-y-12">
             <div className="w-full flex justify-end">
               <p className="uppercase tracking-wide">
-                <span className="font-bold">Date:</span> {formatDateHeading(leakTest.date_of_test)}
+                <span className="font-bold">Date:</span>{" "}
+                {formatCertificateDateHeading(leakTest.date_of_test)}
               </p>
             </div>
 

@@ -11,6 +11,7 @@ import {
 import DashboardStatsCard from "../DashBoardStatsCard";
 import BillingInvoicesTable from "../tables/BillingInvoicesTable";
 import BillingQuotesTable from "../tables/BillingQuotesTable";
+import { formatDate } from "@/src/utils/date";
 
 type QuoteStatus = "draft" | "sent" | "accepted" | "rejected" | "revised";
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
@@ -113,13 +114,6 @@ const formatCurrency = (value: number) =>
     currency: "NGN",
     maximumFractionDigits: 0,
   }).format(value);
-
-const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString("en-NG", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
 
 const getQuoteStatusColor = (status: QuoteStatus) => {
   switch (status) {
@@ -357,4 +351,3 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
     </div>
   );
 }
-

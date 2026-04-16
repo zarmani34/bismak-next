@@ -25,12 +25,6 @@ import {
   FaUser,
 } from "react-icons/fa6";
 
-export const currentUser = {
-  name: "Bayo Ismail",
-  role: "client", // client, staff, admin
-  avatar: "/api/placeholder/40/40",
-  company: "TechCorp Industries",
-};
 
 type Stat = {
   label: string;
@@ -447,13 +441,26 @@ export const getProgressPercentage = (status: string) => {
 };
 
 export const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
+  const formattedStatus = status
+    .toLowerCase()
+    .replace(/[_-]/g, " ")
+    .trim();
+
+  switch (formattedStatus) {
     case "completed":
+    case "accepted":
       return "bg-primary/20 text-primary";
+    case "reviewed":
+    case "quoted":
     case "in progress":
+    case "on hold":
       return "bg-secondary-light/40 text-primary";
     case "pending":
+    case "planning":
       return "bg-secondary/20 text-secondary";
+    case "rejected":
+    case "cancelled":
+      return "bg-error/20 text-error";
     default:
       return "bg-info/40 text-info";
   }
@@ -471,3 +478,4 @@ export const getPriorityColor = (priority: string) => {
       return "bg-gray-100 text-gray-800";
   }
 };
+

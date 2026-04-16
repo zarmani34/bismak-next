@@ -45,3 +45,4 @@ export type ServiceRequest = z.infer<typeof ServiceRequestListSchema>
 export type CreateServiceRequestData = z.infer<typeof CreateServiceRequestSchema>
 export type ServiceType = z.infer<typeof ServiceTypeSchema>
 export type ServiceStats = z.infer<typeof ServiceStats>
+export type ServiceStatus = z.infer<typeof ServiceStatusSchema> 

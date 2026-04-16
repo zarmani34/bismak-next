@@ -1,37 +1,11 @@
 "use client";
 
-import { ServiceRequest } from "@/schemas/services";
+import { ServiceRequest, ServiceStatus } from "@/schemas/services";
 import { useMemo, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { FaEye, FaMagnifyingGlass } from "react-icons/fa6";
-
-
-const getServiceStatusColor = (status: ServiceStatus) => {
-  switch (status) {
-    case "pending":
-      return "bg-secondary/20 text-secondary";
-    case "reviewed":
-    case "quoted":
-    case "in_progress":
-      return "bg-info/20 text-info";
-    case "accepted":
-    case "completed":
-      return "bg-primary/20 text-primary";
-    case "rejected":
-      return "bg-error/20 text-error";
-    default:
-      return "bg-primary-light/20 text-primary-dark";
-  }
-};
-
-type ServiceStatus =
-  | "pending"
-  | "reviewed"
-  | "quoted"
-  | "accepted"
-  | "rejected"
-  | "in_progress"
-  | "completed";
+import { getStatusColor } from "../../constants";
+import { formatDate } from "@/src/utils/date";
 
 const statusOptions: Array<{ label: string; value: ServiceStatus | "all" }> = [
   { label: "All Status", value: "all" },
@@ -43,32 +17,12 @@ const statusOptions: Array<{ label: string; value: ServiceStatus | "all" }> = [
   { label: "Rejected", value: "rejected" },
 ];
 
-type ServiceRequestRow = {
-  id: string;
-  name: string;
-  service_name: string;
-  location: string;
-  status: ServiceStatus;
-  status_display: string;
-  owner_name: string;
-  created_at: string;
-  updated_at: string;
+type Props = {
+  serviceRequests: ServiceRequest[];
+  isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
 };
-
-
-const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString("en-NG", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-  type Props = {
-    serviceRequests: ServiceRequest[],
-    isLoading: boolean,
-    isError: boolean,
-    onRetry: () => void,
-  } 
 export default function ServiceRequestsTable({
   serviceRequests,
   isLoading,
@@ -81,20 +35,19 @@ export default function ServiceRequestsTable({
   );
 
   const filteredRequests = useMemo(() => {
-      return serviceRequests.filter((request) => {
-        const matchesStatus =
-          statusFilter === "all" ? true : request.status === statusFilter;
-        const q = searchTerm.trim().toLowerCase();
-        const matchesSearch =
-          q.length === 0
-            ? true
-            : request.service_name.toLowerCase().includes(q) ||
-              request.service_name.toLowerCase().includes(q) ||
-              request.owner_name.toLowerCase().includes(q) ||
-              request.location.toLowerCase().includes(q);
-        return matchesStatus && matchesSearch;
-      });
-    }, [searchTerm, statusFilter]);
+    return serviceRequests.filter((request) => {
+      const matchesStatus =
+        statusFilter === "all" ? true : request.status === statusFilter;
+      const q = searchTerm.trim().toLowerCase();
+      const matchesSearch =
+        q.length === 0
+          ? true
+          : request.service_name.toLowerCase().includes(q) ||
+            request.owner_name.toLowerCase().includes(q) ||
+            request.location.toLowerCase().includes(q);
+      return matchesStatus && matchesSearch;
+    });
+  }, [serviceRequests, searchTerm, statusFilter]);
 
   return (
     <div className="rounded-xl shadow-sm border border-border overflow-hidden">
@@ -153,66 +106,93 @@ export default function ServiceRequestsTable({
             </tr>
           </thead>
           <tbody>
-            {filteredRequests.map((service) => (
-              <tr
-                key={service.id}
-                className="border-b border-tetiary hover:bg-primary/20"
-              >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <p className="text-sm font-medium text-primary-dark">
-                    {service.service_name}
-                  </p>
-                  <p className="text-xs text-secondary-text">{service.service_name}</p>
-                  <p className="text-xs text-secondary-text">
-                    #{service.id.slice(0, 8)}
-                  </p>
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-6 py-10 text-center text-sm text-secondary-text"
+                >
+                  Loading service requests...
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                  {service.owner_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                  {service.location}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${getServiceStatusColor(
-                      service.status,
-                    )}`}
-                  >
-                    {service.status_display}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                  {formatDate(service.created_at)}
-                </td>
-                
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
+              </tr>
+            ) : isError ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-6 py-10 text-center text-sm text-secondary-text"
+                >
+                  <div className="space-y-3">
+                    <p>Unable to load service requests.</p>
                     <button
-                      className="p-2 text-body-text hover:text-primary-light"
-                      aria-label="View request"
+                      onClick={onRetry}
+                      className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary-light/30"
                     >
-                      <FaEye className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 text-body-text hover:text-primary-light"
-                      aria-label="Edit request"
-                    >
-                      <FaEdit className="w-4 h-4" />
+                      Retry
                     </button>
                   </div>
                 </td>
               </tr>
-            ))}
-            {filteredRequests.length === 0 && (
+            ) : filteredRequests.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="px-6 py-10 text-center text-sm text-secondary-text"
                 >
                   No service requests match this filter.
                 </td>
               </tr>
+            ) : (
+              filteredRequests.map((service) => (
+                <tr
+                  key={service.id}
+                  className="border-b border-tetiary hover:bg-primary/20"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <p className="text-sm font-medium text-primary-dark">
+                      {service.service_name}
+                    </p>
+                    <p className="text-xs text-secondary-text">{service.service_name}</p>
+                    <p className="text-xs text-secondary-text">
+                      #{service.id.slice(0, 8)}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
+                    {service.owner_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
+                    {service.location}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        service.status,
+                      )}`}
+                    >
+                      {service.status_display}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
+                    {formatDate(service.created_at)}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button
+                        className="p-2 text-body-text hover:text-primary-light"
+                        aria-label="View request"
+                      >
+                        <FaEye className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="p-2 text-body-text hover:text-primary-light"
+                        aria-label="Edit request"
+                      >
+                        <FaEdit className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>

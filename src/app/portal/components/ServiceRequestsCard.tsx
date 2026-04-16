@@ -1,5 +1,6 @@
 import { FaClipboardList } from "react-icons/fa6";
 import { getPriorityColor, getStatusColor } from "../constants";
+import { formatDate } from "@/src/utils/date";
 
 type Service={
   id: number;
@@ -43,7 +44,7 @@ export default function ServiceRequestsCard({ request }: { request: Service }) {
           <FaClipboardList className="w-4 h-4 mr-2" />
           {request.nextAction}
         </div>
-      <span>Created: {new Date(request.created).toLocaleDateString()}</span>
+      <span>Created: {formatDate(request.created)}</span>
     </div>
   </div>
 }

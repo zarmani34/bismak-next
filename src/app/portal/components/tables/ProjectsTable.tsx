@@ -9,6 +9,7 @@ import { useState } from "react";
 import PrimaryButton from "@/src/components/buttons/PrimaryButton";
 import CreateProjectModal from "../modals/CreateProjectModal";
 import TableSkeleton from "../skeletons/TableSkeleton";
+import { formatDate } from "@/src/utils/date";
 
 type Props = {
   projects: ProjectListItem[];
@@ -17,17 +18,6 @@ type Props = {
   onRetry?: () => void;
   emptyMessage?: string;
   basePath?: string;
-};
-
-const formatDate = (value?: string | null) => {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-NG", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
 };
 
 const getProgressValue = (status: string) => {
