@@ -26,6 +26,8 @@ export default function ServiceRequestsWorkspace() {
   } = useServiceRequests();
   const { data: currentUser, isLoading: isCurrentUserLoading } = useCurrentUser();
   const canCreateServiceType = currentUser?.role === "admin";
+  const servicesBasePath =
+    currentUser?.role === "client" ? "/portal/client/services" : "/portal/admin/services";
   const {
     data: serviceTypes = [],
     isLoading: isServiceTypesLoading,
@@ -68,6 +70,7 @@ export default function ServiceRequestsWorkspace() {
         isLoading={isLoading}
         isError={isError}
         onRetry={() => refetch()}
+        basePath={servicesBasePath}
       />
 
       {canCreateServiceType ? (

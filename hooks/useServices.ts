@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import {
   CreateServiceRequestData,
+  ServiceRequestDetail,
   CreateServiceTypeData,
   ServiceStats,
   ServiceType,
@@ -21,6 +22,7 @@ export function useServiceRequests(filters?: Record<string, string>) {
     queryKey: serviceKeys.list(filters),
     queryFn: async () => {
       const { data } = await api.get("/services/", { params: filters });
+      console.log("Fetched service requests:", data);
       return data;
     },
   });
@@ -38,6 +40,17 @@ export function useCreateServiceRequest() {
       queryClient.invalidateQueries({ queryKey: serviceKeys.list() });
       queryClient.invalidateQueries({ queryKey: [...serviceKeys.all, "stats"] });
     },
+  });
+}
+
+export function useServiceRequest(serviceCode: string) {
+  return useQuery<ServiceRequestDetail>({
+    queryKey: serviceKeys.detail(serviceCode),
+    queryFn: async () => {
+      const { data } = await api.get(`/services/${serviceCode}/`);
+      return data;
+    },
+    enabled: !!serviceCode,
   });
 }
 

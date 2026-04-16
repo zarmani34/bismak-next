@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { codec, z } from "zod";
 
 export const ServiceTypeSchema = z.object({
     id: z.union([z.number(), z.string()]),
@@ -6,6 +6,13 @@ export const ServiceTypeSchema = z.object({
     description: z.string().nullable(),
     is_active: z.union([z.boolean(), z.string(), z.number()]),
   })
+
+const ServiceOwnerSchema = z.object({
+  full_name: z.string().optional(),
+  email: z.string().optional(),
+  user_id: z.string().optional(),
+  role: z.enum(["admin", "staff", "client"]).optional(),
+});
 
 export const CreateServiceTypeSchema = z.object({
   name: z.string().min(1, "Service type name is required"),
@@ -17,6 +24,8 @@ export const ServiceStatusSchema = z.enum(["pending", "reviewed", "quoted", "acc
 
 export const ServiceRequestListSchema = z.object({
   id: z.string(),
+  code: z.string(),
+  company_name: z.string().optional(),
   service_name: z.string(),
   location: z.string(),
   status: ServiceStatusSchema,
@@ -24,6 +33,25 @@ export const ServiceRequestListSchema = z.object({
   owner_name: z.string(),
   created_at: z.string(),
 })
+
+export const ServiceRequestDetailSchema = z
+  .object({
+    id: z.string(),
+    company_name: z.string().nullable().optional(),
+    service_name: z.string().nullable().optional(),
+    service_type: ServiceTypeSchema.nullable().optional(),
+    service_type_id: z.union([z.number(), z.string()]).nullable().optional(),
+    custom_service: z.string().nullable().optional(),
+    location: z.string(),
+    description: z.string().nullable().optional(),
+    status: ServiceStatusSchema,
+    status_display: z.string(),
+    owner_name: z.string().optional(),
+    owner: z.union([z.string(), ServiceOwnerSchema]).nullable().optional(),
+    created_at: z.string(),
+    updated_at: z.string().nullable().optional(),
+  })
+  .passthrough();
 
 const CreateServiceRequestBaseSchema = z.object({
   company_name: z.string().min(1, "Name is required"),
@@ -78,6 +106,7 @@ export const ServiceStats = z.object({
     
 
 export type ServiceRequest = z.infer<typeof ServiceRequestListSchema>
+export type ServiceRequestDetail = z.infer<typeof ServiceRequestDetailSchema>
 export type CreateServiceRequestData = z.infer<typeof CreateServiceRequestSchema>
 export type ServiceType = z.infer<typeof ServiceTypeSchema>
 export type CreateServiceTypeData = z.infer<typeof CreateServiceTypeSchema>

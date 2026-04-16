@@ -6,6 +6,7 @@ import { FaEdit } from "react-icons/fa";
 import { FaEye, FaMagnifyingGlass } from "react-icons/fa6";
 import { getStatusColor } from "../../constants";
 import { formatDate } from "@/src/utils/date";
+import { useRouter } from "next/navigation";
 
 const statusOptions: Array<{ label: string; value: ServiceStatus | "all" }> = [
   { label: "All Status", value: "all" },
@@ -22,17 +23,23 @@ type Props = {
   isLoading: boolean;
   isError: boolean;
   onRetry: () => void;
+  basePath?: string;
 };
 export default function ServiceRequestsTable({
   serviceRequests,
   isLoading,
   isError,
   onRetry,
+  basePath = "/portal/admin/services",
 }: Props) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<ServiceStatus | "all">(
     "all",
   );
+  const handleViewRequest = (serviceCode: string) => {
+    router.push(`${basePath}/${serviceCode}`);
+  };
 
   const filteredRequests = useMemo(() => {
     return serviceRequests.filter((request) => {
@@ -145,13 +152,22 @@ export default function ServiceRequestsTable({
               filteredRequests.map((service) => (
                 <tr
                   key={service.id}
-                  className="border-b border-tetiary hover:bg-primary/20"
+                  className="border-b border-tetiary hover:bg-primary/20 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleViewRequest(service.code)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handleViewRequest(service.code);
+                    }
+                  }}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <p className="text-sm font-medium text-primary-dark">
                       {service.service_name}
                     </p>
-                    <p className="text-xs text-secondary-text">{service.service_name}</p>
+                    <p className="text-xs text-secondary-text">{service.company_name}</p>
                     <p className="text-xs text-secondary-text">
                       #{service.id.slice(0, 8)}
                     </p>
@@ -178,14 +194,21 @@ export default function ServiceRequestsTable({
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <button
+                        type="button"
                         className="p-2 text-body-text hover:text-primary-light"
                         aria-label="View request"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleViewRequest(service.code);
+                        }}
                       >
                         <FaEye className="w-4 h-4" />
                       </button>
                       <button
+                        type="button"
                         className="p-2 text-body-text hover:text-primary-light"
                         aria-label="Edit request"
+                        onClick={(event) => event.stopPropagation()}
                       >
                         <FaEdit className="w-4 h-4" />
                       </button>
