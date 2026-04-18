@@ -4,16 +4,19 @@ export type TypeSecondaryButtonProps = {
   tittle: string;
   icon?: React.ReactNode;
   disabled?: boolean;
+  onClick?: () => void;
 };
 export type TypePrimaryButtonProps = {
   tittle: string;
   icon?: React.ReactNode;
   disabled?: boolean;
+  onClick?: () => void;
 };
 export type TypeTetiaryButtonProps = {
   tittle: string;
   icon?: React.ReactNode;
   disabled?: boolean;
+  onClick?: () => void;
 };
 
 export type TypeSetActiveSection = {

@@ -1,4 +1,4 @@
-import { codec, z } from "zod";
+import { z } from "zod";
 
 export const ServiceTypeSchema = z.object({
     id: z.union([z.number(), z.string()]),
@@ -27,6 +27,8 @@ export const ServiceRequestListSchema = z.object({
   code: z.string(),
   company_name: z.string().optional(),
   service_name: z.string(),
+  quote_code: z.string().optional(),
+  invoice_code: z.string().optional(),
   location: z.string(),
   status: ServiceStatusSchema,
   status_display: z.string(),
@@ -38,9 +40,12 @@ export const ServiceRequestDetailSchema = z
   .object({
     id: z.string(),
     company_name: z.string().nullable().optional(),
+    code: z.string(),
     service_name: z.string().nullable().optional(),
     service_type: ServiceTypeSchema.nullable().optional(),
     service_type_id: z.union([z.number(), z.string()]).nullable().optional(),
+    quote_code: z.string().nullable().optional(),
+    invoice_code: z.string().nullable().optional(),
     custom_service: z.string().nullable().optional(),
     location: z.string(),
     description: z.string().nullable().optional(),

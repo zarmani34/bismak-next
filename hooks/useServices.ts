@@ -22,7 +22,6 @@ export function useServiceRequests(filters?: Record<string, string>) {
     queryKey: serviceKeys.list(filters),
     queryFn: async () => {
       const { data } = await api.get("/services/", { params: filters });
-      console.log("Fetched service requests:", data);
       return data;
     },
   });
@@ -38,6 +37,51 @@ export function useCreateServiceRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: serviceKeys.list() });
+      queryClient.invalidateQueries({ queryKey: [...serviceKeys.all, "stats"] });
+    },
+  });
+}
+
+type UpdateServiceStatusInput = {
+  serviceCode: string;
+  status: string;
+};
+
+export function useUpdateServiceRequestStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ serviceCode, status }: UpdateServiceStatusInput) => {
+      const { data } = await api.patch(`/services/${serviceCode}/update-status/`, {
+        status,
+      });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: serviceKeys.list() });
+      queryClient.invalidateQueries({ queryKey: serviceKeys.detail(variables.serviceCode) });
+      queryClient.invalidateQueries({ queryKey: [...serviceKeys.all, "stats"] });
+    },
+  });
+}
+
+type UpdateQuoteStatusInput = {
+  quoteCode: string;
+  status: "accepted" | "rejected";
+};
+
+export function useUpdateQuoteStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ quoteCode, status }: UpdateQuoteStatusInput) => {
+      const { data } = await api.patch(`/quotes/${quoteCode}/update-status/`, {
+        status,
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: serviceKeys.all });
       queryClient.invalidateQueries({ queryKey: [...serviceKeys.all, "stats"] });
     },
   });

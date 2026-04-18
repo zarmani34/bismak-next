@@ -71,6 +71,7 @@ export default function ServiceRequestsWorkspace() {
         isError={isError}
         onRetry={() => refetch()}
         basePath={servicesBasePath}
+        role={currentUser?.role}
       />
 
       {canCreateServiceType ? (

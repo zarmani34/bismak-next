@@ -7,6 +7,7 @@ import { useServiceRequest } from "@/hooks/useServices";
 import ErrorState from "../states/ErrorState";
 import { getStatusColor } from "../../constants";
 import { formatDate, formatDateTime } from "@/src/utils/date";
+import ServiceUpdateStatus from "../project-details/ServiceUpdateStatus";
 
 type ServiceRequestDetailPageProps = {
   role: "admin" | "client";
@@ -31,13 +32,14 @@ export default function ServiceRequestDetailPage({
   role,
 }: ServiceRequestDetailPageProps) {
   const params = useParams();
-  const serviceId = typeof params?.id === "string" ? params.id : "";
+  const serviceCode = typeof params?.code === "string" ? params.code : "";
+  {console.log(serviceCode)}
   const {
     data: serviceRequest,
     isLoading,
     isError,
     refetch,
-  } = useServiceRequest(serviceId);
+  } = useServiceRequest(serviceCode);
 
   if (isLoading) {
     return (
@@ -63,7 +65,6 @@ export default function ServiceRequestDetailPage({
     "Service Request";
   const ownerLabel = getOwnerLabel(serviceRequest.owner_name, serviceRequest.owner);
   const statusLabel = serviceRequest.status_display || toTitleCaseStatus(serviceRequest.status);
-  const serviceCode = `#${serviceRequest.id.slice(0, 8)}`;
   const createdAt = formatDateTime(serviceRequest.created_at, { fallback: "--" });
   const updatedAt = formatDateTime(serviceRequest.updated_at, { fallback: "--" });
 
@@ -98,14 +99,12 @@ export default function ServiceRequestDetailPage({
             </span>
           </div>
         </div>
+        {role === "admin" && <ServiceUpdateStatus serviceRequest={serviceRequest} />}
         <div className="rounded-2xl border border-border bg-primary-light/20 p-6">
           <h2 className="text-lg font-semibold text-primary-dark mb-3">Service Type</h2>
           <div className="flex flex-wrap gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary-dark border border-primary/20">
-              {serviceRequest.service_type?.name ||
-                serviceRequest.custom_service ||
-                serviceRequest.service_name ||
-                "Not specified"}
+              {serviceLabel}
             </span>
             {serviceRequest.service_type_id !== undefined &&
             serviceRequest.service_type_id !== null ? (
