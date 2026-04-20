@@ -1,0 +1,129 @@
+import { z } from "zod";
+
+// ---- Equipment ----
+
+export const EquipmentListItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  serial_number: z.string(),
+  model: z.string(),
+  category: z.string(),
+  status: z.string(),
+  status_display: z.string(),
+  next_maintenance_date: z.string().nullable(),
+});
+
+export const EquipmentDetailSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: z.string(),
+  serial_number: z.string(),
+  model: z.string(),
+  status: z.string(),
+  status_display: z.string(),
+  description: z.string().nullable(),
+  last_maintenance_date: z.string().nullable(),
+  next_maintenance_date: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const CreateEquipmentSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  category: z.string().min(1, "Category is required"),
+  serial_number: z.string().min(1, "Serial number is required"),
+  model: z.string().min(1, "Model is required"),
+  description: z.string().nullable().optional(),
+  next_maintenance_date: z.string().nullable().optional(),
+});
+
+export const UpdateEquipmentSchema = CreateEquipmentSchema.partial();
+
+// ---- Equipment Request ----
+
+const RequestedBySchema = z.object({
+  user_id: z.string(),
+  name: z.string(),
+});
+
+export const EquipmentRequestListItemSchema = z.object({
+  id: z.string(),
+  equipment_name: z.string(),
+  requested_by: z.string().nullable(),
+  project_code: z.string().nullable(),
+  status: z.string(),
+  status_display: z.string(),
+  date_needed: z.string().nullable(),
+  created_at: z.string(),
+});
+
+export const EquipmentRequestDetailSchema = z.object({
+  id: z.string(),
+  equipment: EquipmentListItemSchema,
+  requested_by: RequestedBySchema.nullable(),
+  approved_by: RequestedBySchema.nullable(),
+  project_code: z.string().nullable(),
+  status: z.string(),
+  status_display: z.string(),
+  reason: z.string(),
+  date_needed: z.string().nullable(),
+  date_returned: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const CreateEquipmentRequestSchema = z.object({
+  equipment_id: z.string().min(1, "Equipment is required"),
+  reason: z.string().min(1, "Reason is required"),
+  date_needed: z.string().nullable().optional(),
+});
+
+// ---- Maintenance Request ----
+
+export const MaintenanceRequestListItemSchema = z.object({
+  id: z.string(),
+  equipment_name: z.string(),
+  type: z.string(),
+  type_display: z.string(),
+  requested_by: z.string().nullable(),
+  status: z.string(),
+  status_display: z.string(),
+  scheduled_date: z.string().nullable(),
+  created_at: z.string(),
+});
+
+export const MaintenanceRequestDetailSchema = z.object({
+  id: z.string(),
+  equipment: EquipmentListItemSchema,
+  type: z.string(),
+  type_display: z.string(),
+  requested_by: RequestedBySchema.nullable(),
+  status: z.string(),
+  status_display: z.string(),
+  description: z.string(),
+  scheduled_date: z.string().nullable(),
+  completed_date: z.string().nullable(),
+  next_service_date: z.string().nullable(),
+  cost: z.string().nullable(),
+  notes: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const CreateMaintenanceRequestSchema = z.object({
+  equipment_id: z.string().min(1, "Equipment is required"),
+  type: z.string().min(1, "Type is required"),
+  description: z.string().min(1, "Description is required"),
+});
+
+// TypeScript types
+export type EquipmentListItem = z.infer<typeof EquipmentListItemSchema>;
+export type EquipmentDetail = z.infer<typeof EquipmentDetailSchema>;
+export type CreateEquipmentData = z.infer<typeof CreateEquipmentSchema>;
+export type UpdateEquipmentData = z.infer<typeof UpdateEquipmentSchema>;
+export type EquipmentRequestListItem = z.infer<typeof EquipmentRequestListItemSchema>;
+export type EquipmentRequestDetail = z.infer<typeof EquipmentRequestDetailSchema>;
+export type CreateEquipmentRequestData = z.infer<typeof CreateEquipmentRequestSchema>;
+export type MaintenanceRequestListItem = z.infer<typeof MaintenanceRequestListItemSchema>;
+export type MaintenanceRequestDetail = z.infer<typeof MaintenanceRequestDetailSchema>;
+export type CreateMaintenanceRequestData = z.infer<typeof CreateMaintenanceRequestSchema>;
