@@ -151,11 +151,6 @@ export const ADMINPORTALMENU = [
     icon: <FaCog className="w-5 h-5" />, // tools/machines
   },
   {
-    key: "invoice",
-    label: "Invoice generator",
-    icon: <FaFileInvoiceDollar className="w-5 h-5" />, // invoice generator
-  },
-  {
     key: "reports",
     label: "Reports & Analytics",
     icon: <FaChartLine className="w-5 h-5" />, // analytics

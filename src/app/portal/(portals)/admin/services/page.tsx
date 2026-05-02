@@ -3,5 +3,5 @@
 import ServiceRequestsWorkspace from "../../../components/pages/ServiceRequestsWorkspace";
 
 export default function AdminRequestsPage() {
-  return <ServiceRequestsWorkspace />;
+  return <ServiceRequestsWorkspace role="admin" />;
 }

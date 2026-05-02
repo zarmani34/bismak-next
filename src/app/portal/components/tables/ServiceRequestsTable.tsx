@@ -253,7 +253,7 @@ export default function ServiceRequestsTable({
                         {service.company_name}
                       </p>
                       <p className="text-xs text-secondary-text">
-                        #{service.id.slice(0, 8)}
+                        {service.code}
                       </p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">

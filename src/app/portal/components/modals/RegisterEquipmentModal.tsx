@@ -4,19 +4,14 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaXmark } from "react-icons/fa6";
-import { useCreateEquipment } from "@/hooks/useEquipment";
+import {
+  useCreateEquipment,
+  useEquipmentCategories,
+} from "@/hooks/useEquipment";
 import { extractApiError } from "@/lib/errors";
+import { useState } from "react";
+import { CreateEquipmentData, CreateEquipmentSchema } from "@/schemas/equipment";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  category: z.string().min(1, "Category is required"),
-  serial_number: z.string().min(1, "Serial number is required"),
-  model: z.string().min(1, "Model is required"),
-  description: z.string().optional(),
-  next_maintenance_date: z.string().optional(),
-});
-
-type FormData = z.infer<typeof formSchema>;
 
 type RegisterEquipmentModalProps = {
   open: boolean;
@@ -28,20 +23,32 @@ export default function RegisterEquipmentModal({
   onClose,
 }: RegisterEquipmentModalProps) {
   const createEquipment = useCreateEquipment();
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const {
+    data: categories = [],
+    isLoading: isCategoriesLoading,
+    isError: isCategoriesError,
+  } = useEquipmentCategories({enabled: open});
+
+  const requireCustomCategory =
+    selectedCategory === "custom" ||
+    isCategoriesError ||
+    (isCategoriesLoading && !categories.length);
   const {
     register,
     handleSubmit,
+    setValue,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  } = useForm<CreateEquipmentData>({
+    resolver: zodResolver(CreateEquipmentSchema),
     defaultValues: {
       name: "",
-      category: "",
+      category_id: "",
+      custom_category: "",
       serial_number: "",
       model: "",
       description: "",
-      next_maintenance_date: "",
     },
   });
 
@@ -50,16 +57,25 @@ export default function RegisterEquipmentModal({
     onClose();
   };
 
-  const onSubmit = async (data: FormData) => {
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+
+    if (value === "custom") {
+      setValue("category_id", null, { shouldValidate: true });
+      return;
+    }
+
+    setValue("category_id", value, { shouldValidate: true });
+  };
+
+  const onSubmit = async (data: CreateEquipmentData) => {
     await createEquipment.mutateAsync({
       name: data.name,
-      category: data.category,
+      category_id: data.category_id,
       serial_number: data.serial_number,
       model: data.model,
       description: data.description?.trim() ? data.description.trim() : null,
-      next_maintenance_date: data.next_maintenance_date?.trim()
-        ? data.next_maintenance_date
-        : null,
+      custom_category: data.custom_category?.trim() ? data.custom_category.trim() : null,
     });
 
     handleClose();
@@ -81,8 +97,12 @@ export default function RegisterEquipmentModal({
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex items-center justify-between border-b border-border p-6">
             <div>
-              <h2 className="text-2xl font-bold text-primary-dark/80">Register Tool / Machine</h2>
-              <p className="text-sm text-primary/70">Add a new equipment item to the register.</p>
+              <h2 className="text-2xl font-bold text-primary-dark/80">
+                Register Tool / Machine
+              </h2>
+              <p className="text-sm text-primary/70">
+                Add a new equipment item to the register.
+              </p>
             </div>
             <button
               type="button"
@@ -96,62 +116,104 @@ export default function RegisterEquipmentModal({
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-primary-dark font-semibold tracking-wide">Name</label>
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">
+                  Name
+                </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
                   {...register("name")}
                 />
                 {errors.name ? (
-                  <p className="text-xs text-secondary-light mt-1">{errors.name.message}</p>
+                  <p className="text-xs text-secondary-light mt-1">
+                    {errors.name.message}
+                  </p>
                 ) : null}
               </div>
 
               <div>
-                <label className="text-xs text-primary-dark font-semibold tracking-wide">Category</label>
-                <input
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">
+                  Category
+                </label>
+                <select
                   className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
-                  placeholder="Machine, Tool, Sensor..."
-                  {...register("category")}
-                />
-                {errors.category ? (
-                  <p className="text-xs text-secondary-light mt-1">{errors.category.message}</p>
+                  value={selectedCategory}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  disabled={isCategoriesLoading}
+                >
+                  <option value="" disabled>
+                    {isCategoriesLoading
+                      ? "Loading categories..."
+                      : "Select a category"}
+                  </option>
+
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+
+                  <option value="custom">Custom Category</option>
+                </select>
+                {errors.category_id ? (
+                  <p className="text-xs text-secondary-light mt-1">
+                    {errors.category_id.message}
+                  </p>
                 ) : null}
               </div>
+              
+              {requireCustomCategory && (
+                <div>
+                  <label className="text-xs text-primary-dark font-semibold tracking-wide">
+                    Custom Category
+                  </label>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
+                    {...register("custom_category")}
+                  />
+                  {errors.custom_category ? (
+                    <p className="text-xs text-secondary-light mt-1">
+                      {errors.custom_category.message}
+                    </p>
+                  ) : null}
+                </div>
+              )}
+              
 
               <div>
-                <label className="text-xs text-primary-dark font-semibold tracking-wide">Serial Number</label>
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">
+                  Serial Number
+                </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
                   {...register("serial_number")}
                 />
                 {errors.serial_number ? (
-                  <p className="text-xs text-secondary-light mt-1">{errors.serial_number.message}</p>
+                  <p className="text-xs text-secondary-light mt-1">
+                    {errors.serial_number.message}
+                  </p>
                 ) : null}
               </div>
 
               <div>
-                <label className="text-xs text-primary-dark font-semibold tracking-wide">Model</label>
+                <label className="text-xs text-primary-dark font-semibold tracking-wide">
+                  Model
+                </label>
                 <input
                   className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
                   {...register("model")}
                 />
                 {errors.model ? (
-                  <p className="text-xs text-secondary-light mt-1">{errors.model.message}</p>
+                  <p className="text-xs text-secondary-light mt-1">
+                    {errors.model.message}
+                  </p>
                 ) : null}
-              </div>
-
-              <div>
-                <label className="text-xs text-primary-dark font-semibold tracking-wide">Next Maintenance Date</label>
-                <input
-                  type="date"
-                  className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
-                  {...register("next_maintenance_date")}
-                />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-primary-dark font-semibold tracking-wide">Description</label>
+              <label className="text-xs text-primary-dark font-semibold tracking-wide">
+                Description
+              </label>
               <textarea
                 rows={4}
                 className="mt-1 w-full rounded-xl border border-border px-4 py-3 bg-primary/20 text-primary-dark"
@@ -160,7 +222,9 @@ export default function RegisterEquipmentModal({
             </div>
 
             {createEquipment.error ? (
-              <p className="text-xs text-secondary-light">{extractApiError(createEquipment.error)}</p>
+              <p className="text-xs text-secondary-light">
+                {extractApiError(createEquipment.error)}
+              </p>
             ) : null}
           </div>
 

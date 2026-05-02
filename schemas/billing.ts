@@ -6,6 +6,7 @@ import { UserSchema } from "@/schemas/user";
 export const InvoiceSchema = z.object({
   id: z.string(),
   code: z.string(),
+  quote: z.string(),
   amount: z.string(), // DecimalField returns string in DRF
   status: z.string(),
   status_display: z.string(),
@@ -30,7 +31,13 @@ export const QuoteItemSchema = z.object({
   quantity: z.number(),
   unit_price: z.string(), // DecimalField returns string in DRF
   total: z.string(),
-})
+});
+
+export const CreateQuoteItemSchema = z.object({
+  description: z.string().min(1, "Item description is required"),
+  quantity: z.number().int().min(1, "Quantity must be at least 1"),
+  unit_price: z.string().min(1, "Unit price is required"),
+});
 
 export const QuoteListItemSchema = z.object({
   id: z.string(),
@@ -72,6 +79,7 @@ export const CreateQuoteSchema = z.object({
   note: z.string().nullable().optional(),
   valid_until: z.string().nullable().optional(),
   status: z.string().optional(),
+  items: z.array(CreateQuoteItemSchema).optional(),
 });
 
 export const UpdateQuoteSchema = CreateQuoteSchema.partial();

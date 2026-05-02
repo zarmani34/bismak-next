@@ -162,7 +162,7 @@ export default function CreateProjectModal({
             <button type="submit" className="flex justify-center  rounded-2xl" disabled={isSubmitting || createProject.isPending}>
               <PrimaryButton tittle={createProject.isPending ? "Saving..." : "Save Project"} />
             </button>
-            <button type="button" className="flex justify-center bg-secondary rounded-2xl" onClick={onClose}>
+            <button type="button" className="flex justify-center rounded-2xl" onClick={onClose}>
               <SecondaryButton tittle="Cancel" />
             </button>
           </div>

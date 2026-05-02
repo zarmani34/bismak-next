@@ -14,7 +14,11 @@ import ServiceTypesPanel from "../ServiceTypesPanel";
 import PrimaryButton from "@/src/components/buttons/PrimaryButton";
 import SecondaryButton from "@/src/components/buttons/SecondaryButton";
 
-export default function ServiceRequestsWorkspace() {
+type ServiceRequestsWorkspaceProps = {
+  role: "admin" | "client";
+};
+
+export default function ServiceRequestsWorkspace({ role }: ServiceRequestsWorkspaceProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCreateServiceTypeModal, setShowCreateServiceTypeModal] =
     useState(false);
@@ -27,7 +31,7 @@ export default function ServiceRequestsWorkspace() {
   const { data: currentUser, isLoading: isCurrentUserLoading } = useCurrentUser();
   const canCreateServiceType = currentUser?.role === "admin";
   const servicesBasePath =
-    currentUser?.role === "client" ? "/portal/client/services" : "/portal/admin/services";
+    role === "client" ? "/portal/client/services" : "/portal/admin/services";
   const {
     data: serviceTypes = [],
     isLoading: isServiceTypesLoading,
@@ -71,7 +75,7 @@ export default function ServiceRequestsWorkspace() {
         isError={isError}
         onRetry={() => refetch()}
         basePath={servicesBasePath}
-        role={currentUser?.role}
+        role={role}
       />
 
       {canCreateServiceType ? (

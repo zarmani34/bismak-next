@@ -12,6 +12,11 @@ import DashboardStatsCard from "../DashBoardStatsCard";
 import BillingInvoicesTable from "../tables/BillingInvoicesTable";
 import BillingQuotesTable from "../tables/BillingQuotesTable";
 import { formatDate } from "@/src/utils/date";
+import { useInvoices, useQuotes } from "@/hooks/useBilling";
+import StatsCardsSkeleton from "../skeletons/StatsCardsSkeleton";
+import ErrorState from "../states/ErrorState";
+import CreateQuoteModal from "../modals/CreateQuoteModal";
+import GenerateInvoiceModal from "../modals/GenerateInvoiceModal";
 
 type QuoteStatus = "draft" | "sent" | "accepted" | "rejected" | "revised";
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
@@ -21,10 +26,10 @@ type QuoteRow = {
   project: string | null;
   service_request: string | null;
   amount: number;
-  status: QuoteStatus;
+  status: string;
   status_display: string;
   quoted_by: string;
-  valid_until: string;
+  valid_until: string | null;
   created_at: string;
 };
 
@@ -32,81 +37,12 @@ type InvoiceRow = {
   code: string;
   quote: string;
   amount: number;
-  status: InvoiceStatus;
+  status: string;
   status_display: string;
-  due_date: string;
+  due_date: string | null;
   paid_at: string | null;
   created_at: string;
 };
-
-const quotes: QuoteRow[] = [
-  {
-    code: "BE-PR-26-04-03-091401",
-    project: "BE-PR-26-03-20-082211",
-    service_request: null,
-    amount: 1540000,
-    status: "sent",
-    status_display: "Sent",
-    quoted_by: "BE-STF-0008",
-    valid_until: "2026-04-16",
-    created_at: "2026-04-03T09:14:01Z",
-  },
-  {
-    code: "BE-PR-26-04-02-154501",
-    project: null,
-    service_request: "95d11ef9-6f44-46de-b5a5-5b09005fa38a",
-    amount: 820000,
-    status: "accepted",
-    status_display: "Accepted",
-    quoted_by: "BE-ADM-0001",
-    valid_until: "2026-04-15",
-    created_at: "2026-04-02T15:45:01Z",
-  },
-  {
-    code: "BE-PR-26-03-29-123001",
-    project: null,
-    service_request: "61f2de98-f983-4fb9-9f3b-f6f5019e9e38",
-    amount: 640000,
-    status: "draft",
-    status_display: "Draft",
-    quoted_by: "BE-STF-0005",
-    valid_until: "2026-04-12",
-    created_at: "2026-03-29T12:30:01Z",
-  },
-];
-
-const invoices: InvoiceRow[] = [
-  {
-    code: "BE-INV-26-04-04-111550",
-    quote: "BE-PR-26-04-02-154501",
-    amount: 820000,
-    status: "sent",
-    status_display: "Sent",
-    due_date: "2026-04-18",
-    paid_at: null,
-    created_at: "2026-04-04T11:15:50Z",
-  },
-  {
-    code: "BE-INV-26-03-30-170200",
-    quote: "BE-PR-26-03-26-091015",
-    amount: 1260000,
-    status: "paid",
-    status_display: "Paid",
-    due_date: "2026-04-13",
-    paid_at: "2026-04-06T10:02:11Z",
-    created_at: "2026-03-30T17:02:00Z",
-  },
-  {
-    code: "BE-INV-26-03-22-082010",
-    quote: "BE-PR-26-03-15-140023",
-    amount: 980000,
-    status: "overdue",
-    status_display: "Overdue",
-    due_date: "2026-04-01",
-    paid_at: null,
-    created_at: "2026-03-22T08:20:10Z",
-  },
-];
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-NG", {
@@ -115,8 +51,8 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-const getQuoteStatusColor = (status: QuoteStatus) => {
-  switch (status) {
+const getQuoteStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
     case "draft":
       return "bg-primary-light/20 text-primary-dark";
     case "sent":
@@ -132,8 +68,8 @@ const getQuoteStatusColor = (status: QuoteStatus) => {
   }
 };
 
-const getInvoiceStatusColor = (status: InvoiceStatus) => {
-  switch (status) {
+const getInvoiceStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
     case "draft":
       return "bg-primary-light/20 text-primary-dark";
     case "sent":
@@ -168,22 +104,68 @@ const invoiceStatusFilters: Array<{ label: string; value: InvoiceStatus | "all" 
 ];
 
 type BillingWorkspaceProps = {
+  role: "admin" | "client";
   canCreateBilling: boolean;
 };
 
-export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceProps) {
+export default function BillingWorkspace({ role, canCreateBilling }: BillingWorkspaceProps) {
   const [activeTab, setActiveTab] = useState<"invoices" | "quotes">("invoices");
   const [searchTerm, setSearchTerm] = useState("");
   const [quoteStatus, setQuoteStatus] = useState<QuoteStatus | "all">("all");
   const [invoiceStatus, setInvoiceStatus] = useState<InvoiceStatus | "all">("all");
+  const [showCreateQuoteModal, setShowCreateQuoteModal] = useState(false);
+  const [showGenerateInvoiceModal, setShowGenerateInvoiceModal] = useState(false);
+
+  const {
+    data: quoteData = [],
+    isLoading: isQuotesLoading,
+    isError: isQuotesError,
+    refetch: refetchQuotes,
+  } = useQuotes();
+  const {
+    data: invoiceData = [],
+    isLoading: isInvoicesLoading,
+    isError: isInvoicesError,
+    refetch: refetchInvoices,
+  } = useInvoices();
+
+  const quoteRows = useMemo<QuoteRow[]>(() => {
+    return quoteData.map((quote) => ({
+      code: quote.code,
+      project: quote.project,
+      service_request: quote.service_request,
+      amount: Number.parseFloat(quote.amount || "0"),
+      status: quote.status,
+      status_display: quote.status_display,
+      quoted_by: quote.quoted_by?.full_name || quote.quoted_by?.user_id || "-",
+      valid_until: quote.valid_until,
+      created_at: quote.created_at,
+    }));
+  }, [quoteData]);
+
+  const invoiceRows = useMemo<InvoiceRow[]>(() => {
+    return invoiceData.map((invoice) => ({
+      code: invoice.code,
+      quote: invoice.quote,
+      amount: Number.parseFloat(invoice.amount || "0"),
+      status: invoice.status,
+      status_display: invoice.status_display,
+      due_date: invoice.due_date,
+      paid_at: invoice.paid_at,
+      created_at: invoice.created_at,
+    }));
+  }, [invoiceData]);
+
+  const hasError = isQuotesError || isInvoicesError;
+  const isLoading = isQuotesLoading || isInvoicesLoading;
 
   const billingStats = useMemo(() => {
-    const totalQuotes = quotes.length;
-    const openInvoices = invoices.filter((item) => ["sent", "overdue"].includes(item.status)).length;
-    const paidValue = invoices
+    const totalQuotes = quoteRows.length;
+    const openInvoices = invoiceRows.filter((item) => ["sent", "overdue"].includes(item.status)).length;
+    const paidValue = invoiceRows
       .filter((item) => item.status === "paid")
       .reduce((acc, item) => acc + item.amount, 0);
-    const overdue = invoices.filter((item) => item.status === "overdue").length;
+    const overdue = invoiceRows.filter((item) => item.status === "overdue").length;
 
     return [
       {
@@ -211,11 +193,11 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
         color: "error" as const,
       },
     ];
-  }, []);
+  }, [invoiceRows, quoteRows]);
 
   const filteredQuotes = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    return quotes.filter((item) => {
+    return quoteRows.filter((item) => {
       const matchesStatus = quoteStatus === "all" ? true : item.status === quoteStatus;
       const matchesSearch =
         q.length === 0
@@ -226,11 +208,11 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
             item.quoted_by.toLowerCase().includes(q);
       return matchesStatus && matchesSearch;
     });
-  }, [searchTerm, quoteStatus]);
+  }, [searchTerm, quoteRows, quoteStatus]);
 
   const filteredInvoices = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    return invoices.filter((item) => {
+    return invoiceRows.filter((item) => {
       const matchesStatus = invoiceStatus === "all" ? true : item.status === invoiceStatus;
       const matchesSearch =
         q.length === 0
@@ -238,7 +220,12 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
           : item.code.toLowerCase().includes(q) || item.quote.toLowerCase().includes(q);
       return matchesStatus && matchesSearch;
     });
-  }, [searchTerm, invoiceStatus]);
+  }, [searchTerm, invoiceRows, invoiceStatus]);
+
+  const handleRetry = () => {
+    void refetchQuotes();
+    void refetchInvoices();
+  };
 
   return (
     <div className="space-y-6">
@@ -251,11 +238,19 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
         </div>
         {canCreateBilling ? (
           <div className="flex items-center gap-2">
-            <button className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-border bg-white text-primary-dark hover:bg-primary-light/20 transition-colors text-sm font-medium">
+            <button
+              type="button"
+              onClick={() => setShowCreateQuoteModal(true)}
+              className="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-border bg-primary-light/20 text-primary-dark text-sm font-medium"
+            >
               <FaPlus className="w-3 h-3" />
               Create Quote
             </button>
-            <button className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors text-sm font-medium">
+            <button
+              type="button"
+              onClick={() => setShowGenerateInvoiceModal(true)}
+              className="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-tetiary text-sm font-medium"
+            >
               <FaFileInvoice className="w-3 h-3" />
               Generate Invoice
             </button>
@@ -263,20 +258,31 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
-        {billingStats.map((stat) => (
-          <DashboardStatsCard key={stat.label} stat={stat} />
-        ))}
-      </div>
+      {isLoading ? (
+        <StatsCardsSkeleton count={4} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
+          {billingStats.map((stat) => (
+            <DashboardStatsCard key={stat.label} stat={stat} />
+          ))}
+        </div>
+      )}
+
+      {hasError ? (
+        <ErrorState
+          message="Unable to load billing data."
+          onRetry={handleRetry}
+        />
+      ) : null}
 
       <div className="rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="bg-primary-light/40 px-6 py-4 border-b border-border flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-          <div className="flex items-center rounded-lg border border-border p-1 bg-white/80 w-fit">
+          <div className="flex items-center rounded-lg border border-border p-1 bg-primary-light/10 w-fit">
             <button
               onClick={() => setActiveTab("invoices")}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === "invoices"
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-tetiary"
                   : "text-primary-dark hover:bg-primary-light/20"
               }`}
             >
@@ -286,7 +292,7 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
               onClick={() => setActiveTab("quotes")}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === "quotes"
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-tetiary"
                   : "text-primary-dark hover:bg-primary-light/20"
               }`}
             >
@@ -298,15 +304,21 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder={activeTab === "invoices" ? "Search invoice code or quote" : "Search quote, project or requester"}
-              className="px-3 py-2 rounded-lg border border-border bg-white text-sm text-primary-dark min-w-72 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              placeholder={
+                activeTab === "invoices"
+                  ? "Search invoice code"
+                  : "Search quote, project or requester"
+              }
+              className="px-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary-dark min-w-72 focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
 
             {activeTab === "invoices" ? (
               <select
                 value={invoiceStatus}
-                onChange={(event) => setInvoiceStatus(event.target.value as InvoiceStatus | "all")}
-                className="px-3 py-2 rounded-lg border border-border bg-white text-sm text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
+                onChange={(event) =>
+                  setInvoiceStatus(event.target.value as InvoiceStatus | "all")
+                }
+                className="px-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 {invoiceStatusFilters.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -317,8 +329,10 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
             ) : (
               <select
                 value={quoteStatus}
-                onChange={(event) => setQuoteStatus(event.target.value as QuoteStatus | "all")}
-                className="px-3 py-2 rounded-lg border border-border bg-white text-sm text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
+                onChange={(event) =>
+                  setQuoteStatus(event.target.value as QuoteStatus | "all")
+                }
+                className="px-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 {quoteStatusFilters.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -337,6 +351,8 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
               formatCurrency={formatCurrency}
               formatDate={formatDate}
               getInvoiceStatusColor={getInvoiceStatusColor}
+              role={role}
+              isLoading={isInvoicesLoading}
             />
           ) : (
             <BillingQuotesTable
@@ -344,10 +360,23 @@ export default function BillingWorkspace({ canCreateBilling }: BillingWorkspaceP
               formatCurrency={formatCurrency}
               formatDate={formatDate}
               getQuoteStatusColor={getQuoteStatusColor}
+              role={role}
+              isLoading={isQuotesLoading}
             />
           )}
         </div>
       </div>
+
+      <CreateQuoteModal
+        open={showCreateQuoteModal}
+        onClose={() => setShowCreateQuoteModal(false)}
+      />
+
+      <GenerateInvoiceModal
+        open={showGenerateInvoiceModal}
+        onClose={() => setShowGenerateInvoiceModal(false)}
+      />
+
     </div>
   );
 }

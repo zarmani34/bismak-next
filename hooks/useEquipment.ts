@@ -11,7 +11,30 @@ import {
   MaintenanceRequestListItem,
   MaintenanceRequestDetail,
   CreateMaintenanceRequestData,
+  EquipmentCategoryListItem,
 } from "@/schemas/equipment";
+
+type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
+const normalizeListResponse = <T>(data: unknown): T[] => {
+  if (Array.isArray(data)) return data as T[];
+
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "results" in data &&
+    Array.isArray((data as PaginatedResponse<T>).results)
+  ) {
+    return (data as PaginatedResponse<T>).results;
+  }
+
+  return [];
+};
 
 // ---- Query Keys ----
 
@@ -38,6 +61,11 @@ export const maintenanceRequestKeys = {
   detail: (id: string) => ["maintenance-requests", id] as const,
 };
 
+export const equipmentCategoryKeys = {
+  all: ["equipment-categories"] as const,
+  list: () => [...equipmentCategoryKeys.all, "list"] as const,
+};
+
 // ---- Equipment Hooks ----
 
 export function useEquipmentList(filters?: Record<string, string>) {
@@ -45,7 +73,7 @@ export function useEquipmentList(filters?: Record<string, string>) {
     queryKey: equipmentKeys.list(filters),
     queryFn: async () => {
       const { data } = await api.get("/equipment/", { params: filters });
-      return data;
+      return normalizeListResponse<EquipmentListItem>(data);
     },
   });
 }
@@ -67,6 +95,7 @@ export function useCreateEquipment() {
   return useMutation({
     mutationFn: async (equipmentData: CreateEquipmentData) => {
       const { data } = await api.post("/equipment/", equipmentData);
+      console.log("Equipment data:", data)
       return data as EquipmentDetail;
     },
     onSuccess: () => {
@@ -100,7 +129,7 @@ export function useEquipmentRequests(filters?: Record<string, string>) {
     queryKey: equipmentRequestKeys.all,
     queryFn: async () => {
       const { data } = await api.get("/equipment-requests/", { params: filters });
-      return data;
+      return normalizeListResponse<EquipmentRequestListItem>(data);
     },
   });
 }
@@ -113,7 +142,7 @@ export function useEquipmentItemRequests(equipmentId: string) {
     queryKey: equipmentKeys.requests(equipmentId),
     queryFn: async () => {
       const { data } = await api.get(`/equipment/${equipmentId}/requests/`);
-      return data;
+      return normalizeListResponse<EquipmentRequestListItem>(data);
     },
     enabled: !!equipmentId,
   });
@@ -155,7 +184,7 @@ export function useMaintenanceRequests(filters?: Record<string, string>) {
     queryKey: maintenanceRequestKeys.all,
     queryFn: async () => {
       const { data } = await api.get("/maintenance-requests/", { params: filters });
-      return data;
+      return normalizeListResponse<MaintenanceRequestListItem>(data);
     },
   });
 }
@@ -168,7 +197,7 @@ export function useEquipmentMaintenanceRequests(equipmentId: string) {
     queryKey: equipmentKeys.maintenance(equipmentId),
     queryFn: async () => {
       const { data } = await api.get(`/equipment/${equipmentId}/maintenance/`);
-      return data;
+      return normalizeListResponse<MaintenanceRequestListItem>(data);
     },
     enabled: !!equipmentId,
   });
@@ -197,5 +226,20 @@ export function useCreateMaintenanceRequest() {
       queryClient.invalidateQueries({ queryKey: maintenanceRequestKeys.all });
       queryClient.invalidateQueries({ queryKey: equipmentKeys.all });
     },
+  });
+}
+
+
+// Create equipment category hooks for listing the equipment category and creating equipment category
+
+export function useEquipmentCategories(options?: { enabled?: boolean }) {
+  return useQuery<EquipmentCategoryListItem[]>({
+    queryKey: equipmentCategoryKeys.list(),
+    queryFn: async () => {
+      const { data } = await api.get("/equipment-categories/");
+      return normalizeListResponse<EquipmentCategoryListItem>(data);
+    },
+    enabled: options?.enabled ?? true,
+    staleTime: 5 * 60 * 1000,
   });
 }

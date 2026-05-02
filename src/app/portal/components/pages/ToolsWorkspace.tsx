@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FaEye, FaWrench } from "react-icons/fa";
 import {
   FaClock,
@@ -49,6 +51,7 @@ const getEquipmentStatusColor = (status: string) => {
 };
 
 export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<EquipmentStatusFilter>("all");
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -70,6 +73,7 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
 
   const isLoading = isEquipmentLoading || isMaintenanceLoading;
   const hasError = isEquipmentError || isMaintenanceError;
+  const toolsBasePath = role === "admin" ? "/portal/admin/tools" : "/portal/staff/tools";
 
   const filteredEquipment = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
@@ -80,7 +84,7 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
         q.length === 0
           ? true
           : item.name.toLowerCase().includes(q) ||
-            item.category.toLowerCase().includes(q) ||
+            item.category.name.toLowerCase().includes(q) ||
             item.model.toLowerCase().includes(q) ||
             item.serial_number.toLowerCase().includes(q);
 
@@ -236,7 +240,7 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
           </div>
 
           <div className="overflow-x-auto bg-primary-light/10 border border-primary-light/20 shadow-md transition duration-200">
-            <table className="w-full min-w-[820px]">
+            <table className="w-full min-w-225">
               <thead className="bg-primary-light/40 border-b border-tetiary">
                 <tr>
                   <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
@@ -273,12 +277,24 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
                   </tr>
                 ) : (
                   filteredEquipment.map((item) => (
-                    <tr key={item.id} className="border-b border-tetiary hover:bg-primary/20">
+                    <tr
+                      key={item.id}
+                      className="border-b border-tetiary hover:bg-primary/20 cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => router.push(`${toolsBasePath}/${item.id}`)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          router.push(`${toolsBasePath}/${item.id}`);
+                        }
+                      }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-dark">
                         {item.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                        {item.category}
+                        {item.category.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
                         {item.serial_number}
@@ -300,12 +316,20 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <button className="p-2 text-body-text hover:text-primary-light" type="button">
+                          <Link
+                            href={`${toolsBasePath}/${item.id}`}
+                            className="p-2 text-body-text hover:text-primary-light"
+                            onClick={(event) => event.stopPropagation()}
+                          >
                             <FaEye className="w-4 h-4" />
-                          </button>
-                          <button className="p-2 text-body-text hover:text-primary-light" type="button">
+                          </Link>
+                          <Link
+                            href={`${toolsBasePath}/${item.id}#maintenance`}
+                            className="p-2 text-body-text hover:text-primary-light"
+                            onClick={(event) => event.stopPropagation()}
+                          >
                             <FaWrench className="w-4 h-4" />
-                          </button>
+                          </Link>
                         </div>
                       </td>
                     </tr>
