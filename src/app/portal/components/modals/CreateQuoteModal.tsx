@@ -1,20 +1,25 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaCircleInfo, FaPlus, FaTrash, FaXmark } from "react-icons/fa6";
-import { useCreateProjectQuote, useCreateServiceRequestQuote } from "@/hooks/useBilling";
+import {
+  useCreateProjectQuote,
+  useCreateServiceRequestQuote,
+  useInvoices,
+  useQuotes,
+} from "@/hooks/useBilling";
 import { useProjects } from "@/hooks/useProjects";
 import { useServiceRequests } from "@/hooks/useServices";
 import { extractApiError } from "@/lib/errors";
 import { ServiceRequest } from "@/schemas/services";
 
 const itemSchema = z.object({
-  description: z.string().min(1, "Description is required"),
-  quantity: z.number().int().min(1, "Quantity must be at least 1"),
-  unit_price: z.string().min(1, "Unit price is required"),
+  description: z.string().optional(),
+  quantity: z.number().optional(),
+  unit_price: z.string().optional(),
 });
 
 const formSchema = z
@@ -38,9 +43,35 @@ const formSchema = z
         return;
       }
 
-      const subtotal = data.items.reduce((total, item) => {
-        const quantity = Number(item.quantity);
+      const subtotal = data.items.reduce((total, item, index) => {
+        const description = item.description?.trim() ?? "";
+        const quantity = Number(item.quantity ?? 0);
         const unitPrice = Number.parseFloat(item.unit_price || "0");
+
+        if (!description) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["items", index, "description"],
+            message: "Description is required",
+          });
+        }
+
+        if (!Number.isFinite(quantity) || quantity < 1 || !Number.isInteger(quantity)) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["items", index, "quantity"],
+            message: "Quantity must be at least 1",
+          });
+        }
+
+        if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["items", index, "unit_price"],
+            message: "Unit price is required",
+          });
+        }
+
         if (!Number.isFinite(quantity) || !Number.isFinite(unitPrice)) return total;
         return total + quantity * unitPrice;
       }, 0);
@@ -98,7 +129,6 @@ export default function CreateQuoteModal({
   const {
     register,
     handleSubmit,
-    watch,
     reset,
     setValue,
     control,
@@ -133,10 +163,10 @@ export default function CreateQuoteModal({
     }
   }, [defaultLinkType, defaultLinkedCode, open, setValue]);
 
-  const linkType = watch("linkType");
-  const linkedCode = watch("linkedCode");
-  const watchedItems = watch("items");
-  const isItemized = watch("is_itemized");
+  const linkType = useWatch({ control, name: "linkType" }) ?? "service";
+  const linkedCode = useWatch({ control, name: "linkedCode" }) ?? "";
+  const watchedItems = useWatch({ control, name: "items" });
+  const isItemized = useWatch({ control, name: "is_itemized" }) ?? true;
 
   const {
     data: projects,
@@ -150,6 +180,8 @@ export default function CreateQuoteModal({
 
   const createProjectQuote = useCreateProjectQuote(linkedCode || "");
   const createServiceQuote = useCreateServiceRequestQuote(linkedCode || "");
+  const { data: quotes = [] } = useQuotes();
+  const { data: invoices = [] } = useInvoices();
 
   const serviceOptions = useMemo(() => {
     if (Array.isArray(serviceRequests)) return serviceRequests;
@@ -164,7 +196,38 @@ export default function CreateQuoteModal({
     return [];
   }, [serviceRequests]);
 
-  const projectOptions = projects?.results ?? [];
+  const existingProjectQuoteCodes = useMemo(
+    () => new Set(quotes.map((quote) => quote.project).filter(Boolean)),
+    [quotes],
+  );
+  const existingServiceQuoteCodes = useMemo(
+    () => new Set(quotes.map((quote) => quote.service_request).filter(Boolean)),
+    [quotes],
+  );
+
+  const invoicedQuoteCodes = useMemo(
+    () => new Set(invoices.map((invoice) => invoice.quote)),
+    [invoices],
+  );
+
+  const projectOptions = useMemo(() => {
+    const items = projects?.results ?? [];
+    return items.filter((project) => {
+      const projectCode = project.code;
+      if (!projectCode) return false;
+      if (existingProjectQuoteCodes.has(projectCode)) return false;
+      return true;
+    });
+  }, [existingProjectQuoteCodes, projects?.results]);
+
+  const filteredServiceOptions = useMemo(() => {
+    return serviceOptions.filter((service) => {
+      const serviceCode = service.code;
+      if (!serviceCode) return false;
+      if (existingServiceQuoteCodes.has(serviceCode)) return false;
+      return true;
+    });
+  }, [existingServiceQuoteCodes, serviceOptions]);
 
   const isLoadingOptions =
     linkType === "project" ? isProjectsLoading : isServicesLoading;
@@ -290,12 +353,20 @@ export default function CreateQuoteModal({
                           {project.name} ({project.code})
                         </option>
                       ))
-                    : serviceOptions.map((service) => (
+                    : filteredServiceOptions.map((service) => (
                         <option key={service.code} value={service.code}>
                           {service.service_name} ({service.code})
                         </option>
                       ))}
                 </select>
+                {!lockLinkedRecord &&
+                !isLoadingOptions &&
+                ((linkType === "project" && projectOptions.length === 0) ||
+                  (linkType === "service" && filteredServiceOptions.length === 0)) ? (
+                  <p className="text-xs text-secondary-text mt-1">
+                    All {linkType === "project" ? "projects" : "service requests"} already have quotes.
+                  </p>
+                ) : null}
                 {errors.linkedCode ? (
                   <p className="text-xs text-secondary-light mt-1">{errors.linkedCode.message}</p>
                 ) : null}
@@ -360,8 +431,8 @@ export default function CreateQuoteModal({
                     </thead>
                     <tbody>
                       {fields.map((field, index) => {
-                        const qty = Number((watchedItems ?? [])[index]?.quantity ?? 0);
-                        const unitPrice = Number.parseFloat((watchedItems ?? [])[index]?.unit_price ?? "0");
+                        const qty = Number(watchedItems?.[index]?.quantity ?? 0);
+                        const unitPrice = Number.parseFloat(watchedItems?.[index]?.unit_price ?? "0");
                         const lineTotal = Number.isFinite(qty) && Number.isFinite(unitPrice)
                           ? qty * unitPrice
                           : 0;
@@ -458,6 +529,11 @@ export default function CreateQuoteModal({
 
             {activeMutation.error ? (
               <p className="text-xs text-secondary-light">{extractApiError(activeMutation.error)}</p>
+            ) : null}
+            {invoicedQuoteCodes.size > 0 ? (
+              <p className="text-xs text-secondary-text">
+                Records with existing quotes or invoices are excluded automatically.
+              </p>
             ) : null}
           </div>
 

@@ -12,7 +12,12 @@ import {
   FaToolbox,
   FaTriangleExclamation,
 } from "react-icons/fa6";
-import { useEquipmentList, useMaintenanceRequests } from "@/hooks/useEquipment";
+import {
+  useEquipmentList,
+  useEquipmentRequests,
+  useMaintenanceRequests,
+  useUpdateEquipmentRequestStatus,
+} from "@/hooks/useEquipment";
 import DashboardStatsCard from "../DashBoardStatsCard";
 import { formatDate } from "@/src/utils/date";
 import ErrorState from "../states/ErrorState";
@@ -20,6 +25,7 @@ import StatsCardsSkeleton from "../skeletons/StatsCardsSkeleton";
 import TableSkeleton from "../skeletons/TableSkeleton";
 import CreateEquipmentRequestModal from "../modals/CreateEquipmentRequestModal";
 import RegisterEquipmentModal from "../modals/RegisterEquipmentModal";
+import { extractApiError } from "@/lib/errors";
 
 type ToolsWorkspaceProps = {
   role: "admin" | "staff";
@@ -50,12 +56,28 @@ const getEquipmentStatusColor = (status: string) => {
   }
 };
 
+const getRequestStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "approved":
+      return "bg-primary/20 text-primary";
+    case "pending":
+      return "bg-secondary/20 text-secondary";
+    case "rejected":
+      return "bg-error/20 text-error";
+    case "returned":
+      return "bg-info/20 text-info";
+    default:
+      return "bg-primary-light/20 text-primary-dark";
+  }
+};
+
 export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<EquipmentStatusFilter>("all");
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [requestActionError, setRequestActionError] = useState<string | null>(null);
 
   const {
     data: equipment = [],
@@ -70,9 +92,17 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
     isError: isMaintenanceError,
     refetch: refetchMaintenance,
   } = useMaintenanceRequests();
+  const {
+    data: equipmentRequests = [],
+    isLoading: isEquipmentRequestsLoading,
+    isError: isEquipmentRequestsError,
+    refetch: refetchEquipmentRequests,
+  } = useEquipmentRequests();
+  const updateEquipmentRequestStatus = useUpdateEquipmentRequestStatus();
 
-  const isLoading = isEquipmentLoading || isMaintenanceLoading;
-  const hasError = isEquipmentError || isMaintenanceError;
+  const isLoading =
+    isEquipmentLoading || isMaintenanceLoading || isEquipmentRequestsLoading;
+  const hasError = isEquipmentError || isMaintenanceError || isEquipmentRequestsError;
   const toolsBasePath = role === "admin" ? "/portal/admin/tools" : "/portal/staff/tools";
 
   const filteredEquipment = useMemo(() => {
@@ -102,6 +132,12 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
       })
       .slice(0, 8);
   }, [maintenanceRequests]);
+  const equipmentRequestQueue = useMemo(() => {
+    console.log(equipmentRequests)
+    return equipmentRequests
+      .filter((item) => ["pending", "approved", "rejected", "returned"].includes(item.status))
+      .slice(0, 8);
+  }, [equipmentRequests]);
 
   const toolStats = useMemo(() => {
     const today = new Date();
@@ -150,6 +186,16 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
   const handleRetry = () => {
     void refetchEquipment();
     void refetchMaintenance();
+    void refetchEquipmentRequests();
+  };
+
+  const handleEquipmentRequestAction = async (requestCode: string, status: string) => {
+    setRequestActionError(null);
+    try {
+      await updateEquipmentRequestStatus.mutateAsync({ code: requestCode, status });
+    } catch (error) {
+      setRequestActionError(extractApiError(error));
+    }
   };
 
   return (
@@ -340,41 +386,129 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
           </div>
         </div>
 
-        <div className="rounded-xl shadow-sm border border-border overflow-hidden">
-          <div className="bg-primary-light/40 px-6 py-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-primary-dark">Maintenance Queue</h2>
+        <div className="space-y-6">
+          <div className="rounded-xl shadow-sm border border-border overflow-hidden">
+            <div className="bg-primary-light/40 px-6 py-4 border-b border-border">
+              <h2 className="text-lg font-semibold text-primary-dark">Maintenance Queue</h2>
+            </div>
+
+            <div className="p-4 bg-primary-light/10 space-y-3 max-h-[32rem] overflow-y-auto">
+              {isMaintenanceLoading ? (
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 animate-pulse"
+                  >
+                    <div className="h-4 w-40 bg-primary/20 rounded" />
+                    <div className="mt-2 h-3 w-24 bg-primary/10 rounded" />
+                    <div className="mt-3 h-3 w-32 bg-primary/10 rounded" />
+                  </div>
+                ))
+              ) : maintenanceQueue.length === 0 ? (
+                <p className="text-sm text-secondary-text">No maintenance tasks in queue.</p>
+              ) : (
+                maintenanceQueue.map((task) => (
+                  <div
+                    key={task.id}
+                    className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 hover:bg-primary-light/30 transition-colors"
+                  >
+                    <p className="text-sm font-semibold text-primary-dark">{task.equipment_name}</p>
+                    <p className="text-sm text-body-text">{task.type_display}</p>
+                    <p className="text-xs text-secondary-text mt-1">{task.status_display}</p>
+                    <div className="mt-2 flex items-center gap-2 text-xs text-secondary-text">
+                      <FaClock className="w-3 h-3" />
+                      Due {formatDate(task.scheduled_date || task.created_at)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
-          <div className="p-4 bg-primary-light/10 space-y-3 max-h-[32rem] overflow-y-auto">
-            {isMaintenanceLoading ? (
-              Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 animate-pulse"
-                >
-                  <div className="h-4 w-40 bg-primary/20 rounded" />
-                  <div className="mt-2 h-3 w-24 bg-primary/10 rounded" />
-                  <div className="mt-3 h-3 w-32 bg-primary/10 rounded" />
-                </div>
-              ))
-            ) : maintenanceQueue.length === 0 ? (
-              <p className="text-sm text-secondary-text">No maintenance tasks in queue.</p>
-            ) : (
-              maintenanceQueue.map((task) => (
-                <div
-                  key={task.id}
-                  className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 hover:bg-primary-light/30 transition-colors"
-                >
-                  <p className="text-sm font-semibold text-primary-dark">{task.equipment_name}</p>
-                  <p className="text-sm text-body-text">{task.type_display}</p>
-                  <p className="text-xs text-secondary-text mt-1">{task.status_display}</p>
-                  <div className="mt-2 flex items-center gap-2 text-xs text-secondary-text">
-                    <FaClock className="w-3 h-3" />
-                    Due {formatDate(task.scheduled_date || task.created_at)}
+          <div className="rounded-xl shadow-sm border border-border overflow-hidden">
+            <div className="bg-primary-light/40 px-6 py-4 border-b border-border">
+              <h2 className="text-lg font-semibold text-primary-dark">Equipment Requests</h2>
+            </div>
+
+            <div className="p-4 bg-primary-light/10 space-y-3 max-h-[20rem] overflow-y-auto">
+              {requestActionError ? (
+                <p className="text-xs text-secondary-light">{requestActionError}</p>
+              ) : null}
+              {isEquipmentRequestsLoading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 animate-pulse"
+                  >
+                    <div className="h-4 w-40 bg-primary/20 rounded" />
+                    <div className="mt-2 h-3 w-24 bg-primary/10 rounded" />
+                    <div className="mt-3 h-3 w-32 bg-primary/10 rounded" />
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              ) : equipmentRequestQueue.length === 0 ? (
+                <p className="text-sm text-secondary-text">No active equipment requests.</p>
+              ) : (
+                equipmentRequestQueue.map((request) => (
+                  <div
+                  key={request.id}
+                  className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 hover:bg-primary-light/30 transition-colors"
+                  >
+                    <p className="text-sm font-semibold text-primary-dark">{request.equipment_name}</p>
+                    <p className="text-xs text-secondary-text mt-1">
+                      Requested by {request.requested_by || "--"}
+                    </p>
+                    <p className="text-xs text-secondary-text mt-1">
+                      Project: {request.project_code || "--"}
+                    </p>
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      <span
+                        className={`px-2 py-1 rounded-full text-[11px] font-medium ${getRequestStatusColor(
+                          request.status,
+                        )}`}
+                      >
+                        {request.status_display}
+                      </span>
+                      {role === "admin" && request.status === "pending" ? (
+                        <>
+                          <button
+                            type="button"
+                            disabled={updateEquipmentRequestStatus.isPending}
+                            onClick={() =>
+                              void handleEquipmentRequestAction(request.code, "approved")
+                            }
+                            className="px-2 py-1 rounded-md text-[11px] font-medium border border-secondary/40 text-secondary hover:bg-secondary/10 disabled:opacity-60"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            disabled={updateEquipmentRequestStatus.isPending}
+                            onClick={() =>
+                              void handleEquipmentRequestAction(request.code, "rejected")
+                            }
+                            className="px-2 py-1 rounded-md text-[11px] font-medium border border-error/40 text-error hover:bg-error/10 disabled:opacity-60"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      ) : null}
+                      {role === "staff" && request.status === "approved" ? (
+                        <button
+                          type="button"
+                          disabled={updateEquipmentRequestStatus.isPending}
+                          onClick={() =>
+                            void handleEquipmentRequestAction(request.id, "returned")
+                          }
+                          className="px-2 py-1 rounded-md text-[11px] font-medium border border-info/40 text-info hover:bg-info/10 disabled:opacity-60"
+                        >
+                          Return
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>

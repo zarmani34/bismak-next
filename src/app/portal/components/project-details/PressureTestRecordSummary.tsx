@@ -15,6 +15,9 @@ export default function PressureTestRecordSummary({
       <h3 className="text-sm font-semibold text-primary-dark">Pressure Test</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm text-secondary-text">
         <div>Client: {pressureTest.client}</div>
+        <div>
+          Client Rep: {pressureTest.client_representative || "--"}
+        </div>
         <div>Location: {pressureTest.location_address}</div>
         <div>Date of Test: {formatDate(pressureTest.date_of_test)}</div>
         <div>Next Test Date: {formatDate(pressureTest.next_test_date)}</div>

@@ -52,6 +52,7 @@ const getDefaultPressureTestValues = (): CreatePressureTestData => {
   const today = formatDateInput(new Date());
   return {
     client: "",
+    client_representative: "",
     location_address: "",
     manufacturer: "",
     manufacturing_date: "",
@@ -78,6 +79,7 @@ const mapPressureTestToForm = (
   pressureTest: PressureTest,
 ): CreatePressureTestData => ({
   client: pressureTest.client ?? "",
+  client_representative: pressureTest.client_representative ?? "",
   location_address: pressureTest.location_address ?? "",
   manufacturer: pressureTest.manufacturer ?? "",
   manufacturing_date: pressureTest.manufacturing_date ?? "",
@@ -101,6 +103,11 @@ const mapPressureTestToForm = (
 
 const FIELDS: FieldConfig[] = [
   { name: "client", label: "Client", type: "text" },
+  {
+    name: "client_representative",
+    label: "Client representative",
+    type: "text",
+  },
   { name: "location_address", label: "Location", type: "text" },
   { name: "manufacturer", label: "Manufacturer", type: "text" },
   { name: "manufacturing_date", label: "Manufacturing date", type: "date" },
@@ -217,6 +224,12 @@ export default function PressureTestFormPage({ role, mode = "create" }: Props) {
 
     if (!getValues("location_address")) {
       setValue("location_address", project.location, { shouldDirty: false });
+    }
+
+    if (!getValues("client_representative")) {
+      setValue("client_representative", project.owner?.full_name || "", {
+        shouldDirty: false,
+      });
     }
 
     if (!getValues("temperature")) {

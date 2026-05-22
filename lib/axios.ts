@@ -1,7 +1,7 @@
 import axios from "axios";
 
 /**
- * Base axios instance pointing at your Django backend.
+ * Base axios instance pointing at our Django backend.
  *
  * withCredentials: true — this is the key setting for Option 2.
  * It tells the browser to automatically send cookies (including the
@@ -42,7 +42,7 @@ api.interceptors.response.use(
       } catch {
         console.log("refresh failed — redirecting to login");
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.href = "/portal/sign-in";
         }
       }
     }

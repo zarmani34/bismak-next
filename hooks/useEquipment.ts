@@ -174,6 +174,28 @@ export function useCreateEquipmentRequest() {
   });
 }
 
+export function useUpdateEquipmentRequestStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: { code: string; status: string }) => {
+      const { data } = await api.patch(`/equipment-requests/${input.code}/`, {
+        status: input.status,
+      });
+      console.log("Updated equipment request:", data);
+      return data as EquipmentRequestDetail;
+    },
+    onSuccess: (updatedRequest) => {
+      queryClient.setQueryData(
+        equipmentRequestKeys.detail(updatedRequest.code),
+        updatedRequest,
+      );
+      queryClient.invalidateQueries({ queryKey: equipmentRequestKeys.all });
+      queryClient.invalidateQueries({ queryKey: equipmentKeys.all });
+    },
+  });
+}
+
 // ---- Maintenance Request Hooks ----
 
 /**

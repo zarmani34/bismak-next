@@ -2,6 +2,8 @@ import Link from "next/link";
 import { FaBell } from "react-icons/fa";
 import Image from "next/image";
 import UserMenu from "./UserMenu";
+import NotificationBell from "./NotificationBell";
+import NotificationToast from "./NotificationsToast";
 
 export default function PortalHeader() {
   
@@ -40,20 +42,12 @@ export default function PortalHeader() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <button className="p-2 text-tetiary hover:bg-secondary-dark rounded-lg relative">
-              <FaBell className=" w-5 h-5md:w-6 md:h-6" />
-              {notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-white text-xs rounded-full flex items-center justify-center">
-                  {notifications.length}
-                </span>
-              )}
-            </button>
-          </div>
+            <NotificationBell />
 
           <UserMenu />
         </div>
       </div>
+      <NotificationToast />
     </header>
   );
 }

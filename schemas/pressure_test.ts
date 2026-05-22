@@ -4,6 +4,7 @@ export const PressureTestSchema = z.object({
   id: z.string(),
   project: z.string(),
   client: z.string(),
+  client_representative: z.string().nullable().optional(),
   location_address: z.string(),
   manufacturer: z.string(),
   manufacturing_date: z.string(),
@@ -34,6 +35,7 @@ export const CreatePressureTestSchema = PressureTestSchema.omit({
   created_at: true,
 }).extend({
   client: z.string().min(1, "Client is required"),
+  client_representative: z.string().min(1, "Client representative is required"),
   location_address: z.string().min(1, "Location is required"),
   manufacturer: z.string().min(1, "Manufacturer is required"),
   manufacturing_date: z.string().min(1, "Manufacturing date is required"),

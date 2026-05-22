@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { FaDownload, FaEye } from "react-icons/fa";
 import TableSkeleton from "../skeletons/TableSkeleton";
+import { getInvoiceActions, InvoiceActionKey } from "../../utils/billingActions";
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
 type InvoiceRow = {
+  id: string;
   code: string;
   quote: string;
   amount: number;
@@ -23,6 +25,9 @@ type BillingInvoicesTableProps = {
   getInvoiceStatusColor: (status: string) => string;
   role: "admin" | "client";
   isLoading?: boolean;
+  onQuickAction?: (invoice: InvoiceRow, actionKey: InvoiceActionKey) => void | Promise<void>;
+  isActionPending?: boolean;
+  actionError?: string | null;
 };
 
 export default function BillingInvoicesTable({
@@ -32,6 +37,9 @@ export default function BillingInvoicesTable({
   getInvoiceStatusColor,
   role,
   isLoading = false,
+  onQuickAction,
+  isActionPending = false,
+  actionError,
 }: BillingInvoicesTableProps) {
   const billingBase = role === "admin" ? "/portal/admin/billing" : "/portal/client/billings";
 
@@ -63,6 +71,14 @@ export default function BillingInvoicesTable({
         </tr>
       </thead>
       <tbody>
+        {actionError ? (
+          <tr>
+            <td colSpan={7} className="px-6 py-3 text-xs text-secondary-light">
+              {actionError}
+            </td>
+          </tr>
+        ) : null}
+
         {isLoading ? (
           <TableSkeleton rows={4} />
         ) : invoices.length === 0 ? (
@@ -72,7 +88,13 @@ export default function BillingInvoicesTable({
             </td>
           </tr>
         ) : (
-          invoices.map((invoice) => (
+          invoices.map((invoice) => {
+            const quickActions = getInvoiceActions({
+              role,
+              status: invoice.status,
+            });
+
+            return (
             <tr key={invoice.code} className="border-b border-tetiary hover:bg-primary/20">
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-dark">
                 <Link href={`${billingBase}/invoices/${invoice.code}`} className="hover:text-primary">
@@ -104,6 +126,21 @@ export default function BillingInvoicesTable({
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div className="flex space-x-2">
+                  {quickActions.map((action) => (
+                    <button
+                      key={action.key}
+                      type="button"
+                      disabled={isActionPending}
+                      onClick={() => void onQuickAction?.(invoice, action.key)}
+                      className={`px-2 py-1 rounded-md text-xs font-medium border ${
+                        action.tone === "primary"
+                          ? "border-secondary/40 text-secondary hover:bg-secondary/10"
+                          : "border-border text-primary-dark hover:bg-primary-light/20"
+                      } disabled:opacity-60`}
+                    >
+                      {action.label}
+                    </button>
+                  ))}
                   <Link
                     href={`${billingBase}/invoices/${invoice.code}`}
                     className="p-2 text-body-text hover:text-primary-light"
@@ -120,7 +157,7 @@ export default function BillingInvoicesTable({
                 </div>
               </td>
             </tr>
-          ))
+          )})
         )}
       </tbody>
     </table>

@@ -2,11 +2,17 @@
 
 import { useMemo } from "react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaXmark } from "react-icons/fa6";
-import { useQuote, useQuotes, useUpdateInvoice, useUpdateQuoteStatus } from "@/hooks/useBilling";
+import {
+  useInvoices,
+  useQuote,
+  useQuotes,
+  useUpdateInvoice,
+  useUpdateQuoteStatus,
+} from "@/hooks/useBilling";
 import { extractApiError } from "@/lib/errors";
 
 const formSchema = z.object({
@@ -27,6 +33,7 @@ export default function GenerateInvoiceModal({ open, onClose }: GenerateInvoiceM
     data: quotes = [],
     isLoading: isQuotesLoading,
   } = useQuotes();
+  const { data: invoices = [] } = useInvoices();
 
   const updateQuoteStatus = useUpdateQuoteStatus();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -34,8 +41,8 @@ export default function GenerateInvoiceModal({ open, onClose }: GenerateInvoiceM
   const {
     register,
     handleSubmit,
-    watch,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -46,10 +53,19 @@ export default function GenerateInvoiceModal({ open, onClose }: GenerateInvoiceM
     },
   });
 
-  const selectedQuoteCode = watch("quoteCode");
+  const eligibleQuotes = useMemo(() => {
+    const invoicedQuoteCodes = new Set(invoices.map((invoice) => invoice.quote));
+    return quotes.filter(
+      (quote) =>
+        !invoicedQuoteCodes.has(quote.code) &&
+        ["sent", "revised", "accepted"].includes(quote.status.toLowerCase()),
+    );
+  }, [invoices, quotes]);
+
+  const selectedQuoteCode = useWatch({ control, name: "quoteCode" }) ?? "";
   const selectedQuote = useMemo(
-    () => quotes.find((quote) => quote.code === selectedQuoteCode),
-    [quotes, selectedQuoteCode],
+    () => eligibleQuotes.find((quote) => quote.code === selectedQuoteCode),
+    [eligibleQuotes, selectedQuoteCode],
   );
   const {
     refetch: refetchSelectedQuoteDetail,
@@ -153,12 +169,17 @@ export default function GenerateInvoiceModal({ open, onClose }: GenerateInvoiceM
                 <option value="" disabled>
                   {isQuotesLoading ? "Loading quotes..." : "Select quote"}
                 </option>
-                {quotes.map((quote) => (
+                {eligibleQuotes.map((quote) => (
                   <option key={quote.code} value={quote.code}>
                     {quote.code} - {quote.status_display}
                   </option>
                 ))}
               </select>
+              {!isQuotesLoading && eligibleQuotes.length === 0 ? (
+                <p className="text-xs text-secondary-text mt-1">
+                  No eligible quotes found. Quotes that already produced invoices are excluded.
+                </p>
+              ) : null}
               {errors.quoteCode ? (
                 <p className="text-xs text-secondary-light mt-1">{errors.quoteCode.message}</p>
               ) : null}

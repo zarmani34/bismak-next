@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FaFileInvoiceDollar, FaMoneyBillWave } from "react-icons/fa";
 import {
   FaClockRotateLeft,
@@ -12,11 +13,18 @@ import DashboardStatsCard from "../DashBoardStatsCard";
 import BillingInvoicesTable from "../tables/BillingInvoicesTable";
 import BillingQuotesTable from "../tables/BillingQuotesTable";
 import { formatDate } from "@/src/utils/date";
-import { useInvoices, useQuotes } from "@/hooks/useBilling";
+import {
+  useInvoices,
+  useQuotes,
+  useUpdateInvoice,
+  useUpdateQuoteStatus,
+} from "@/hooks/useBilling";
 import StatsCardsSkeleton from "../skeletons/StatsCardsSkeleton";
 import ErrorState from "../states/ErrorState";
 import CreateQuoteModal from "../modals/CreateQuoteModal";
 import GenerateInvoiceModal from "../modals/GenerateInvoiceModal";
+import { extractApiError } from "@/lib/errors";
+import { InvoiceActionKey, QuoteActionKey } from "../../utils/billingActions";
 
 type QuoteStatus = "draft" | "sent" | "accepted" | "rejected" | "revised";
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
@@ -31,9 +39,12 @@ type QuoteRow = {
   quoted_by: string;
   valid_until: string | null;
   created_at: string;
+  has_invoice: boolean;
+  invoice_code: string | null;
 };
 
 type InvoiceRow = {
+  id: string;
   code: string;
   quote: string;
   amount: number;
@@ -109,12 +120,14 @@ type BillingWorkspaceProps = {
 };
 
 export default function BillingWorkspace({ role, canCreateBilling }: BillingWorkspaceProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"invoices" | "quotes">("invoices");
   const [searchTerm, setSearchTerm] = useState("");
   const [quoteStatus, setQuoteStatus] = useState<QuoteStatus | "all">("all");
   const [invoiceStatus, setInvoiceStatus] = useState<InvoiceStatus | "all">("all");
   const [showCreateQuoteModal, setShowCreateQuoteModal] = useState(false);
   const [showGenerateInvoiceModal, setShowGenerateInvoiceModal] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const {
     data: quoteData = [],
@@ -128,6 +141,16 @@ export default function BillingWorkspace({ role, canCreateBilling }: BillingWork
     isError: isInvoicesError,
     refetch: refetchInvoices,
   } = useInvoices();
+  const updateQuoteStatus = useUpdateQuoteStatus();
+  const updateInvoice = useUpdateInvoice();
+
+  const invoiceByQuoteCode = useMemo(
+    () =>
+      new Map(
+        invoiceData.map((invoice) => [invoice.quote, invoice.code]),
+      ),
+    [invoiceData],
+  );
 
   const quoteRows = useMemo<QuoteRow[]>(() => {
     return quoteData.map((quote) => ({
@@ -140,11 +163,14 @@ export default function BillingWorkspace({ role, canCreateBilling }: BillingWork
       quoted_by: quote.quoted_by?.full_name || quote.quoted_by?.user_id || "-",
       valid_until: quote.valid_until,
       created_at: quote.created_at,
+      has_invoice: invoiceByQuoteCode.has(quote.code),
+      invoice_code: invoiceByQuoteCode.get(quote.code) ?? null,
     }));
-  }, [quoteData]);
+  }, [invoiceByQuoteCode, quoteData]);
 
   const invoiceRows = useMemo<InvoiceRow[]>(() => {
     return invoiceData.map((invoice) => ({
+      id: invoice.id,
       code: invoice.code,
       quote: invoice.quote,
       amount: Number.parseFloat(invoice.amount || "0"),
@@ -225,6 +251,82 @@ export default function BillingWorkspace({ role, canCreateBilling }: BillingWork
   const handleRetry = () => {
     void refetchQuotes();
     void refetchInvoices();
+  };
+
+  const isActionPending = updateQuoteStatus.isPending || updateInvoice.isPending;
+
+  const handleQuoteQuickAction = async (quote: QuoteRow, actionKey: QuoteActionKey) => {
+    setActionError(null);
+    try {
+      if (actionKey === "view_invoice") {
+        if (quote.invoice_code) {
+          router.push(`${role === "admin" ? "/portal/admin/billing" : "/portal/client/billings"}/invoices/${quote.invoice_code}`);
+        }
+        return;
+      }
+
+      if (actionKey === "accept_quote") {
+        await updateQuoteStatus.mutateAsync({ quoteCode: quote.code, status: "accepted" });
+        return;
+      }
+
+      if (actionKey === "reject_quote") {
+        await updateQuoteStatus.mutateAsync({ quoteCode: quote.code, status: "rejected" });
+        return;
+      }
+
+      if (actionKey === "mark_revised") {
+        await updateQuoteStatus.mutateAsync({ quoteCode: quote.code, status: "revised" });
+        return;
+      }
+
+      if (actionKey === "mark_sent") {
+        await updateQuoteStatus.mutateAsync({ quoteCode: quote.code, status: "sent" });
+      }
+    } catch (error) {
+      setActionError(extractApiError(error));
+    }
+  };
+
+  const handleInvoiceQuickAction = async (
+    invoice: InvoiceRow,
+    actionKey: InvoiceActionKey,
+  ) => {
+    setActionError(null);
+    try {
+      if (actionKey === "mark_paid") {
+        await updateInvoice.mutateAsync({
+          invoiceId: invoice.id,
+          invoiceData: { status: "paid" },
+        });
+        return;
+      }
+
+      if (actionKey === "mark_overdue") {
+        await updateInvoice.mutateAsync({
+          invoiceId: invoice.id,
+          invoiceData: { status: "overdue" },
+        });
+        return;
+      }
+
+      if (actionKey === "mark_cancelled") {
+        await updateInvoice.mutateAsync({
+          invoiceId: invoice.id,
+          invoiceData: { status: "cancelled" },
+        });
+        return;
+      }
+
+      if (actionKey === "mark_sent") {
+        await updateInvoice.mutateAsync({
+          invoiceId: invoice.id,
+          invoiceData: { status: "sent" },
+        });
+      }
+    } catch (error) {
+      setActionError(extractApiError(error));
+    }
   };
 
   return (
@@ -353,6 +455,9 @@ export default function BillingWorkspace({ role, canCreateBilling }: BillingWork
               getInvoiceStatusColor={getInvoiceStatusColor}
               role={role}
               isLoading={isInvoicesLoading}
+              onQuickAction={handleInvoiceQuickAction}
+              isActionPending={isActionPending}
+              actionError={actionError}
             />
           ) : (
             <BillingQuotesTable
@@ -362,6 +467,9 @@ export default function BillingWorkspace({ role, canCreateBilling }: BillingWork
               getQuoteStatusColor={getQuoteStatusColor}
               role={role}
               isLoading={isQuotesLoading}
+              onQuickAction={handleQuoteQuickAction}
+              isActionPending={isActionPending}
+              actionError={actionError}
             />
           )}
         </div>

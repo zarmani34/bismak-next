@@ -19,6 +19,7 @@ import {
   LeakTestResponse,
   useUpdateLeakTest,
 } from "@/hooks/useLeakTest";
+import { useProject } from "@/hooks/useProjects";
 import ErrorState from "../states/ErrorState";
 import { extractApiError } from "@/lib/errors";
 
@@ -69,6 +70,7 @@ const mapLeakTestToForm = (leakTest: LeakTest): CreateLeakTestData => {
 
   return {
     station_name: leakTest.station_name ?? "",
+    client_representative: leakTest.client_representative ?? "",
     location: leakTest.location ?? "",
     date_of_test: dateOfTest,
     expiring_date: expiringDate,
@@ -114,6 +116,7 @@ export default function LeakTestFormPage({ role, mode = "create" }: Props) {
   const router = useRouter();
   const code = typeof params?.code === "string" ? params.code : "";
   const isEditMode = mode === "edit";
+  const { data: project } = useProject(code);
   const {
     data: leakTestResponse,
     isLoading,
@@ -131,6 +134,7 @@ export default function LeakTestFormPage({ role, mode = "create" }: Props) {
     handleSubmit,
     control,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateLeakTestData>({
@@ -138,6 +142,7 @@ export default function LeakTestFormPage({ role, mode = "create" }: Props) {
     mode: "onBlur",
     defaultValues: {
       station_name: "",
+      client_representative: "",
       location: "",
       date_of_test: formatDateInput(new Date()),
       expiring_date: addYearsToDateInput(formatDateInput(new Date()), 2),
@@ -165,6 +170,24 @@ export default function LeakTestFormPage({ role, mode = "create" }: Props) {
     if (!existingLeakTest) return;
     reset(mapLeakTestToForm(existingLeakTest));
   }, [existingLeakTest, isEditMode, reset]);
+
+  useEffect(() => {
+    if (!project || isEditMode) return;
+
+    if (!getValues("station_name")) {
+      setValue("station_name", project.company, { shouldDirty: false });
+    }
+
+    if (!getValues("location")) {
+      setValue("location", project.location, { shouldDirty: false });
+    }
+
+    if (!getValues("client_representative")) {
+      setValue("client_representative", project.owner?.full_name || "", {
+        shouldDirty: false,
+      });
+    }
+  }, [getValues, isEditMode, project, setValue]);
 
   useEffect(() => {
     if (!dateOfTest) return;
@@ -252,6 +275,20 @@ export default function LeakTestFormPage({ role, mode = "create" }: Props) {
               {errors.station_name && (
                 <p className="text-xs text-secondary-light mt-1">
                   {errors.station_name.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="text-xs text-secondary-text">
+                Client representative
+              </label>
+              <input
+                className="mt-1 w-full rounded-lg border border-border px-3 py-2 bg-primary-light/20 text-primary-dark"
+                {...register("client_representative")}
+              />
+              {errors.client_representative && (
+                <p className="text-xs text-secondary-light mt-1">
+                  {errors.client_representative.message}
                 </p>
               )}
             </div>

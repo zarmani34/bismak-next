@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import { FaArrowLeft, FaFileInvoice, FaPrint } from "react-icons/fa6";
-import { useInvoiceByCode, useQuote } from "@/hooks/useBilling";
+import { useInvoiceByCode, useQuote, useUpdateInvoice } from "@/hooks/useBilling";
 import ErrorState from "../states/ErrorState";
 import { formatDate, formatDateTime } from "@/src/utils/date";
 import { getStatusColor } from "../../constants";
+import { extractApiError } from "@/lib/errors";
+import { getInvoiceActions, InvoiceActionKey } from "../../utils/billingActions";
 
 type InvoiceDetailPageProps = {
   role: "admin" | "client";
@@ -23,8 +26,10 @@ export default function InvoiceDetailPage({ role }: InvoiceDetailPageProps) {
   const params = useParams();
   const invoiceCode = typeof params?.code === "string" ? params.code : "";
   const billingBase = role === "admin" ? "/portal/admin/billing" : "/portal/client/billings";
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const { data: invoice, isLoading, isError, refetch } = useInvoiceByCode(invoiceCode);
+  const updateInvoice = useUpdateInvoice();
 
   const quoteCode = invoice?.quote ?? "";
   const { data: quote } = useQuote(quoteCode);
@@ -62,6 +67,45 @@ export default function InvoiceDetailPage({ role }: InvoiceDetailPageProps) {
   );
 
   const invoiceAmount = Number.parseFloat(invoice.amount || "0");
+  const invoiceActions = getInvoiceActions({ role, status: invoice.status });
+
+  const handleInvoiceAction = async (actionKey: InvoiceActionKey) => {
+    setActionError(null);
+    try {
+      if (actionKey === "mark_paid") {
+        await updateInvoice.mutateAsync({
+          invoiceId: invoice.id,
+          invoiceData: { status: "paid" },
+        });
+        return;
+      }
+
+      if (actionKey === "mark_overdue") {
+        await updateInvoice.mutateAsync({
+          invoiceId: invoice.id,
+          invoiceData: { status: "overdue" },
+        });
+        return;
+      }
+
+      if (actionKey === "mark_cancelled") {
+        await updateInvoice.mutateAsync({
+          invoiceId: invoice.id,
+          invoiceData: { status: "cancelled" },
+        });
+        return;
+      }
+
+      if (actionKey === "mark_sent") {
+        await updateInvoice.mutateAsync({
+          invoiceId: invoice.id,
+          invoiceData: { status: "sent" },
+        });
+      }
+    } catch (error) {
+      setActionError(extractApiError(error));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -195,6 +239,32 @@ export default function InvoiceDetailPage({ role }: InvoiceDetailPageProps) {
         </div>
 
         <div className="space-y-4">
+          <div className="rounded-2xl border border-border bg-primary-light/20 p-5">
+            <h3 className="text-sm font-semibold text-primary-dark">Invoice Actions</h3>
+            {invoiceActions.length === 0 ? (
+              <p className="text-xs text-secondary-text mt-2">No available actions for this status.</p>
+            ) : (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {invoiceActions.map((action) => (
+                  <button
+                    key={action.key}
+                    type="button"
+                    onClick={() => void handleInvoiceAction(action.key)}
+                    disabled={updateInvoice.isPending}
+                    className={`px-3 py-2 rounded-lg border text-xs font-medium disabled:opacity-60 ${
+                      action.tone === "primary"
+                        ? "border-secondary/40 text-secondary hover:bg-secondary/10"
+                        : "border-border text-primary-dark hover:bg-primary-light/20"
+                    }`}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {actionError ? <p className="text-xs text-secondary-light mt-2">{actionError}</p> : null}
+          </div>
+
           <div className="rounded-2xl border border-border bg-primary-light/20 p-5">
             <h3 className="text-sm font-semibold text-primary-dark">Payment Timeline</h3>
             <div className="mt-3 space-y-3 text-xs text-secondary-text">

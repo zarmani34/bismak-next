@@ -15,6 +15,7 @@ export const LeakTestSchema = z.object({
   id: z.string(),
   project: z.string(),
   station_name: z.string(),
+  client_representative: z.string().nullable().optional(),
   location: z.string(),
   date_of_test: z.string(),
   expiring_date: z.string(),
@@ -34,6 +35,7 @@ export const CreateLeakTestTankSchema = z.object({
 
 export const CreateLeakTestSchema = z.object({
   station_name: z.string().min(1, "Station name is required"),
+  client_representative: z.string().min(1, "Client representative is required"),
   location: z.string().min(1, "Location is required"),
   date_of_test: z.string().min(1, "Date of test is required"),
   expiring_date: z.string().min(1, "Expiring date is required"),

@@ -124,22 +124,25 @@ export default function LeakTestRecordPage({ role }: Props) {
          
 
           <div className="pt-5 md:pt-7 text-center mt-24">
-            <h1 className="text-[31px] md:text-[40px] leading-none font-black tracking-wide uppercase underline decoration-[1.5px] underline-offset-[5px]">
+            <h1 className="text-[31px] md:text-[60px] leading-none font-extrabold tracking-wide uppercase underline decoration-[1.5px] underline-offset-[5px]">
               Leak Test Certificate
             </h1>
           </div>
 
           <p className="mt-5 text-[14px] leading-[1.35] text-left max-w-[780px] tracking-[0.03em] font-semibold">
             <span className="certificate-body-text">
-              This is to certify that the leakage Detection Tests conducted on (FOUR) 
-               specified below have been found satisfactory. The tanks
+              This is to certify that the leakage Detection Tests conducted on ({leakTest.tanks.length}) 
+              fuel storage tanks specified below have been found satisfactory. The tanks
               are hereby safe for storage of Petroleum product until the next test
               period.
             </span>
           </p>
 
           <div className="mt-6 text-[13px] space-y-12">
-            <div className="w-full flex justify-end">
+            <div className="w-full flex justify-between items-start ">
+              <p className="font-bold">
+                Certificate No:
+              </p>
               <p className="uppercase tracking-wide">
                 <span className="font-bold">Date:</span>{" "}
                 {formatCertificateDateHeading(leakTest.date_of_test)}
@@ -163,6 +166,8 @@ export default function LeakTestRecordPage({ role }: Props) {
                 </span>
               </p>
             </div>
+
+            
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-[13px] mt-6">
@@ -229,7 +234,9 @@ export default function LeakTestRecordPage({ role }: Props) {
               </p>
             </div>
             <div className="md:text-right">
-              
+              <p className="uppercase font-bold tracking-wide">
+                {leakTest.client_representative || "--"}
+              </p>
               <p className="mt-8 inline-block w-[220px] border-t border-black pt-1">
                 Name of Client Representative
               </p>

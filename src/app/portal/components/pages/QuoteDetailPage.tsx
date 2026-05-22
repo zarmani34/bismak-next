@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { FaArrowLeft, FaFileInvoice, FaLink } from "react-icons/fa6";
-import { useQuote } from "@/hooks/useBilling";
+import { useQuote, useUpdateQuoteStatus } from "@/hooks/useBilling";
 import ErrorState from "../states/ErrorState";
 import { formatDate, formatDateTime } from "@/src/utils/date";
 import { getStatusColor } from "../../constants";
+import { extractApiError } from "@/lib/errors";
+import { getQuoteActions, QuoteActionKey } from "../../utils/billingActions";
 
 type QuoteDetailPageProps = {
   role: "admin" | "client";
@@ -20,11 +23,14 @@ const formatCurrency = (value: string | number) =>
   }).format(typeof value === "number" ? value : Number.parseFloat(value || "0"));
 
 export default function QuoteDetailPage({ role }: QuoteDetailPageProps) {
+  const router = useRouter();
   const params = useParams();
   const quoteCode = typeof params?.code === "string" ? params.code : "";
   const billingBase = role === "admin" ? "/portal/admin/billing" : "/portal/client/billings";
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const { data: quote, isLoading, isError, refetch } = useQuote(quoteCode);
+  const updateQuoteStatus = useUpdateQuoteStatus();
 
   if (isLoading) {
     return (
@@ -59,6 +65,44 @@ export default function QuoteDetailPage({ role }: QuoteDetailPageProps) {
 
   const quoteAmount = Number.parseFloat(quote.amount || "0");
   const hasItems = quote.items.length > 0;
+  const quoteActions = getQuoteActions({
+    role,
+    status: quote.status,
+    hasInvoice: Boolean(quote.invoice),
+  });
+
+  const handleQuoteAction = async (actionKey: QuoteActionKey) => {
+    setActionError(null);
+    try {
+      if (actionKey === "view_invoice") {
+        if (quote.invoice?.code) {
+          router.push(`${billingBase}/invoices/${quote.invoice.code}`);
+        }
+        return;
+      }
+
+      if (actionKey === "accept_quote") {
+        await updateQuoteStatus.mutateAsync({ quoteCode: quote.code, status: "accepted" });
+        return;
+      }
+
+      if (actionKey === "reject_quote") {
+        await updateQuoteStatus.mutateAsync({ quoteCode: quote.code, status: "rejected" });
+        return;
+      }
+
+      if (actionKey === "mark_revised") {
+        await updateQuoteStatus.mutateAsync({ quoteCode: quote.code, status: "revised" });
+        return;
+      }
+
+      if (actionKey === "mark_sent") {
+        await updateQuoteStatus.mutateAsync({ quoteCode: quote.code, status: "sent" });
+      }
+    } catch (error) {
+      setActionError(extractApiError(error));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -198,6 +242,32 @@ export default function QuoteDetailPage({ role }: QuoteDetailPageProps) {
         </div>
 
         <div className="space-y-4">
+          <div className="rounded-2xl border border-border bg-primary-light/20 p-5">
+            <h3 className="text-sm font-semibold text-primary-dark">Quote Actions</h3>
+            {quoteActions.length === 0 ? (
+              <p className="text-xs text-secondary-text mt-2">No available actions for this status.</p>
+            ) : (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {quoteActions.map((action) => (
+                  <button
+                    key={action.key}
+                    type="button"
+                    onClick={() => void handleQuoteAction(action.key)}
+                    disabled={updateQuoteStatus.isPending}
+                    className={`px-3 py-2 rounded-lg border text-xs font-medium disabled:opacity-60 ${
+                      action.tone === "primary"
+                        ? "border-secondary/40 text-secondary hover:bg-secondary/10"
+                        : "border-border text-primary-dark hover:bg-primary-light/20"
+                    }`}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {actionError ? <p className="text-xs text-secondary-light mt-2">{actionError}</p> : null}
+          </div>
+
           <div className="rounded-2xl border border-border bg-primary-light/20 p-5">
             <h3 className="text-sm font-semibold text-primary-dark">Timeline</h3>
             <div className="mt-3 space-y-3 text-xs text-secondary-text">

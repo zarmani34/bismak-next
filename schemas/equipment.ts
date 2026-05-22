@@ -59,6 +59,7 @@ const RequestedBySchema = z.object({
 
 export const EquipmentRequestListItemSchema = z.object({
   id: z.string(),
+  code: z.string(),
   equipment_name: z.string(),
   requested_by: z.string().nullable(),
   project_code: z.string().nullable(),
@@ -70,6 +71,7 @@ export const EquipmentRequestListItemSchema = z.object({
 
 export const EquipmentRequestDetailSchema = z.object({
   id: z.string(),
+  code: z.string(),
   equipment: EquipmentListItemSchema,
   requested_by: RequestedBySchema.nullable(),
   approved_by: RequestedBySchema.nullable(),

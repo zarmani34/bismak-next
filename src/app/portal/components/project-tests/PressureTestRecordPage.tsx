@@ -182,6 +182,11 @@ export default function PressureTestRecordPage({ role }: Props) {
                 {pressureTest.client}
               </p>
               <p>
+                CLIENT REPRESENTATIVE{" "}
+                <span className="inline-block w-3 text-center">-</span>{" "}
+                {pressureTest.client_representative || project?.owner?.full_name || "--"}
+              </p>
+              <p>
                 LOCATION ADDRESS{" "}
                 <span className="inline-block w-3 text-center">-</span>{" "}
                 {pressureTest.location_address}
@@ -298,7 +303,10 @@ export default function PressureTestRecordPage({ role }: Props) {
               </div>
               <div className="md:text-right">
                 <p className="uppercase font-bold tracking-wide">
-                  {project?.company ?? pressureTest.client}
+                  {pressureTest.client_representative ||
+                    project?.owner?.full_name ||
+                    project?.company ||
+                    pressureTest.client}
                 </p>
                 <p className="mt-4 inline-block w-[220px] border-t border-black pt-1 uppercase">
                   Name & Sign of Client Representative
@@ -327,6 +335,14 @@ export default function PressureTestRecordPage({ role }: Props) {
             <div className="mt-8 space-y-1 text-[13px] leading-[1.2] uppercase">
               <p>
                 CLIENT: <span className="underline">{pressureTest.client}</span>
+              </p>
+              <p>
+                CLIENT REPRESENTATIVE:{" "}
+                <span className="underline">
+                  {pressureTest.client_representative ||
+                    project?.owner?.full_name ||
+                    "--"}
+                </span>
               </p>
               <p>
                 TANK TEST LOCATION:{" "}
@@ -439,7 +455,10 @@ export default function PressureTestRecordPage({ role }: Props) {
               </div>
               <div className="md:text-right">
                 <p className="uppercase font-bold tracking-wide">
-                  {project?.company ?? pressureTest.client}
+                  {pressureTest.client_representative ||
+                    project?.owner?.full_name ||
+                    project?.company ||
+                    pressureTest.client}
                 </p>
                 <p className="mt-4 inline-block w-[220px] border-t border-black pt-1 uppercase">
                   Name of Client Representative
