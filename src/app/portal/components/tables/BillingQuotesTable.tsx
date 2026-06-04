@@ -17,6 +17,7 @@ type QuoteRow = {
   status_display: string;
   quoted_by: string;
   valid_until: string | null;
+  created_at: string;
   has_invoice: boolean;
   invoice_code: string | null;
 };

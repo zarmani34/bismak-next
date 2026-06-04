@@ -27,7 +27,7 @@ export function useAuth() {
       document.cookie = `user-role=${result.user.role}; path=/; max-age=${60 * 60 * 24 * 7}`;
       router.push(next ?? `/${result.user.portal}`);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.log("Login error:", err);
       setError(extractApiError(err));
       return false;

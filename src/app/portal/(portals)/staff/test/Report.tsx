@@ -43,8 +43,10 @@ interface Report {
   priority: 'low' | 'medium' | 'high' | 'urgent';
 }
 
+type ReportTab = 'all' | 'drafts' | 'submitted';
+
 export default function ReportsPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'drafts' | 'submitted'>('all');
+  const [activeTab, setActiveTab] = useState<ReportTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -202,6 +204,12 @@ export default function ReportsPage() {
     { name: 'Technical Assessment', icon: FaChartBar, color: 'bg-[#D95C3E]' }
   ];
 
+  const reportTabs: Array<{ id: ReportTab; label: string; count: number }> = [
+    { id: 'all', label: 'All Reports', count: reports.length },
+    { id: 'drafts', label: 'Drafts', count: stats.drafts },
+    { id: 'submitted', label: 'Submitted', count: reports.length - stats.drafts },
+  ];
+
   return (
     <div className="min-h-screen bg-[#F6F5D9]">
       {/* Header */}
@@ -266,14 +274,10 @@ export default function ReportsPage() {
         {/* Tabs */}
         <div className="bg-white rounded-t-xl border border-b-0 border-[#e0ddc7] shadow-sm">
           <div className="flex border-b border-[#e0ddc7]">
-            {[
-              { id: 'all', label: 'All Reports', count: reports.length },
-              { id: 'drafts', label: 'Drafts', count: stats.drafts },
-              { id: 'submitted', label: 'Submitted', count: reports.length - stats.drafts }
-            ].map((tab) => (
+            {reportTabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`px-6 py-4 font-medium transition-all relative ${
                   activeTab === tab.id 
                     ? 'text-[#37574a] border-b-2 border-[#37574a] bg-[#F6F5D9]' 

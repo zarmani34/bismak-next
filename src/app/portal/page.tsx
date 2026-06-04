@@ -93,7 +93,7 @@ export default function Portal() {
           transition={{ delay: 0.5, duration: 0.6 }}
           className="text-lg md:text-xl text-body-text mb-8 max-w-2xl mx-auto"
         >
-          We're working hard to bring you an enhanced portal experience. Our team is crafting something special for you.
+          We&apos;re working hard to bring you an enhanced portal experience. Our team is crafting something special for you.
         </motion.p>
 
         {/* Progress indicator */}

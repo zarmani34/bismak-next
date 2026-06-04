@@ -82,7 +82,7 @@ const Hero = ({setActiveSection}: TypeSetActiveSection) => {
             </span>
           </h1>
           <p className="text-sm md:text-xl text-tetiary max-w-3xl mx-auto mb-2 md:mb-10 leading-relaxed">
-            Nigeria's leading indigenous contractor delivering world-class
+            Nigeria&apos;s leading indigenous contractor delivering world-class
             technical solutions with unwavering commitment to safety, quality,
             and operational excellence since{" "}
             <span className="text-primary-dark font-semibold">2009</span>.

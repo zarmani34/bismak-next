@@ -20,7 +20,7 @@ const Footer = () => {
               <span className="text-2xl font-bold">BISMAK</span>
             </div>
             <p className="text-white/80 text-sm leading-relaxed mb-6">
-              Nigeria's leading indigenous contractor delivering world-class
+              Nigeria&apos;s leading indigenous contractor delivering world-class
               technical solutions with unwavering commitment to safety, quality,
               and operational excellence since 2009.
             </p>

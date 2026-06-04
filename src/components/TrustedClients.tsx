@@ -27,7 +27,7 @@ const TrustedClients = () => {
             Our Valued Clients
           </h2>
           <p className="text-body-text max-w-2xl mx-auto text-lg">
-            Partnering with Nigeria's leading operators in the oil, gas, and energy sectors
+            Partnering with Nigeria&apos;s leading operators in the oil, gas, and energy sectors
           </p>
         </motion.div>
       </div>

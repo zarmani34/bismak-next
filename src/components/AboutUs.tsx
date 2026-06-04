@@ -37,17 +37,17 @@ const AboutUs = ({setActiveSection}:TypeSetActiveSection) => {
         {/* Left Content */}
         <div className="about-content">
           <h2 className="text-3xl md:text-4xl font-bold text-primary-dark mb-8">
-            Nigeria's Premier Indigenous Oil &amp; Gas Contractor
+            Nigeria&apos;s Premier Indigenous Oil &amp; Gas Contractor
           </h2>
           <p className="mt-8 text-header-color leading-relaxed">
             Established in 2009, BISMAK EXCEL AND TECHNICAL SERVICES LIMITED
-            stands as Nigeria's leading indigenous technical services provider,
+            stands as Nigeria&apos;s leading indigenous technical services provider,
             delivering world-class solutions to the oil, gas, and allied
             industries.
           </p>
           <p className="mt-8 text-header-color leading-relaxed">
-            Our mission transcends mere service provision – we're committed to
-            actualizing Nigeria's local content agenda while maintaining
+            Our mission transcends mere service provision – we&apos;re committed to
+            actualizing Nigeria&apos;s local content agenda while maintaining
             international standards of safety, quality, and operational
             excellence.
           </p>
@@ -82,7 +82,7 @@ const AboutUs = ({setActiveSection}:TypeSetActiveSection) => {
             </h4>
             <p className="text-gray-600 leading-relaxed">
               To fulfill and actualize the ideas of local content as vigorously
-              pursued by Nigeria's total transformation agenda.
+              pursued by Nigeria&apos;s total transformation agenda.
             </p>
           </div>
 
@@ -108,3 +108,4 @@ const AboutUs = ({setActiveSection}:TypeSetActiveSection) => {
 };
 
 export default AboutUs;
+

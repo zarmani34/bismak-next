@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { isAxiosError } from "axios";
 import api from "@/lib/axios";
 
 export interface Notification {
@@ -37,9 +38,9 @@ export function useNotifications(
     ]);
     setNotifications(notifRes.data.results ?? notifRes.data);
     setUnreadCount(countRes.data.unread_count);
-  } catch (err: any) {
+  } catch (err: unknown) {
     // Silently ignore auth errors — user may not be logged in yet
-    if (err.response?.status !== 401) {
+    if (!isAxiosError(err) || err.response?.status !== 401) {
       console.error("Failed to fetch notifications:", err);
     }
   }
@@ -47,11 +48,14 @@ export function useNotifications(
 
   // ── SSE connection ────────────────────────────────────────────────────────
   useEffect(() => {
-  fetchInitial();
-
   let eventSource: EventSource | null = null;
+  let isMounted = true;
 
-  api.get('/auth/user/').then((res) => {
+  const connectNotifications = async () => {
+    await fetchInitial();
+    const res = await api.get('/auth/user/');
+    if (!isMounted) return;
+
     const userCode = res.data.user_id;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "");
     const streamUrl = `${baseUrl}/api/notifications/stream/?channel=notifications-${userCode}`;
@@ -74,15 +78,17 @@ export function useNotifications(
     eventSource.onerror = () => {
       setIsConnected(false);
     };
-  }).catch((err) => {
+  };
+
+  connectNotifications().catch((err) => {
     console.error("Failed to get user for SSE:", err);
   });
 
   return () => {
+    isMounted = false;
     eventSource?.close();
-    setIsConnected(false);
   };
-}, [fetchInitial]);
+}, [fetchInitial, onNewNotification]);
 
   // ── Mark single notification as read ─────────────────────────────────────
   const markAsRead = useCallback(async (id: string) => {

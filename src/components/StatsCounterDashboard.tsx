@@ -1,5 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useScrollInView } from "../utils/useScrollInView";
+
+const stats = [
+  { key: "years", target: 15, label: "Years of Excellence", suffix: "" },
+  { key: "projects", target: 200, label: "Projects Completed", suffix: "+" },
+  { key: "clients", target: 100, label: "Satisfied Clients", suffix: "+" },
+  { key: "experts", target: 150, label: "Expert Professionals", suffix: "+" },
+];
 
 const StatsCounterDashboard = () => {
   type Counts = {
@@ -7,44 +14,45 @@ const StatsCounterDashboard = () => {
   };
 
   const [counts, setCounts] = useState<Counts>({});
-  const [hasAnimated, setHasAnimated] = useState(false);
+  const hasAnimated = useRef(false);
 
   const [ref, inView] = useScrollInView(0.5, true);
 
-  const stats = [
-    { key: "years", target: 15, label: "Years of Excellence", suffix: "" },
-    { key: "projects", target: 200, label: "Projects Completed", suffix: "+" },
-    { key: "clients", target: 100, label: "Satisfied Clients", suffix: "+" },
-    { key: "experts", target: 150, label: "Expert Professionals", suffix: "+" },
-  ];
-
   useEffect(() => {
-    if (inView && !hasAnimated) {
-      setHasAnimated(true);
+    if (!inView || hasAnimated.current) return;
 
-      const duration = 2000;
-      const intervals: Record<string, ReturnType<typeof setInterval>> = {};
+    hasAnimated.current = true;
 
-      stats.forEach((stat, index) => {
-        setTimeout(() => {
-          let current = 0;
-          const increment = stat.target / (duration / 50);
+    const duration = 2000;
+    const intervals: Record<string, ReturnType<typeof setInterval>> = {};
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-          intervals[stat.key] = setInterval(() => {
-            current += increment;
-            if (current >= stat.target) {
-              current = stat.target;
-              clearInterval(intervals[stat.key]);
-            }
-            setCounts((prev) => ({
-              ...prev,
-              [stat.key]: Math.floor(current),
-            }));
-          }, 50);
-        }, index * 200); // stagger like your original
-      });
-    }
-  }, [inView, hasAnimated]);
+    stats.forEach((stat, index) => {
+      const timeout = setTimeout(() => {
+        let current = 0;
+        const increment = stat.target / (duration / 50);
+
+        intervals[stat.key] = setInterval(() => {
+          current += increment;
+          if (current >= stat.target) {
+            current = stat.target;
+            clearInterval(intervals[stat.key]);
+          }
+          setCounts((prev) => ({
+            ...prev,
+            [stat.key]: Math.floor(current),
+          }));
+        }, 50);
+      }, index * 200);
+
+      timeouts.push(timeout);
+    });
+
+    return () => {
+      timeouts.forEach(clearTimeout);
+      Object.values(intervals).forEach(clearInterval);
+    };
+  }, [inView]);
   return (
     <section
       ref={ref}

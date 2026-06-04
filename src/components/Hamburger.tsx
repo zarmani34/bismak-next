@@ -37,4 +37,6 @@ const Harmburger = forwardRef<HTMLDivElement, HarmburgerProps>(({ showMenu, hand
   );
 });
 
+Harmburger.displayName = "Harmburger";
+
 export default Harmburger;

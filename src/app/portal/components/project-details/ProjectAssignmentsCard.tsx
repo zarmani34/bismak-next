@@ -8,12 +8,12 @@ import { useCreateAssignment, useDeleteAssignment } from "@/hooks/useAssignment"
 import { useStaffList } from "@/hooks/useStaff";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { extractApiError } from "@/lib/errors";
-import { CreateAssignmentData, CreateAssignmentSchema } from "@/schemas/assignment";
+import { Assignment, CreateAssignmentData, CreateAssignmentSchema } from "@/schemas/assignment";
 
 
 
 type ProjectAssignmentsCardProps = {
-  assignments?: any[];
+  assignments?: Assignment[];
   company: string;
   projectCode: string;
 };
@@ -131,7 +131,7 @@ export default function ProjectAssignmentsCard({
 
       {assignments?.length ? (
         <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-          {assignments.map((assignment: any) => (
+          {assignments.map((assignment) => (
             <div key={assignment.id} className="rounded-xl border border-border bg-tetiary/80 p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-secondary-text">Assignment</span>

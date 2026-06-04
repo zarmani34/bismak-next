@@ -16,6 +16,7 @@ type InvoiceRow = {
   status_display: string;
   due_date: string | null;
   paid_at: string | null;
+  created_at: string;
 };
 
 type BillingInvoicesTableProps = {

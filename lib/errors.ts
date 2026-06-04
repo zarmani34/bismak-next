@@ -1,8 +1,15 @@
-export function extractApiError(err: any): string {
-  console.log(err);
-  const data = err.response?.data;
+import { isAxiosError } from "axios";
 
-  if (!data) return err.message ?? "Something went wrong";
+type ApiErrorResponse = {
+  detail?: string;
+  non_field_errors?: string[];
+};
+
+export function extractApiError(err: unknown): string {
+  console.log(err);
+  const data = isAxiosError<ApiErrorResponse>(err) ? err.response?.data : null;
+
+  if (!data) return err instanceof Error ? err.message : "Something went wrong";
 
   // "detail" — general Django error e.g authentication
   if (data.detail) return data.detail;
