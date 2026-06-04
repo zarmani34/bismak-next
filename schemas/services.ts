@@ -17,7 +17,7 @@ const ServiceOwnerSchema = z.object({
 export const CreateServiceTypeSchema = z.object({
   name: z.string().min(1, "Service type name is required"),
   description: z.string().optional(),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean(),
 });
 
 export const ServiceStatusSchema = z.enum(["pending", "reviewed", "quoted", "accepted", "rejected", "in_progress", "completed"])
