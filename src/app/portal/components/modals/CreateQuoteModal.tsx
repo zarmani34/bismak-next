@@ -271,7 +271,7 @@ export default function CreateQuoteModal({
       status: "sent",
       items: data.is_itemized
         ? data.items.map((item) => ({
-            description: item.description,
+            description: item.description ?? "",
             quantity: Number(item.quantity),
             unit_price: Number.parseFloat(item.unit_price || "0").toFixed(2),
           }))
