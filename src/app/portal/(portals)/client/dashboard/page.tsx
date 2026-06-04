@@ -12,6 +12,7 @@ import { useServiceRequests } from "@/hooks/useServices";
 import { useInvoices, useQuotes } from "@/hooks/useBilling";
 import { formatDate } from "@/src/utils/date";
 import { FaCheckCircle } from "react-icons/fa";
+import { ServiceRequestDetail } from "@/schemas/services";
 
 export default function ClientDashboard() {
   const {
@@ -56,7 +57,7 @@ export default function ClientDashboard() {
       {
         label: "Active Services",
         value: String(
-          services.filter((service) => ["pending", "reviewed", "quoted", "in_progress"].includes(service.status)).length,
+          services.filter((service:ServiceRequestDetail) => ["pending", "reviewed", "quoted", "in_progress"].includes(service.status)).length,
         ),
         icon: <FaClockRotateLeft />,
         color: "warning" as const,
@@ -69,7 +70,7 @@ export default function ClientDashboard() {
       },
       {
         label: "Completed Services",
-        value: String(services.filter((service) => service.status === "completed").length),
+        value: String(services.filter((service:ServiceRequestDetail) => service.status === "completed").length),
         icon: <FaCheckCircle />,
         color: "info" as const,
       },
