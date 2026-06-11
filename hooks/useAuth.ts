@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { logoutAction } from "@/actions/auth";
-import { LoginFormData } from "@/schemas/auth";
+import { LoginFormData, SignUpFormData } from "@/schemas/auth";
 import { currentUserKey } from "@/hooks/useCurrentUser";
 import api from "@/lib/axios";
 import { extractApiError } from "@/lib/errors";
+import { isAxiosError } from "axios";
 
 export function useAuth() {
   const router = useRouter();
@@ -36,10 +37,29 @@ export function useAuth() {
     }
   }
 
+  async function signUp(credentials: SignUpFormData) {
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    await api.post("/auth/registration/client/", credentials);
+    return { success: true };
+  } catch (err: any) {
+    if (isAxiosError(err) && err.response?.status === 500) {
+      setError("Something went wrong on our end. Please try again.");
+      return { success: false };
+    }
+    setError(extractApiError(err));
+    return { success: false };
+  } finally {
+    setIsLoading(false);
+  }
+}
+
   async function logout() {
     queryClient.removeQueries({ queryKey: currentUserKey });
     await logoutAction();
   }
 
-  return { login, logout, isLoading, error };
+  return { login, signUp, logout, isLoading, error };
 }

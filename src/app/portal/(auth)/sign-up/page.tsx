@@ -5,31 +5,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
-
-const signUpSchema = z
-  .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z
-      .string()
-      .min(1, "Email is required")
-      .email("Please enter a valid email address"),
-    password: z
-      .string()
-      .min(1, "Password is required")
-      .min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Passwords do not match",
-  });
-
-type SignUpFormData = z.infer<typeof signUpSchema>;
+import { SignUpFormData, SignUpSchema } from "@/schemas/auth";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { FaEnvelope } from "react-icons/fa";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showVerificationPopup, setShowVerificationPopup] = useState(false);
+  const { signUp, isLoading, error } = useAuth();
+  const router = useRouter();
 
   const {
     register,
@@ -37,20 +23,14 @@ export default function SignUpForm() {
     formState: { errors, isSubmitting },
     setError,
   } = useForm<SignUpFormData>({
-    resolver: zodResolver(signUpSchema),
+    resolver: zodResolver(SignUpSchema),
     mode: "onBlur",
   });
 
   const onSubmit = async (data: SignUpFormData) => {
-    try {
-      console.log("Signing up with data:", data);
-
-      // TODO: Replace with API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    } catch (error) {
-      setError("root", {
-        message: "Something went wrong. Please try again.",
-      });
+    const result = await signUp(data);
+    if (result?.success) {
+      setShowVerificationPopup(true);
     }
   };
 
@@ -65,15 +45,17 @@ export default function SignUpForm() {
             id="firstName"
             type="text"
             placeholder="First Name"
-            {...register("firstName")}
+            {...register("first_name")}
             className={`w-full p-3 rounded-lg bg-primary-light/20 border ${
-              errors.firstName ? "border-secondary-light" : "border-primary-dark"
+              errors.first_name
+                ? "border-secondary-light"
+                : "border-primary-dark"
             } text-primary-dark placeholder:text-primary-dark focus:outline-0 focus:bg-transparent focus:text-primary-dark font-semibold`}
-            aria-invalid={errors.firstName ? "true" : "false"}
+            aria-invalid={errors.first_name ? "true" : "false"}
           />
-          {errors.firstName && (
+          {errors.first_name && (
             <p className="text-secondary-light text-sm mt-1">
-              {errors.firstName.message}
+              {errors.first_name.message}
             </p>
           )}
         </div>
@@ -86,15 +68,17 @@ export default function SignUpForm() {
             id="lastName"
             type="text"
             placeholder="Last Name"
-            {...register("lastName")}
+            {...register("last_name")}
             className={`w-full p-3 rounded-lg bg-primary-light/20 border ${
-              errors.lastName ? "border-secondary-light" : "border-primary-dark"
+              errors.last_name
+                ? "border-secondary-light"
+                : "border-primary-dark"
             } text-primary-dark placeholder:text-primary-dark focus:outline-0 focus:bg-transparent focus:text-primary-dark font-semibold`}
-            aria-invalid={errors.lastName ? "true" : "false"}
+            aria-invalid={errors.last_name ? "true" : "false"}
           />
-          {errors.lastName && (
+          {errors.last_name && (
             <p className="text-secondary-light text-sm mt-1">
-              {errors.lastName.message}
+              {errors.last_name.message}
             </p>
           )}
         </div>
@@ -130,11 +114,13 @@ export default function SignUpForm() {
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="Password"
-            {...register("password")}
+            {...register("password1")}
             className={`w-full p-3 rounded-lg bg-primary-light/20 border ${
-              errors.password ? "border-secondary-light" : "border-primary-dark"
+              errors.password1
+                ? "border-secondary-light"
+                : "border-primary-dark"
             } text-primary-dark placeholder:text-primary-dark focus:outline-0 focus:bg-transparent focus:text-primary-dark font-semibold`}
-            aria-invalid={errors.password ? "true" : "false"}
+            aria-invalid={errors.password1 ? "true" : "false"}
           />
           <button
             type="button"
@@ -145,9 +131,9 @@ export default function SignUpForm() {
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
         </div>
-        {errors.password && (
+        {errors.password1 && (
           <p className="text-secondary-light text-sm mt-1">
-            {errors.password.message}
+            {errors.password1.message}
           </p>
         )}
       </div>
@@ -161,38 +147,77 @@ export default function SignUpForm() {
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             placeholder="Confirm Password"
-            {...register("confirmPassword")}
+            {...register("password2")}
             className={`w-full p-3 rounded-lg bg-primary-light/20 border ${
-              errors.confirmPassword
+              errors.password2
                 ? "border-secondary-light"
                 : "border-primary-dark"
             } text-primary-dark placeholder:text-primary-dark focus:outline-0 focus:bg-transparent focus:text-primary-dark font-semibold`}
-            aria-invalid={errors.confirmPassword ? "true" : "false"}
+            aria-invalid={errors.password2 ? "true" : "false"}
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute inset-y-0 right-3 flex items-center text-primary-dark"
             aria-label={
-              showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+              showConfirmPassword
+                ? "Hide confirm password"
+                : "Show confirm password"
             }
           >
             {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
         </div>
-        {errors.confirmPassword && (
+        {errors.password2 && (
           <p className="text-secondary-light text-sm mt-1">
-            {errors.confirmPassword.message}
+            {errors.password2.message}
           </p>
         )}
       </div>
 
-        {errors.root && (
+      {errors.root && (
         <div className="p-3 rounded-lg text-sm bg-red-50 text-secondary-light border border-secondary-light">
           {errors.root.message}
         </div>
       )}
-      
+      <div>
+        <label htmlFor="company_name" className="sr-only">
+          Company Name
+        </label>
+        <input
+          id="company_name"
+          type="text"
+          placeholder="Company Name"
+          {...register("company_name")}
+          className={`w-full p-3 rounded-lg bg-primary-light/20 border ${
+            errors.company_name
+              ? "border-secondary-light"
+              : "border-primary-dark"
+          } text-primary-dark placeholder:text-primary-dark focus:outline-0 focus:bg-transparent focus:text-primary-dark font-semibold`}
+          aria-invalid={errors.company_name ? "true" : "false"}
+        />
+        {errors.company_name && (
+          <p className="text-secondary-light text-sm mt-1">
+            {errors.company_name.message}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="company_address" className="sr-only">
+          Company Address
+        </label>
+        <input
+          id="company_address"
+          type="text"
+          placeholder="Company Address (optional)"
+          {...register("company_address")}
+          className="w-full p-3 rounded-lg bg-primary-light/20 border border-primary-dark
+      text-primary-dark placeholder:text-primary-dark focus:outline-0 
+      focus:bg-transparent focus:text-primary-dark font-semibold"
+        />
+      </div>
+
       <button
         type="submit"
         disabled={isSubmitting}
@@ -200,6 +225,43 @@ export default function SignUpForm() {
       >
         {isSubmitting ? "Creating account..." : "Create Account"}
       </button>
+
+      { showVerificationPopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div
+            className="bg-tetiary rounded-xl p-8 max-w-sm w-full mx-4 text-center"
+            style={{ boxShadow: "0 6px 18px rgba(26, 36, 33, 0.06)" }}
+          >
+            {/* Email icon */}
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaEnvelope className="w-8 h-8 text-primary" />
+            </div>
+
+            <h2 className="text-xl font-bold text-primary mb-2">
+              Check your email
+            </h2>
+            <p className="text-sm text-muted mb-6">
+              We sent a verification link to your email address. Please verify
+              your email before signing in.
+            </p>
+
+            <button
+              onClick={() => router.push("/portal/sign-in")}
+              className="w-full py-3 bg-secondary text-white rounded-lg font-semibold 
+          hover:bg-secondary-dark transition"
+            >
+              Go to Sign In
+            </button>
+          </div>
+        </div>
+      )}
+      {
+        error && (
+          <div className="p-3 rounded-lg text-sm bg-red-50 text-secondary-light border border-secondary-light">
+            {error}
+          </div>
+        )
+      }
     </form>
   );
 }
