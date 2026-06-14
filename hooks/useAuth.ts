@@ -24,7 +24,8 @@ export function useAuth() {
       const { data: result } = await api.post("/auth/login/", credentials);
 
       queryClient.setQueryData(currentUserKey, result.user);
-      document.cookie = `user-role=${result.user.role}; path=/; max-age=${60 * 60 * 24 * 7}`;
+      const isProduction = process.env.NODE_ENV === 'production';
+document.cookie = `user-role=${result.user.role}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${isProduction ? '; secure' : ''}`;
       router.push(next ?? `/${result.user.portal}`);
       return true;
     } catch (err: unknown) {
