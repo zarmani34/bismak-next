@@ -38,15 +38,23 @@ export async function loginAction(credentials: LoginFormData) {
 export async function logoutAction() {
   const cookieStore = await cookies();
   
-  // manually delete both cookies from the browser
-  cookieStore.delete("access-token");
-  cookieStore.delete("refresh-token");
-  cookieStore.delete("user-role");
+  const cookieOptions = {
+    domain: '.bismakexcelservice.com',
+    path: '/',
+  };
 
-  await fetch(`${DJANGO_API}/auth/logout/`, {
-    method: "POST",
-    credentials: "include",
-  });
+  cookieStore.delete({ name: "access-token", ...cookieOptions });
+  cookieStore.delete({ name: "refresh-token", ...cookieOptions });
+  cookieStore.delete({ name: "user-role", ...cookieOptions });
+
+  try {
+    await fetch(`${DJANGO_API}/auth/logout/`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {
+    // ignore logout API errors
+  }
 
   redirect("/portal/sign-in");
 }

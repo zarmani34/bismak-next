@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const publicRoutes = ["/portal/sign-in", "/portal/sign-up","/forgot-password", "/reset-password"];
+const publicRoutes = [
+  "/portal/sign-in",
+  "/portal/sign-up",
+  "/forgot-password",
+  "/reset-password",
+];
 
 const rolePortalMap: Record<string, string> = {
   admin: "/portal/admin",
@@ -16,7 +21,7 @@ const roleDashboardMap: Record<string, string> = {
 
 async function silentRefresh(
   refreshToken: string,
-  response: NextResponse
+  response: NextResponse,
 ): Promise<string | null> {
   try {
     const refreshResponse = await fetch(
@@ -25,7 +30,7 @@ async function silentRefresh(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh: refreshToken }),
-      }
+      },
     );
 
     if (refreshResponse.ok) {
@@ -38,7 +43,7 @@ async function silentRefresh(
         maxAge: 60 * 15,
         path: "/",
       });
-      return data.access;  // return new token
+      return data.access; // return new token
     }
     return null;
   } catch {
@@ -93,16 +98,18 @@ export default async function proxy(request: NextRequest) {
   if (portalBasePaths.some((path) => pathname === path)) {
     if (!accessToken && refreshToken) {
       const redirectResponse = NextResponse.redirect(
-        new URL(role ? roleDashboardMap[role] : "/portal/sign-in", request.url)
+        new URL(role ? roleDashboardMap[role] : "/portal/sign-in", request.url),
       );
       const newToken = await silentRefresh(refreshToken, redirectResponse);
       if (newToken && role) {
-        return redirectResponse;  // cookie already set inside silentRefresh
+        return redirectResponse; // cookie already set inside silentRefresh
       }
     }
 
     if (!isAuthenticated || !role) {
-      const response = NextResponse.redirect(new URL("/portal/sign-in", request.url));
+      const response = NextResponse.redirect(
+        new URL("/portal/sign-in", request.url),
+      );
       response.cookies.delete("access-token");
       response.cookies.delete("refresh-token");
       return response;
@@ -119,12 +126,11 @@ export default async function proxy(request: NextRequest) {
   }
 
   // 5. Already authenticated + public route
-  if (isPublicRoute && isAuthenticated) {
-    const dashboard =
-      role && roleDashboardMap[role]
-        ? roleDashboardMap[role]
-        : "/portal/sign-in";
-    return NextResponse.redirect(new URL(dashboard, request.url));
+  if (isPublicRoute && isAuthenticated && role) {
+    const dashboard = roleDashboardMap[role];
+    if (dashboard) {
+      return NextResponse.redirect(new URL(dashboard, request.url));
+    }
   }
 
   return NextResponse.next();
