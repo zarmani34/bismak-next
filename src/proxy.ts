@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const publicRoutes = ["/portal/sign-in", "/forgot-password", "/reset-password"];
+const publicRoutes = ["/portal/sign-in", "/portal/sign-up","/forgot-password", "/reset-password"];
 
 const rolePortalMap: Record<string, string> = {
   admin: "/portal/admin",

@@ -14,6 +14,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
 
   const next = searchParams.get("next");
+  const verified = searchParams.get("verified");
 
   const {
     register,
@@ -30,6 +31,12 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {verified && (
+        <div className="rounded-lg border border-success/20 bg-success/10 p-3 text-sm text-success">
+          Email verified successfully. You can now sign in.
+        </div>
+      )}
+
       <div>
         <label htmlFor="email" className="sr-only">
           Email Address

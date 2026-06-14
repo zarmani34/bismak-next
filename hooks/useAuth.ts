@@ -22,7 +22,6 @@ export function useAuth() {
 
     try {
       const { data: result } = await api.post("/auth/login/", credentials);
-      console.log("Login response:", result);
 
       queryClient.setQueryData(currentUserKey, result.user);
       document.cookie = `user-role=${result.user.role}; path=/; max-age=${60 * 60 * 24 * 7}`;
