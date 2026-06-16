@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
-import { UserListItem, CreateStaffAdminData } from "@/schemas/users";
+import { UserListItem, CreateStaffAdminData } from "@/schemas/users"; //rename to users
 
 export const userKeys = {
   all: ["users"] as const,
