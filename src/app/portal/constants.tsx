@@ -75,11 +75,11 @@ export const CLIENTPORTALMENU = [
     label: "Billing & Invoices",
     icon: <FaFileInvoiceDollar className="w-5 h-5" />, // billing
   },
-  {
-    key: "documents",
-    label: "Documents & Certificates",
-    icon: <FaFileContract className="w-5 h-5" />, // documents/certs
-  },
+  // {
+  //   key: "documents",
+  //   label: "Documents & Certificates",
+  //   icon: <FaFileContract className="w-5 h-5" />, // documents/certs
+  // },
 
   {
     key: "profile",
@@ -140,21 +140,26 @@ export const ADMINPORTALMENU = [
     label: "Billing & Invoices",
     icon: <FaFileInvoiceDollar className="w-5 h-5" />, // billing
   },
-  {
-    key: "documents",
-    label: "Documents & Certificates",
-    icon: <FaFileContract className="w-5 h-5" />, // documents/certs
-  },
+  // {
+  //   key: "documents",
+  //   label: "Documents & Certificates",
+  //   icon: <FaFileContract className="w-5 h-5" />, // documents/certs
+  // },
   {
     key: "tools",
     label: "Tools and Machines",
     icon: <FaCog className="w-5 h-5" />, // tools/machines
   },
   {
-    key: "reports",
-    label: "Reports & Analytics",
-    icon: <FaChartLine className="w-5 h-5" />, // analytics
+    key: "users",
+    label: "User Management",
+    icon: <FaUsers className="w-5 h-5" />, // users
   },
+  // {
+  //   key: "reports",
+  //   label: "Reports & Analytics",
+  //   icon: <FaChartLine className="w-5 h-5" />, // analytics
+  // },
   {
     key: "profile",
     label: "Profile",
