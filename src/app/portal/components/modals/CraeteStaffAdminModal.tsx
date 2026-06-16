@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { extractApiError } from "@/lib/errors";
 import { useState } from "react";
 import { useCreateStaffAdmin } from "@/hooks/useUsers";
-import { CreateStaffAdminData, CreateStaffAdminSchema } from "@/schemas/Users";
+import { CreateStaffAdminData, CreateStaffAdminSchema } from "@/schemas/users";
 
 /**
  * CREATE STAFF/ADMIN MODAL
