@@ -18,9 +18,7 @@ export const CreateStaffAdminSchema = z
     role: z.enum(["staff", "admin"], {
       error: "Please select a role",
     }),
-    password1: z
-      .string()
-      .min(8, "Password must be at least 8 characters"),
+    password1: z.string().min(8, "Password must be at least 8 characters"),
     password2: z.string().min(1, "Please confirm password"),
   })
   .refine((data) => data.password1 === data.password2, {
