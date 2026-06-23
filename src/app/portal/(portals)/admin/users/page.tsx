@@ -3,6 +3,7 @@
 import { useState } from "react";
 import CreateStaffAdminModal from "../../../components/modals/CraeteStaffAdminModal";
 import { useUsers } from "@/hooks/useUsers";
+import { formatDateTime } from "@/src/utils/date";
 
 type RoleTab = "all" | "admin" | "staff" | "client";
 
@@ -95,6 +96,7 @@ export default function UsersPage() {
                   <th className="px-5 py-3 font-semibold text-body-text">Role</th>
                   <th className="px-5 py-3 font-semibold text-body-text">Verified</th>
                   <th className="px-5 py-3 font-semibold text-body-text">Joined</th>
+                  <th className="px-5 py-3 font-semibold text-body-text">Last login</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,7 +132,14 @@ export default function UsersPage() {
                       )}
                     </td>
                     <td className="px-5 py-3.5 text-[#8a8a8a] text-xs">
-                      {new Date(user.date_joined).toLocaleDateString()}
+                      {
+                      formatDateTime(user.date_joined)
+                      }
+                    </td>
+                    <td className="px-5 py-3.5 text-[#8a8a8a] text-xs">
+                      {
+                      formatDateTime(user.last_login)
+                      }
                     </td>
                   </tr>
                 ))}
