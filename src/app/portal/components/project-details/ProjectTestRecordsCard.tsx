@@ -25,8 +25,10 @@ export default function ProjectTestRecordsCard({
   const { data: currentUser } = useCurrentUser();
   const canExecute =
     currentUser?.role === "staff" || currentUser?.role === "admin";
+    console.log("canExecute:", canExecute);
   const isExecutionLocked =
-    projectStatus === "completed" || projectStatus === "cancelled";
+     projectStatus === "completed" || projectStatus === "cancelled";
+    console.log("isExecutionLocked:", isExecutionLocked);
   const testTypeMap: Record<string, { slug: string; label: string }> = {
     Pressure_test: { slug: "pressure-test", label: "Pressure Test" },
     Leak_test: { slug: "leak-test", label: "Leak Test" },
@@ -39,20 +41,24 @@ export default function ProjectTestRecordsCard({
       : testSlug === "leak-test"
       ? !!leakTest
       : false;
+      console.log("hasRecord:", hasRecord);
   const portalBase =
     currentUser?.role === "admin"
       ? "/portal/admin/projects"
       : currentUser?.role === "staff"
       ? "/portal/staff/projects"
+      : currentUser?.role === "client"
+      ? "/portal/client/projects"
       : "";
-  const showAction = canExecute && !!projectCode && !!testSlug && !!portalBase;
+  const showAction = !!projectCode && !!testSlug && !!portalBase;
   const testHref =
     hasRecord && testSlug
       ? `${portalBase}/${projectCode}/${testSlug}/record`
       : `${portalBase}/${projectCode}/${testSlug}`;
-  const canEditRecord = hasRecord && currentUser?.role === "admin";
+  const canEditRecord = hasRecord && currentUser?.role === "admin" || currentUser?.role === "staff";
   const canOpenRecord = showAction && hasRecord;
-  const canExecuteTest = showAction && !hasRecord && !isExecutionLocked;
+  const canExecuteTest = showAction && !hasRecord && !isExecutionLocked && canExecute;
+      console.log("canExecuteTest:", canExecuteTest);
   return (
     <div className="rounded-xl border border-border bg-primary-light/20 p-6">
       <div className="flex items-center justify-between mb-3">

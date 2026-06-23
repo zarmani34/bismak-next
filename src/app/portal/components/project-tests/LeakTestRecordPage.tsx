@@ -12,7 +12,7 @@ import {
 } from "@/src/utils/date";
 
 type Props = {
-  role: "admin" | "staff";
+  role: "admin" | "staff" | "client";
 };
 
 const resolveLeakTestRecord = (data: LeakTestResponse): LeakTest | null => {

@@ -24,7 +24,7 @@ import ErrorState from "../states/ErrorState";
 import { extractApiError } from "@/lib/errors";
 
 type Props = {
-  role: "admin" | "staff";
+  role: "admin" | "staff" | "client";
   mode?: "create" | "edit";
 };
 
