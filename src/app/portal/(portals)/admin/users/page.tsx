@@ -116,7 +116,7 @@ export default function UsersPage() {
                               ? "bg-primary/10 text-primary"
                               : user.role === "staff"
                               ? "bg-[#D95C3E]/10 text-[#D95C3E]"
-                              : "bg-[#2b6cb0]/10 text-[#2b6cb0]"
+                              : "bg-info/10 text-info"
                           }`}
                       >
                         {user.role}

@@ -55,7 +55,7 @@ export default function CreateStaffAdminModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div
-        className="bg-white rounded-xl w-full max-w-md p-6"
+        className="bg-tetiary rounded-xl w-full max-w-md p-6"
         style={{ boxShadow: "0 6px 18px rgba(26, 36, 33, 0.08)" }}
       >
         <div className="flex items-center justify-between mb-5">
@@ -87,7 +87,7 @@ export default function CreateStaffAdminModal({
             </label>
             <select
               {...register("role")}
-              className="w-full px-4 py-2.5 rounded-lg text-sm bg-tetiary border border-error
+              className="w-full px-4 py-2.5 rounded-lg text-sm bg-tetiary border border-primary/30
                 text-[#333333] focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="staff">Staff</option>
@@ -106,9 +106,10 @@ export default function CreateStaffAdminModal({
               </label>
               <input
                 {...register("first_name")}
+                placeholder="John"
                 className={`w-full px-4 py-2.5 rounded-lg text-sm bg-tetiary border text-[#333333]
                   focus:outline-none focus:ring-2 focus:ring-primary
-                  ${errors.first_name ? "border-error" : "border-error"}`}
+                  ${errors.first_name ? "border-primary/30" : "border-primary/30"}`}
               />
               {errors.first_name && (
                 <p className="mt-1 text-xs text-error">{errors.first_name.message}</p>
@@ -120,9 +121,10 @@ export default function CreateStaffAdminModal({
               </label>
               <input
                 {...register("last_name")}
+                placeholder="Doe"
                 className={`w-full px-4 py-2.5 rounded-lg text-sm bg-tetiary border text-[#333333]
                   focus:outline-none focus:ring-2 focus:ring-primary
-                  ${errors.last_name ? "border-error" : "border-error"}`}
+                  ${errors.last_name ? "border-primary/30" : "border-primary/30"}`}
               />
               {errors.last_name && (
                 <p className="mt-1 text-xs text-error">{errors.last_name.message}</p>
@@ -138,9 +140,10 @@ export default function CreateStaffAdminModal({
             <input
               type="email"
               {...register("email")}
+              placeholder="john.doe@example.com"
               className={`w-full px-4 py-2.5 rounded-lg text-sm bg-tetiary border text-[#333333]
                 focus:outline-none focus:ring-2 focus:ring-primary
-                ${errors.email ? "border-error" : "border-error"}`}
+                ${errors.email ? "border-primary/30" : "border-primary/30"}`}
             />
             {errors.email && (
               <p className="mt-1 text-xs text-error">{errors.email.message}</p>
@@ -154,9 +157,10 @@ export default function CreateStaffAdminModal({
             </label>
             <input
               {...register("phone_number")}
+              placeholder="123-456-7890"
               className={`w-full px-4 py-2.5 rounded-lg text-sm bg-tetiary border text-[#333333]
                 focus:outline-none focus:ring-2 focus:ring-primary
-                ${errors.phone_number ? "border-error" : "border-error"}`}
+                ${errors.phone_number ? "border-primary/30" : "border-primary/30"}`}
             />
             {errors.phone_number && (
               <p className="mt-1 text-xs text-error">{errors.phone_number.message}</p>
@@ -172,9 +176,10 @@ export default function CreateStaffAdminModal({
               <input
                 type="password"
                 {...register("password1")}
+                placeholder="••••••••"
                 className={`w-full px-4 py-2.5 rounded-lg text-sm bg-tetiary border text-[#333333]
                   focus:outline-none focus:ring-2 focus:ring-primary
-                  ${errors.password1 ? "border-error" : "border-error"}`}
+                  ${errors.password1 ? "border-primary/30" : "border-primary/30"}`}
               />
               {errors.password1 && (
                 <p className="mt-1 text-xs text-error">{errors.password1.message}</p>
@@ -187,9 +192,10 @@ export default function CreateStaffAdminModal({
               <input
                 type="password"
                 {...register("password2")}
+                placeholder="••••••••"
                 className={`w-full px-4 py-2.5 rounded-lg text-sm bg-tetiary border text-[#333333]
                   focus:outline-none focus:ring-2 focus:ring-primary
-                  ${errors.password2 ? "border-error" : "border-error"}`}
+                  ${errors.password2 ? "border-primary/30" : "border-primary/30"}`}
               />
               {errors.password2 && (
                 <p className="mt-1 text-xs text-error">{errors.password2.message}</p>

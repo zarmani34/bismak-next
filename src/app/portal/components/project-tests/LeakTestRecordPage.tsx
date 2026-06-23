@@ -119,7 +119,7 @@ export default function LeakTestRecordPage({ role }: Props) {
         </div>
       </div>
 
-      <section className="certificate-sheet mx-auto w-full max-w-[900px] bg-white border border-[#d8d8d8] shadow-sm py-5 px-8 md:py-9 md:px-16 text-[#1f1f1f] print-container print:py-4">
+      <section className="certificate-sheet mx-auto w-full max-w-225 bg-white border border-[#d8d8d8] shadow-sm py-5 px-8 md:py-9 md:px-16 text-[#1f1f1f] print-container print:py-4">
         <div className="certificate-inner">
          
 
@@ -129,7 +129,7 @@ export default function LeakTestRecordPage({ role }: Props) {
             </h1>
           </div>
 
-          <p className="mt-5 text-[14px] leading-[1.35] text-left max-w-[780px] tracking-[0.03em] font-semibold">
+          <p className="mt-5 text-[14px] leading-[1.35] text-left max-w-195 tracking-[0.03em] font-semibold">
             <span className="certificate-body-text">
               This is to certify that the leakage Detection Tests conducted on ({leakTest.tanks.length}) 
               fuel storage tanks specified below have been found satisfactory. The tanks
@@ -170,7 +170,7 @@ export default function LeakTestRecordPage({ role }: Props) {
             
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-[13px] mt-6">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[13px]">
             <p>
               <span className="font-bold">Equipment Tested:</span> Underground Fuel
               Storage Tanks
@@ -229,7 +229,7 @@ export default function LeakTestRecordPage({ role }: Props) {
               <p className="uppercase font-bold tracking-wide">
                 B.I AKINJOBI
               </p>
-              <p className="mt-4 inline-block w-[240px] border-t border-black pt-1">
+              <p className="mt-4 inline-block w-60 border-t border-black pt-1">
                 Name & Sign of Company&apos;s Engineering Officer
               </p>
             </div>
@@ -237,14 +237,14 @@ export default function LeakTestRecordPage({ role }: Props) {
               <p className="uppercase font-bold tracking-wide">
                 {leakTest.client_representative || "--"}
               </p>
-              <p className="mt-8 inline-block w-[220px] border-t border-black pt-1">
+              <p className="mt-8 inline-block w-55 border-t border-black pt-1">
                 Name of Client Representative
               </p>
             </div>
           </div>
 
           <div className="my-12 text-center text-[12px]">
-            <p className="inline-block min-w-[340px] border-t border-black pt-1">
+            <p className="inline-block min-w-85 border-t border-black pt-1">
               Name & Sign of NMDPRA Representative
             </p>
           </div>
