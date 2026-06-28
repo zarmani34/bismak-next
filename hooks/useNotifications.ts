@@ -22,80 +22,79 @@ interface UseNotificationsReturn {
 }
 
 export function useNotifications(
-  onNewNotification?: (n: Notification) => void
+  onNewNotification?: (n: Notification) => void,
 ): UseNotificationsReturn {
-    console.log("useNotifications hook called");
+  console.log("useNotifications hook called");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
 
   // ── Fetch initial notifications + unread count on mount ──────────────────
   const fetchInitial = useCallback(async () => {
-  try {
-    const [notifRes, countRes] = await Promise.all([
-      api.get("/notifications/"),
-      api.get("/notifications/unread-count/"),
-    ]);
-    setNotifications(notifRes.data.results ?? notifRes.data);
-    setUnreadCount(countRes.data.unread_count);
-  } catch (err: unknown) {
-    // Silently ignore auth errors — user may not be logged in yet
-    if (!isAxiosError(err) || err.response?.status !== 401) {
-      console.error("Failed to fetch notifications:", err);
+    try {
+      const [notifRes, countRes] = await Promise.all([
+        api.get("/notifications/"),
+        api.get("/notifications/unread-count/"),
+      ]);
+      setNotifications(notifRes.data.results ?? notifRes.data);
+      setUnreadCount(countRes.data.unread_count);
+    } catch (err: unknown) {
+      // Silently ignore auth errors — user may not be logged in yet
+      if (!isAxiosError(err) || err.response?.status !== 401) {
+        console.error("Failed to fetch notifications:", err);
+      }
     }
-  }
-}, []);;
+  }, []);
 
   // ── SSE connection ────────────────────────────────────────────────────────
   useEffect(() => {
-  let eventSource: EventSource | null = null;
-  let isMounted = true;
+    let eventSource: EventSource | null = null;
+    let isMounted = true;
 
-  const connectNotifications = async () => {
-    await fetchInitial();
-    const res = await api.get('/auth/user/');
-    if (!isMounted) return;
+    const connectNotifications = async () => {
+      await fetchInitial();
+      const res = await api.get("/auth/user/");
+      if (!isMounted) return;
 
-    const userCode = res.data.user_id;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "");
-    const streamUrl = `${baseUrl}/api/notifications/stream/?channel=notifications-${userCode}`;
-    console.log("SSE URL:", streamUrl);
+      const userCode = res.data.user_id;
+      const streamUrl = `${process.env.NEXT_PUBLIC_API_URL}/notifications/stream/${userCode}/`;
+      console.log("SSE URL:", streamUrl);
 
-    eventSource = new EventSource(streamUrl, { withCredentials: true });
+      eventSource = new EventSource(streamUrl, { withCredentials: true });
 
-    eventSource.addEventListener("notification", (e: MessageEvent) => {
-      const notification: Notification = JSON.parse(e.data);
-      setNotifications((prev) => [notification, ...prev]);
-      setUnreadCount((prev) => prev + 1);
-      onNewNotification?.(notification);
+      eventSource.addEventListener("notification", (e: MessageEvent) => {
+        const notification: Notification = JSON.parse(e.data);
+        setNotifications((prev) => [notification, ...prev]);
+        setUnreadCount((prev) => prev + 1);
+        onNewNotification?.(notification);
+      });
+
+      eventSource.onopen = () => {
+        console.log("SSE connected");
+        setIsConnected(true);
+      };
+
+      eventSource.onerror = () => {
+        setIsConnected(false);
+      };
+    };
+
+    connectNotifications().catch((err) => {
+      console.error("Failed to get user for SSE:", err);
     });
 
-    eventSource.onopen = () => {
-      console.log("SSE connected");
-      setIsConnected(true);
+    return () => {
+      isMounted = false;
+      eventSource?.close();
     };
-
-    eventSource.onerror = () => {
-      setIsConnected(false);
-    };
-  };
-
-  connectNotifications().catch((err) => {
-    console.error("Failed to get user for SSE:", err);
-  });
-
-  return () => {
-    isMounted = false;
-    eventSource?.close();
-  };
-}, [fetchInitial, onNewNotification]);
+  }, [fetchInitial, onNewNotification]);
 
   // ── Mark single notification as read ─────────────────────────────────────
   const markAsRead = useCallback(async (id: string) => {
     try {
       await api.patch(`/notifications/${id}/read/`);
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {

@@ -42,7 +42,7 @@ export default function PortalHeader() {
         </div>
 
         <div className="flex items-center space-x-4">
-            <NotificationBell />
+          <NotificationBell />
 
           <UserMenu />
         </div>
