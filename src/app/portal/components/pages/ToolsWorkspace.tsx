@@ -26,58 +26,100 @@ import TableSkeleton from "../skeletons/TableSkeleton";
 import CreateEquipmentRequestModal from "../modals/CreateEquipmentRequestModal";
 import RegisterEquipmentModal from "../modals/RegisterEquipmentModal";
 import { extractApiError } from "@/lib/errors";
+import {
+  getEquipmentStatusColor,
+  getRequestStatusColor,
+} from "../../utils/toolsStatusColor";
+import { EquipmentListItem } from "@/schemas/equipment";
+import { ColumnDef } from "@tanstack/react-table";
+import { SearchBar } from "../SearchBar";
+import { DataTable } from "../tables/Datatable";
 
 type ToolsWorkspaceProps = {
   role: "admin" | "staff";
 };
 
-type EquipmentStatusFilter = "all" | "available" | "in_use" | "under_maintenance" | "retired";
 
-const statusFilters: Array<{ label: string; value: EquipmentStatusFilter }> = [
-  { label: "All", value: "all" },
-  { label: "Available", value: "available" },
-  { label: "In Use", value: "in_use" },
-  { label: "Maintenance", value: "under_maintenance" },
-  { label: "Retired", value: "retired" },
+function StatusBadge({ status, display }: { status: string; display: string }) {
+  const colors: Record<string, string> = {
+    available: "bg-success/10 text-success",
+    in_use: "bg-primary/10 text-primary",
+    under_maintenance: "bg-warning/10 text-warning",
+    retired: "bg-muted/10 text-muted",
+  };
+  return (
+    <span
+      className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${colors[status] ?? "bg-muted/10 text-muted"}`}
+    >
+      {display}
+    </span>
+  );
+}
+
+const columns: ColumnDef<EquipmentListItem>[] = [
+  {
+    accessorKey: "name",
+    header: "Equipment",
+    cell: ({ getValue }) => (
+      <span className="font-semibold text-primary-dark">
+        {getValue() as string}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "category",
+    header: "Category",
+    accessorFn: (row) => row.category?.name ?? "—",
+  },
+  {
+    accessorKey: "model",
+    header: "Model",
+  },
+  {
+    accessorKey: "serial_number",
+    header: "Serial No.",
+    cell: ({ getValue }) => (
+      <span className="font-mono text-xs text-muted">
+        {getValue() as string}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <StatusBadge
+        status={row.original.status}
+        display={row.original.status_display}
+      />
+    ),
+  },
+  {
+    accessorKey: "next_maintenance_date",
+    header: "Next Maintenance",
+    cell: ({ getValue }) => {
+      const val = getValue() as string | null;
+      return val ? (
+        new Date(val).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      ) : (
+        <span className="text-muted">—</span>
+      );
+    },
+  },
 ];
-
-const getEquipmentStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "available":
-      return "bg-primary/20 text-primary";
-    case "in_use":
-      return "bg-info/20 text-info";
-    case "under_maintenance":
-      return "bg-secondary/20 text-secondary";
-    case "retired":
-      return "bg-error/20 text-error";
-    default:
-      return "bg-primary-light/20 text-primary-dark";
-  }
-};
-
-const getRequestStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "approved":
-      return "bg-primary/20 text-primary";
-    case "pending":
-      return "bg-secondary/20 text-secondary";
-    case "rejected":
-      return "bg-error/20 text-error";
-    case "returned":
-      return "bg-info/20 text-info";
-    default:
-      return "bg-primary-light/20 text-primary-dark";
-  }
-};
 
 export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<EquipmentStatusFilter>("all");
+  const [search, setSearch] = useState("");
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [requestActionError, setRequestActionError] = useState<string | null>(null);
+  const [requestActionError, setRequestActionError] = useState<string | null>(
+    null,
+  );
 
   const {
     data: equipment = [],
@@ -102,29 +144,16 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
 
   const isLoading =
     isEquipmentLoading || isMaintenanceLoading || isEquipmentRequestsLoading;
-  const hasError = isEquipmentError || isMaintenanceError || isEquipmentRequestsError;
-  const toolsBasePath = role === "admin" ? "/portal/admin/tools" : "/portal/staff/tools";
-
-  const filteredEquipment = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
-
-    return equipment.filter((item) => {
-      const matchesStatus = statusFilter === "all" ? true : item.status === statusFilter;
-      const matchesSearch =
-        q.length === 0
-          ? true
-          : item.name.toLowerCase().includes(q) ||
-            item.category.name.toLowerCase().includes(q) ||
-            item.model.toLowerCase().includes(q) ||
-            item.serial_number.toLowerCase().includes(q);
-
-      return matchesStatus && matchesSearch;
-    });
-  }, [equipment, searchTerm, statusFilter]);
+  const hasError =
+    isEquipmentError || isMaintenanceError || isEquipmentRequestsError;
+  const toolsBasePath =
+    role === "admin" ? "/portal/admin/tools" : "/portal/staff/tools";
 
   const maintenanceQueue = useMemo(() => {
     return maintenanceRequests
-      .filter((item) => ["pending", "scheduled", "in_progress"].includes(item.status))
+      .filter((item) =>
+        ["pending", "scheduled", "in_progress"].includes(item.status),
+      )
       .sort((a, b) => {
         const left = a.scheduled_date || a.created_at;
         const right = b.scheduled_date || b.created_at;
@@ -133,9 +162,11 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
       .slice(0, 8);
   }, [maintenanceRequests]);
   const equipmentRequestQueue = useMemo(() => {
-    console.log(equipmentRequests)
+    console.log(equipmentRequests);
     return equipmentRequests
-      .filter((item) => ["pending", "approved", "rejected", "returned"].includes(item.status))
+      .filter((item) =>
+        ["pending", "approved", "rejected", "returned"].includes(item.status),
+      )
       .slice(0, 8);
   }, [equipmentRequests]);
 
@@ -189,20 +220,28 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
     void refetchEquipmentRequests();
   };
 
-  const handleEquipmentRequestAction = async (requestCode: string, status: string) => {
+  const handleEquipmentRequestAction = async (
+    requestCode: string,
+    status: string,
+  ) => {
     setRequestActionError(null);
     try {
-      await updateEquipmentRequestStatus.mutateAsync({ code: requestCode, status });
+      await updateEquipmentRequestStatus.mutateAsync({
+        code: requestCode,
+        status,
+      });
     } catch (error) {
       setRequestActionError(extractApiError(error));
     }
   };
-
+  console.log("equipment", equipment);
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
         <div>
-          <h1 className="text-2xl font-bold text-primary-dark">Tools & Machines</h1>
+          <h1 className="text-2xl font-bold text-primary-dark">
+            Tools & Machines
+          </h1>
           <p className="text-secondary-text text-sm sm:text-base">
             Monitor asset availability, assignments, and maintenance schedules.
           </p>
@@ -252,144 +291,44 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
       )}
 
       {hasError ? (
-        <ErrorState message="Unable to load tools and maintenance data." onRetry={handleRetry} />
+        <ErrorState
+          message="Unable to load tools and maintenance data."
+          onRetry={handleRetry}
+        />
       ) : null}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 rounded-xl shadow-sm border border-border overflow-hidden">
           <div className="bg-primary-light/40 px-6 py-4 border-b border-border flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <h2 className="text-lg font-semibold text-primary-dark">Asset Register</h2>
+            <h2 className="text-lg font-semibold text-primary-dark">
+              Asset Register
+            </h2>
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <label className="relative">
-                <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text text-xs" />
-                <input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search equipment"
-                  className="pl-9 pr-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary min-w-64 focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </label>
-
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value as EquipmentStatusFilter)}
-                className="px-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              >
-                {statusFilters.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SearchBar
+              value={search}
+              onChange={setSearch}
+              placeholder="Search projects..."
+              className="w-full sm:w-64"
+            />
           </div>
 
-          <div className="overflow-x-auto bg-primary-light/10 border border-primary-light/20 shadow-md transition duration-200">
-            <table className="w-full min-w-225">
-              <thead className="bg-primary-light/40 border-b border-tetiary">
-                <tr>
-                  <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                    Asset
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                    Serial No
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                    Model
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                    Next Service
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {isEquipmentLoading ? (
-                  <TableSkeleton rows={5} />
-                ) : filteredEquipment.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-sm text-secondary-text">
-                      No equipment match this filter.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredEquipment.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="border-b border-tetiary hover:bg-primary/20 cursor-pointer"
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => router.push(`${toolsBasePath}/${item.id}`)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          router.push(`${toolsBasePath}/${item.id}`);
-                        }
-                      }}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-dark">
-                        {item.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                        {item.category.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                        {item.serial_number}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                        {item.model}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                        {formatDate(item.next_maintenance_date)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${getEquipmentStatusColor(
-                            item.status,
-                          )}`}
-                        >
-                          {item.status_display}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <Link
-                            href={`${toolsBasePath}/${item.id}`}
-                            className="p-2 text-body-text hover:text-primary-light"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            <FaEye className="w-4 h-4" />
-                          </Link>
-                          <Link
-                            href={`${toolsBasePath}/${item.id}#maintenance`}
-                            className="p-2 text-body-text hover:text-primary-light"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            <FaWrench className="w-4 h-4" />
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+        data={equipment ?? []}
+        columns={columns}
+        isLoading={isLoading}
+        isError={isEquipmentError}
+        globalFilter={search}
+        onGlobalFilterChange={setSearch}
+        onRowClick={(row) => router.push(`/portal/admin/equipment/${row.id}`)}
+      />
         </div>
 
         <div className="space-y-6">
           <div className="rounded-xl shadow-sm border border-border overflow-hidden">
             <div className="bg-primary-light/40 px-6 py-4 border-b border-border">
-              <h2 className="text-lg font-semibold text-primary-dark">Maintenance Queue</h2>
+              <h2 className="text-lg font-semibold text-primary-dark">
+                Maintenance Queue
+              </h2>
             </div>
 
             <div className="p-4 bg-primary-light/10 space-y-3 max-h-[32rem] overflow-y-auto">
@@ -405,16 +344,24 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
                   </div>
                 ))
               ) : maintenanceQueue.length === 0 ? (
-                <p className="text-sm text-secondary-text">No maintenance tasks in queue.</p>
+                <p className="text-sm text-secondary-text">
+                  No maintenance tasks in queue.
+                </p>
               ) : (
                 maintenanceQueue.map((task) => (
                   <div
                     key={task.id}
                     className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 hover:bg-primary-light/30 transition-colors"
                   >
-                    <p className="text-sm font-semibold text-primary-dark">{task.equipment_name}</p>
-                    <p className="text-sm text-body-text">{task.type_display}</p>
-                    <p className="text-xs text-secondary-text mt-1">{task.status_display}</p>
+                    <p className="text-sm font-semibold text-primary-dark">
+                      {task.equipment_name}
+                    </p>
+                    <p className="text-sm text-body-text">
+                      {task.type_display}
+                    </p>
+                    <p className="text-xs text-secondary-text mt-1">
+                      {task.status_display}
+                    </p>
                     <div className="mt-2 flex items-center gap-2 text-xs text-secondary-text">
                       <FaClock className="w-3 h-3" />
                       Due {formatDate(task.scheduled_date || task.created_at)}
@@ -427,12 +374,16 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
 
           <div className="rounded-xl shadow-sm border border-border overflow-hidden">
             <div className="bg-primary-light/40 px-6 py-4 border-b border-border">
-              <h2 className="text-lg font-semibold text-primary-dark">Equipment Requests</h2>
+              <h2 className="text-lg font-semibold text-primary-dark">
+                Equipment Requests
+              </h2>
             </div>
 
             <div className="p-4 bg-primary-light/10 space-y-3 max-h-[20rem] overflow-y-auto">
               {requestActionError ? (
-                <p className="text-xs text-secondary-light">{requestActionError}</p>
+                <p className="text-xs text-secondary-light">
+                  {requestActionError}
+                </p>
               ) : null}
               {isEquipmentRequestsLoading ? (
                 Array.from({ length: 3 }).map((_, index) => (
@@ -446,14 +397,18 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
                   </div>
                 ))
               ) : equipmentRequestQueue.length === 0 ? (
-                <p className="text-sm text-secondary-text">No active equipment requests.</p>
+                <p className="text-sm text-secondary-text">
+                  No active equipment requests.
+                </p>
               ) : (
                 equipmentRequestQueue.map((request) => (
                   <div
-                  key={request.id}
-                  className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 hover:bg-primary-light/30 transition-colors"
+                    key={request.id}
+                    className="rounded-lg border border-primary-light/30 p-4 bg-primary-light/20 hover:bg-primary-light/30 transition-colors"
                   >
-                    <p className="text-sm font-semibold text-primary-dark">{request.equipment_name}</p>
+                    <p className="text-sm font-semibold text-primary-dark">
+                      {request.equipment_name}
+                    </p>
                     <p className="text-xs text-secondary-text mt-1">
                       Requested by {request.requested_by || "--"}
                     </p>
@@ -474,7 +429,10 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
                             type="button"
                             disabled={updateEquipmentRequestStatus.isPending}
                             onClick={() =>
-                              void handleEquipmentRequestAction(request.code, "approved")
+                              void handleEquipmentRequestAction(
+                                request.code,
+                                "approved",
+                              )
                             }
                             className="px-2 py-1 rounded-md text-[11px] font-medium border border-secondary/40 text-secondary hover:bg-secondary/10 disabled:opacity-60"
                           >
@@ -484,7 +442,10 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
                             type="button"
                             disabled={updateEquipmentRequestStatus.isPending}
                             onClick={() =>
-                              void handleEquipmentRequestAction(request.code, "rejected")
+                              void handleEquipmentRequestAction(
+                                request.code,
+                                "rejected",
+                              )
                             }
                             className="px-2 py-1 rounded-md text-[11px] font-medium border border-error/40 text-error hover:bg-error/10 disabled:opacity-60"
                           >
@@ -497,7 +458,10 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
                           type="button"
                           disabled={updateEquipmentRequestStatus.isPending}
                           onClick={() =>
-                            void handleEquipmentRequestAction(request.id, "returned")
+                            void handleEquipmentRequestAction(
+                              request.id,
+                              "returned",
+                            )
                           }
                           className="px-2 py-1 rounded-md text-[11px] font-medium border border-info/40 text-info hover:bg-info/10 disabled:opacity-60"
                         >
