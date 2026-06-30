@@ -25,18 +25,11 @@ type StatusUpdateResponse = {
   allowed_transitions: string[];
 };
 
-type PaginatedResponse<T> = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
-};
-
 /**
  * FETCH PROJECTS LIST
  */
 export function useProjects(filters?: Record<string, string>) {
-  return useQuery<PaginatedResponse<ProjectListItem>>({
+  return useQuery<ProjectListItem[]>({
     queryKey: projectKeys.list(filters),
     queryFn: async () => {
       const { data } = await api.get("/projects/", { params: filters });

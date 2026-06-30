@@ -1,31 +1,5 @@
-"use client";
+import ProjectPage from "../../../components/pages/ProjectPage";
 
-import { useProjects } from "@/hooks/useProjects";
-import ProjectsTable from "../../../components/tables/ProjectsTable";
-import ProjectStats from "../../../components/ProjectStats";
-
-export default function Projects() {
-  const {
-    data: projectsData,
-    isLoading: projectsLoading,
-    isError,
-    refetch,
-  } = useProjects();
-  const projectList = projectsData?.results ?? [];
-
-  return (
-    <div className="space-y-8">
-      <ProjectStats />
-
-      <div className="">
-          <ProjectsTable
-            projects={projectList}
-            isLoading={projectsLoading}
-            isError={isError}
-            onRetry={() => refetch()}
-            basePath="/portal/client/projects"
-          />
-        </div>
-    </div>
-  );
+export default function ProjectsPage() {
+return (<ProjectPage />)
 }
