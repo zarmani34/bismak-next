@@ -32,7 +32,7 @@ export default function StaffDashboardPage() {
     refetch: refetchMaintenance,
   } = useMaintenanceRequests();
 
-  const projects = useMemo(() => projectData?.results ?? [], [projectData]);
+  const projects = useMemo(() => projectData ?? [], [projectData]);
   const activeProjects = projects.filter((project) => project.status === "in_progress");
   const completedProjects = projects.filter((project) => project.status === "completed");
 
