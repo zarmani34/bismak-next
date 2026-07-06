@@ -95,7 +95,7 @@ export default function UsersPage() {
   );
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="md:p-8 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-primary-dark">Users</h1>
