@@ -218,7 +218,7 @@ export default function CreateQuoteModal({
       if (existingProjectQuoteCodes.has(projectCode)) return false;
       return true;
     });
-  }, [existingProjectQuoteCodes, projects?.results]);
+  }, [existingProjectQuoteCodes, projects]);
 
   const filteredServiceOptions = useMemo(() => {
     return serviceOptions.filter((service) => {
