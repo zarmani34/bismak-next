@@ -27,14 +27,15 @@ export function useUsers(filters?: Record<string, string>) {
   return useQuery<UserListItem[]>({
     queryKey: userKeys.list(filters),
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<UserListItem>>(
+      const { data } = await api.get<UserListItem[]>(
         "/auth/users/",
         {
           params: filters,
         }
       );
+      console.log("Fetched users:", data);
 
-      return data.results;
+      return data;
     },
   });
 }

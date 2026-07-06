@@ -114,33 +114,34 @@ export default function UsersPage() {
         </button>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto rounded-tl-xl rounded-tr-xl border-b border-tetiary bg-primary-light/40">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
-            className={`relative whitespace-nowrap px-4 py-2.5 text-sm transition-colors sm:text-base ${
-              activeTab === tab.key
-                ? "text-primary"
-                : "text-secondary-text hover:text-body-text"
-            }`}
-          >
-            {tab.label}
-            {activeTab === tab.key && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary" />
-            )}
-          </button>
-        ))}
+      <div>
+        <div className="flex gap-1 overflow-x-auto rounded-tl-xl rounded-tr-xl border-b border-tetiary bg-primary-light/40">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`relative whitespace-nowrap px-4 py-2.5 text-sm transition-colors sm:text-base ${
+                activeTab === tab.key
+                  ? "text-primary"
+                  : "text-secondary-text hover:text-body-text"
+              }`}
+            >
+              {tab.label}
+              {activeTab === tab.key && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary" />
+              )}
+            </button>
+          ))}
+        </div>
+        <DataTable
+          data={users ?? []}
+          columns={columns}
+          isLoading={isLoading}
+          isError={isError}
+          pageSize={10}
+        />
       </div>
-
-      <DataTable
-        data={users ?? []}
-        columns={columns}
-        isLoading={isLoading}
-        isError={isError}
-        pageSize={10}
-      />
 
       <CreateStaffAdminModal
         isOpen={isModalOpen}
