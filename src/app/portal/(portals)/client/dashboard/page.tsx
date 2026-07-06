@@ -40,7 +40,7 @@ export default function ClientDashboard() {
     refetch: refetchQuotes,
   } = useQuotes();
 
-  const projects = useMemo(() => projectData?.results ?? [], [projectData]);
+  const projects = useMemo(() => projectData ?? [], [projectData]);
   const services = useMemo(
     () => (Array.isArray(serviceData) ? serviceData : serviceData?.results ?? []),
     [serviceData],
@@ -158,7 +158,7 @@ export default function ClientDashboard() {
               View all
             </Link>
           </div>
-          <div className="p-4 space-y-3 max-h-[24rem] overflow-y-auto">
+          <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
             {recentProjects.length === 0 ? (
               <p className="text-sm text-secondary-text">No projects yet.</p>
             ) : (
@@ -184,7 +184,7 @@ export default function ClientDashboard() {
               View all
             </Link>
           </div>
-          <div className="p-4 space-y-3 max-h-[24rem] overflow-y-auto">
+          <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
             {recentServices.length === 0 ? (
               <p className="text-sm text-secondary-text">No service requests yet.</p>
             ) : (
