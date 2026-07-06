@@ -24,7 +24,6 @@ interface UseNotificationsReturn {
 export function useNotifications(
   onNewNotification?: (n: Notification) => void,
 ): UseNotificationsReturn {
-  console.log("useNotifications hook called");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
@@ -58,7 +57,6 @@ export function useNotifications(
 
       const userCode = res.data.user_id;
       const streamUrl = `${process.env.NEXT_PUBLIC_API_URL}/notifications/stream/${userCode}/`;
-      console.log("SSE URL:", streamUrl);
 
       eventSource = new EventSource(streamUrl, { withCredentials: true });
 
@@ -70,7 +68,6 @@ export function useNotifications(
       });
 
       eventSource.onopen = () => {
-        console.log("SSE connected");
         setIsConnected(true);
       };
 

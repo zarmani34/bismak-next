@@ -95,7 +95,6 @@ export function useCreateEquipment() {
   return useMutation({
     mutationFn: async (equipmentData: CreateEquipmentData) => {
       const { data } = await api.post("/equipment/", equipmentData);
-      console.log("Equipment data:", data)
       return data as EquipmentDetail;
     },
     onSuccess: () => {
@@ -182,7 +181,6 @@ export function useUpdateEquipmentRequestStatus() {
       const { data } = await api.patch(`/equipment-requests/${input.code}/`, {
         status: input.status,
       });
-      console.log("Updated equipment request:", data);
       return data as EquipmentRequestDetail;
     },
     onSuccess: (updatedRequest) => {

@@ -57,12 +57,7 @@ export default async function proxy(request: NextRequest) {
   let accessToken = request.cookies.get("access-token")?.value;
   const refreshToken = request.cookies.get("refresh-token")?.value;
   const role = request.cookies.get("user-role")?.value;
-  console.log("proxy running:", {
-    pathname,
-    accessToken: !!accessToken,
-    refreshToken: !!refreshToken,
-    role,
-  });
+  
 
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route),

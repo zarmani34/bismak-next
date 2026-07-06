@@ -161,7 +161,6 @@ export function useAllProjects() {
     queryKey: [...projectKeys.all, "all"],
     queryFn: async () => {
       const { data } = await api.get("/projects/");
-      console.log("Fetched all projects:", data);
       return data;
     },
   });

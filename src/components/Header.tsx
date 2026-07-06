@@ -5,10 +5,7 @@ import Harmburger from "./Hamburger";
 export const Header = ({activeSection}: {activeSection: string}) => {
   const [showMenu, setShowMenu] = useState(false);
   const harmburgerRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    console.log(harmburgerRef.current); // HTMLDivElement
-  }, []);
-
+  
   const handleClickOutside = (event: MouseEvent) => {
     if (
       harmburgerRef.current &&

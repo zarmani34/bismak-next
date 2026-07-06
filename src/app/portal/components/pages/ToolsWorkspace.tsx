@@ -162,7 +162,6 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
       .slice(0, 8);
   }, [maintenanceRequests]);
   const equipmentRequestQueue = useMemo(() => {
-    console.log(equipmentRequests);
     return equipmentRequests
       .filter((item) =>
         ["pending", "approved", "rejected", "returned"].includes(item.status),
@@ -234,7 +233,6 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
       setRequestActionError(extractApiError(error));
     }
   };
-  console.log("equipment", equipment);
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-col md:flex-row">

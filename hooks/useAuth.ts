@@ -29,7 +29,6 @@ export function useAuth() {
       window.location.href = next ?? `/${result.user.portal}`;
       return true;
     } catch (err: unknown) {
-      console.log("Login error:", err);
       setError(extractApiError(err));
       return false;
     } finally {

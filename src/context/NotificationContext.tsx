@@ -25,9 +25,7 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
 
-export function NotificationProvider({ children }: { children: ReactNode }) {
-console.log("NotificationProvider rendered");
-  const [toasts, setToasts] = useState<ToastNotification[]>([]);
+export function NotificationProvider({ children }: { children: ReactNode })  const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
   const dismissToast = useCallback((toastId: string) => {
     setToasts((prev) => prev.filter((t) => t.toastId !== toastId));

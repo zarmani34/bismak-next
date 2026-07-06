@@ -33,7 +33,6 @@ export function useUsers(filters?: Record<string, string>) {
           params: filters,
         }
       );
-      console.log("Fetched users:", data);
 
       return data;
     },

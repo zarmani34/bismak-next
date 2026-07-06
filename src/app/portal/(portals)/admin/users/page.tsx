@@ -93,7 +93,6 @@ export default function UsersPage() {
   const { data: users, isLoading, isError } = useUsers(
     activeTab === "all" ? undefined : { role: activeTab },
   );
-  console.log("users", users);
 
   return (
     <div className="p-6 md:p-8 space-y-6">
