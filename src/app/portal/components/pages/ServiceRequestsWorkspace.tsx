@@ -13,10 +13,74 @@ import CreateServiceTypeModal from "../modals/CreateServiceTypeModal";
 import ServiceTypesPanel from "../ServiceTypesPanel";
 import PrimaryButton from "@/src/components/buttons/PrimaryButton";
 import SecondaryButton from "@/src/components/buttons/SecondaryButton";
+import { ColumnDef } from "@tanstack/react-table";
+import { UserListItem } from "@/schemas/users";
 
 type ServiceRequestsWorkspaceProps = {
   role: "admin" | "client";
 };
+
+function RoleBadge({ role }: { role: string }) {
+  const colors: Record<string, string> = {
+    admin: "bg-primary/10 text-primary",
+    staff: "bg-secondary/10 text-secondary",
+    client: "bg-info/10 text-info",
+  };
+  return (
+    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${colors[role] ?? ""}`}>
+      {role}
+    </span>
+  );
+}
+ 
+// Column definitions — each object describes one column
+const columns: ColumnDef<UserListItem>[] = [
+  {
+    accessorKey: "user_id",
+    header: "ID",
+    cell: ({ getValue }) => (
+      <span className="font-mono text-xs text-muted">{getValue() as string}</span>
+    ),
+  },
+  {
+    accessorKey: "full_name",
+    header: "Name",
+    cell: ({ getValue }) => (
+      <span className="font-semibold text-primary-dark">{getValue() as string}</span>
+    ),
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+  },
+  {
+    accessorKey: "phone_number",
+    header: "Phone",
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ getValue }) => <RoleBadge role={getValue() as string} />,
+  },
+  {
+    accessorKey: "is_verified",
+    header: "Verified",
+    cell: ({ getValue }) =>
+      getValue() ? (
+        <span className="text-success text-xs font-semibold">✓ Yes</span>
+      ) : (
+        <span className="text-muted text-xs">Pending</span>
+      ),
+  },
+  {
+    accessorKey: "date_joined",
+    header: "Joined",
+    cell: ({ getValue }) =>
+      new Date(getValue() as string).toLocaleDateString("en-GB", {
+        day: "2-digit", month: "short", year: "numeric",
+      }),
+  },
+];
 
 export default function ServiceRequestsWorkspace({ role }: ServiceRequestsWorkspaceProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);

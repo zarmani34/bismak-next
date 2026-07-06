@@ -226,7 +226,7 @@ export default function SignUpForm() {
         {isSubmitting ? "Creating account..." : "Create Account"}
       </button>
 
-      { showVerificationPopup && (
+      {showVerificationPopup && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div
             className="bg-tetiary rounded-xl p-8 max-w-sm w-full mx-4 text-center"
@@ -246,6 +246,7 @@ export default function SignUpForm() {
             </p>
 
             <button
+              type="button"
               onClick={() => router.push("/portal/sign-in")}
               className="w-full py-3 bg-secondary text-white rounded-lg font-semibold 
           hover:bg-secondary-dark transition"
@@ -255,13 +256,11 @@ export default function SignUpForm() {
           </div>
         </div>
       )}
-      {
-        error && (
-          <div className="p-3 rounded-lg text-sm bg-red-50 text-secondary-light border border-secondary-light">
-            {error}
-          </div>
-        )
-      }
+      {error && (
+        <div className="p-3 rounded-lg text-sm bg-red-50 text-secondary-light border border-secondary-light">
+          {error}
+        </div>
+      )}
     </form>
   );
 }

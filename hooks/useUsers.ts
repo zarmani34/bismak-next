@@ -29,8 +29,11 @@ export function useUsers(filters?: Record<string, string>) {
     queryFn: async () => {
       const { data } = await api.get<PaginatedResponse<UserListItem>>(
         "/auth/users/",
-        { params: filters }
+        {
+          params: filters,
+        }
       );
+
       return data.results;
     },
   });

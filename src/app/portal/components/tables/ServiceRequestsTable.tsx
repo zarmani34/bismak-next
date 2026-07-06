@@ -1,11 +1,12 @@
 "use client";
 
-import { ServiceRequest, ServiceStatus } from "@/schemas/services";
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { FaEye, FaMagnifyingGlass } from "react-icons/fa6";
-import { getStatusColor } from "../../constants";
-import { formatDate } from "@/src/utils/date";
 import { useRouter } from "next/navigation";
+import { ColumnDef } from "@tanstack/react-table";
+import { FaEye, FaMagnifyingGlass } from "react-icons/fa6";
+import { ServiceRequest, ServiceStatus } from "@/schemas/services";
+import { formatDate } from "@/src/utils/date";
 import {
   extractInvoiceCode,
   extractQuoteCode,
@@ -18,7 +19,8 @@ import {
   useUpdateServiceRequestStatus,
 } from "@/hooks/useServices";
 import { extractApiError } from "@/lib/errors";
-import TableSkeleton from "../skeletons/TableSkeleton";
+import { getStatusColor } from "../../constants";
+import { DataTable } from "./Datatable";
 
 const statusOptions: Array<{ label: string; value: ServiceStatus | "all" }> = [
   { label: "All Status", value: "all" },
@@ -52,9 +54,7 @@ export default function ServiceRequestsTable({
   const updateQuoteStatus = useUpdateQuoteStatus();
   const [actionError, setActionError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ServiceStatus | "all">(
-    "all",
-  );
+  const [statusFilter, setStatusFilter] = useState<ServiceStatus | "all">("all");
 
   const handleViewRequest = (serviceCode: string) => {
     router.push(`${basePath}/${serviceCode}`);
@@ -117,11 +117,9 @@ export default function ServiceRequestsTable({
           role === "admin"
             ? "/portal/admin/billing"
             : role === "client"
-            ? "/portal/client/billings"
-            : "/portal/staff/billings";
-        const query = invoiceCode
-          ? `?invoice=${encodeURIComponent(invoiceCode)}`
-          : "";
+              ? "/portal/client/billings"
+              : "/portal/staff/billings";
+        const query = invoiceCode ? `?invoice=${encodeURIComponent(invoiceCode)}` : "";
         router.push(`${billingBase}${query}`);
       }
     } catch (error) {
@@ -129,18 +127,137 @@ export default function ServiceRequestsTable({
     }
   };
 
+  const columns = useMemo<ColumnDef<ServiceRequest>[]>(
+    () => [
+      {
+        accessorKey: "service_name",
+        header: "Request",
+        cell: ({ row, getValue }) => (
+          <button
+            type="button"
+            onClick={() => handleViewRequest(row.original.code)}
+            className="text-left"
+          >
+            <p className="text-sm font-medium text-primary-dark">
+              {getValue() as string}
+            </p>
+            <p className="text-xs text-secondary-text">{row.original.company_name}</p>
+            <p className="text-xs text-secondary-text">{row.original.code}</p>
+          </button>
+        ),
+      },
+      {
+        accessorKey: "owner_name",
+        header: "Client",
+      },
+      {
+        accessorKey: "location",
+        header: "Location",
+      },
+      {
+        accessorKey: "status_display",
+        header: "Status",
+        cell: ({ row }) => (
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(
+              row.original.status,
+            )}`}
+          >
+            {row.original.status_display}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "created_at",
+        header: "Created",
+        cell: ({ getValue }) => (
+          <span className="text-sm text-body-text">
+            {formatDate(getValue() as string)}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const service = row.original;
+          const rowRole = role ?? "client";
+          const quickActions = getServiceActions({
+            role: rowRole,
+            status: service.status,
+            hasQuote: !!extractQuoteCode(service),
+            hasInvoice: !!extractInvoiceCode(service),
+            scope: "table",
+          });
+
+          return (
+            <div className="flex flex-wrap gap-2">
+              {quickActions.map((action) => {
+                if (action.key === "view_invoice") {
+                  const invoiceCode = extractInvoiceCode(service);
+                  if (invoiceCode) {
+                    const billingBase =
+                      rowRole === "admin"
+                        ? "/portal/admin/billing"
+                        : rowRole === "client"
+                          ? "/portal/client/billings"
+                          : "/portal/staff/billings";
+                    return (
+                      <Link
+                        key={action.key}
+                        href={`${billingBase}/invoices/${invoiceCode}`}
+                        className="rounded-md border border-border px-2 py-1 text-xs font-medium text-primary-dark hover:bg-primary-light/20"
+                      >
+                        {action.label}
+                      </Link>
+                    );
+                  }
+                }
+
+                return (
+                  <button
+                    key={action.key}
+                    type="button"
+                    disabled={updateServiceStatus.isPending || updateQuoteStatus.isPending}
+                    onClick={() => void handleQuickAction(service, action.key)}
+                    className={`rounded-md border px-2 py-1 text-xs font-medium disabled:opacity-60 ${
+                      action.tone === "primary"
+                        ? "border-secondary/40 text-secondary hover:bg-secondary/10"
+                        : "border-border text-primary-dark hover:bg-primary-light/20"
+                    }`}
+                  >
+                    {action.label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => handleViewRequest(service.code)}
+                className="p-2 text-body-text hover:text-primary-light"
+                aria-label="View request"
+              >
+                <FaEye className="h-4 w-4" />
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    [role, updateQuoteStatus.isPending, updateServiceStatus.isPending],
+  );
+
   return (
-    <div className="rounded-xl shadow-sm border border-border overflow-hidden">
-      <div className="bg-primary-light/40 px-6 py-4 border-b border-border flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div className="rounded-xl border border-border shadow-sm overflow-hidden">
+      <div className="flex flex-col gap-3 border-b border-border bg-primary-light/40 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
         <h2 className="text-lg font-semibold text-primary-dark">All Requests</h2>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <label className="relative">
             <FaMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text text-xs" />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search by client, name or location"
-              className="pl-9 pr-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary min-w-72 focus:outline-none focus:ring-1 focus:ring-primary"
+              className="min-w-72 rounded-lg border border-border bg-tetiary py-2 pl-9 pr-3 text-sm text-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </label>
           <select
@@ -148,7 +265,7 @@ export default function ServiceRequestsTable({
             onChange={(event) =>
               setStatusFilter(event.target.value as ServiceStatus | "all")
             }
-            className="px-3 py-2 rounded-lg border border-border bg-tetiary text-sm text-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="rounded-lg border border-border bg-tetiary px-3 py-2 text-sm text-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -159,165 +276,32 @@ export default function ServiceRequestsTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto bg-primary-light/10 border border-primary-light/20 shadow-md transition duration-200">
-        <table className="w-full">
-          <thead className="bg-primary-light/40 border-b border-tetiary">
-            <tr>
-              <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                Request
-              </th>
-              <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                Client
-              </th>
-              <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                Location
-              </th>
-              <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                Status
-              </th>
-              <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                Created
-              </th>
-              <th className="p-4 text-left text-xs font-semibold text-primary-dark uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {actionError ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-3 text-xs text-secondary-light">
-                  {actionError}
-                </td>
-              </tr>
-            ) : null}
+      {actionError ? (
+        <div className="border-b border-border px-6 py-3 text-xs text-secondary-light">
+          {actionError}
+        </div>
+      ) : null}
 
-            {isLoading ? (
-              <TableSkeleton />
-            ) : isError ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-10 text-center text-sm text-secondary-text"
-                >
-                  <div className="space-y-3">
-                    <p>Unable to load service requests.</p>
-                    <button
-                      onClick={onRetry}
-                      className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary-light/30"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ) : filteredRequests.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-10 text-center text-sm text-secondary-text"
-                >
-                  No service requests match this filter.
-                </td>
-              </tr>
-            ) : (
-              filteredRequests.map((service) => {
-                const rowRole = role ?? "client";
-                const quickActions = getServiceActions({
-                  role: rowRole,
-                  status: service.status,
-                  hasQuote: !!extractQuoteCode(service),
-                  hasInvoice: !!extractInvoiceCode(service),
-                  scope: "table",
-                });
+      <DataTable
+        data={filteredRequests}
+        columns={columns}
+        isLoading={isLoading}
+        isError={isError}
+        pageSize={10}
+        onRowClick={(row) => handleViewRequest(row.code)}
+      />
 
-                return (
-                  <tr
-                    key={service.id}
-                    className="border-b border-tetiary hover:bg-primary/20 cursor-pointer"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => handleViewRequest(service.code)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        handleViewRequest(service.code);
-                      }
-                    }}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-sm font-medium text-primary-dark">
-                        {service.service_name}
-                      </p>
-                      <p className="text-xs text-secondary-text">
-                        {service.company_name}
-                      </p>
-                      <p className="text-xs text-secondary-text">
-                        {service.code}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                      {service.owner_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                      {service.location}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          service.status,
-                        )}`}
-                      >
-                        {service.status_display}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-body-text">
-                      {formatDate(service.created_at)}
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex flex-wrap gap-2">
-                        {quickActions.map((action) => (
-                          <button
-                            key={action.key}
-                            type="button"
-                            className={`px-2 py-1 rounded-md text-xs font-medium border ${
-                              action.tone === "primary"
-                                ? "border-secondary/40 text-secondary hover:bg-secondary/10"
-                                : "border-border text-primary-dark hover:bg-primary-light/20"
-                            }`}
-                            disabled={
-                              updateServiceStatus.isPending ||
-                              updateQuoteStatus.isPending
-                            }
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              void handleQuickAction(service, action.key);
-                            }}
-                          >
-                            {action.label}
-                          </button>
-                        ))}
-                        <button
-                          type="button"
-                          className="p-2 text-body-text hover:text-primary-light"
-                          aria-label="View request"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleViewRequest(service.code);
-                          }}
-                        >
-                          <FaEye className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      {!isLoading && isError ? (
+        <div className="px-6 py-4 text-center">
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary-light/30"
+          >
+            Retry
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

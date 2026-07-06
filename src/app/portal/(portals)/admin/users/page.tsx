@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import CreateStaffAdminModal from "../../../components/modals/CraeteStaffAdminModal";
 import { useUsers } from "@/hooks/useUsers";
 import { formatDateTime } from "@/src/utils/date";
+import { DataTable } from "@/src/app/portal/components/tables/Datatable";
+import PrimaryButton from "@/src/components/buttons/PrimaryButton";
+import { UserListItem } from "@/schemas/users";
 
 type RoleTab = "all" | "admin" | "staff" | "client";
 
@@ -14,45 +18,113 @@ const TABS: { key: RoleTab; label: string }[] = [
   { key: "client", label: "Client" },
 ];
 
+const columns: ColumnDef<UserListItem>[] = [
+  {
+    accessorKey: "full_name",
+    header: "Name",
+    cell: ({ row, getValue }) => (
+      <div className="space-y-1">
+        <p className="font-medium text-primary-dark">{getValue() as string}</p>
+        <p className="text-xs text-secondary-text">{row.original.user_id}</p>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+  },
+  {
+    accessorKey: "phone_number",
+    header: "Phone",
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ getValue }) => {
+      const role = getValue() as string;
+      const tone =
+        role === "admin"
+          ? "bg-primary/10 text-primary"
+          : role === "staff"
+            ? "bg-secondary/10 text-secondary"
+            : "bg-info/10 text-info";
+
+      return (
+        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${tone}`}>
+          {role}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "is_verified",
+    header: "Verified",
+    cell: ({ getValue }) =>
+      getValue() ? (
+        <span className="text-success text-xs font-semibold">Verified</span>
+      ) : (
+        <span className="text-secondary-text text-xs">Pending</span>
+      ),
+  },
+  {
+    accessorKey: "date_joined",
+    header: "Joined",
+    cell: ({ getValue }) => (
+      <span className="text-xs text-secondary-text">
+        {formatDateTime(getValue() as string)}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "last_login",
+    header: "Last login",
+    cell: ({ getValue }) => (
+      <span className="text-xs text-secondary-text">
+        {formatDateTime(getValue() as string)}
+      </span>
+    ),
+  },
+];
+
 export default function UsersPage() {
   const [activeTab, setActiveTab] = useState<RoleTab>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: users, isLoading, isError } = useUsers(
-    activeTab === "all" ? undefined : { role: activeTab }
+    activeTab === "all" ? undefined : { role: activeTab },
   );
+  console.log("users", users);
 
   return (
-    <div className="p-6 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-6 md:p-8 space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-primary-dark">Users</h1>
           <p className="text-secondary-text text-sm sm:text-base">
             Manage admin, staff, and client accounts
           </p>
         </div>
+
         <button
+          type="button"
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2.5 rounded-lg text-sm font-semibold text-tetiary
-            bg-[#D95C3E] hover:bg-secondary-dark transition-colors"
+          className="inline-flex items-center justify-center"
         >
-          + Add Staff / Admin
+          <PrimaryButton tittle="+ Add Staff / Admin" />
         </button>
       </div>
 
-      {/* Role tabs */}
-      <div className="flex gap-1 bg-primary-light/40 border-b border-tetiary rounded-tl-xl rounded-tr-xl">
+      <div className="flex gap-1 overflow-x-auto rounded-tl-xl rounded-tr-xl border-b border-tetiary bg-primary-light/40">
         {TABS.map((tab) => (
           <button
             key={tab.key}
+            type="button"
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2.5 text-secondary-text text-sm sm:text-base transition-colors relative
-              ${
-                activeTab === tab.key
-                  ? "text-primary"
-                  : "text-[#8a8a8a] hover:text-body-text"
-              }`}
+            className={`relative whitespace-nowrap px-4 py-2.5 text-sm transition-colors sm:text-base ${
+              activeTab === tab.key
+                ? "text-primary"
+                : "text-secondary-text hover:text-body-text"
+            }`}
           >
             {tab.label}
             {activeTab === tab.key && (
@@ -62,92 +134,13 @@ export default function UsersPage() {
         ))}
       </div>
 
-      {/* Table */}
-      <div
-        className="bg-primary-light/10 rounded-bl-xl rounded-br-xl overflow-hidden"
-        style={{ boxShadow: "0 6px 18px rgba(26, 36, 33, 0.06)" }}
-      >
-        {isLoading && (
-          <div className="p-8 text-center text-sm text-[#8a8a8a]">
-            Loading users…
-          </div>
-        )}
-
-        {isError && (
-          <div className="p-8 text-center text-sm text-error">
-            Failed to load users.
-          </div>
-        )}
-
-        {users && users.length === 0 && (
-          <div className="p-8 text-center text-sm text-[#8a8a8a]">
-            No users found.
-          </div>
-        )}
-
-        {users && users.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th className="px-5 py-3 font-semibold text-body-text">Name</th>
-                  <th className="px-5 py-3 font-semibold text-body-text">Email</th>
-                  <th className="px-5 py-3 font-semibold text-body-text">Phone</th>
-                  <th className="px-5 py-3 font-semibold text-body-text">Role</th>
-                  <th className="px-5 py-3 font-semibold text-body-text">Verified</th>
-                  <th className="px-5 py-3 font-semibold text-body-text">Joined</th>
-                  <th className="px-5 py-3 font-semibold text-body-text">Last login</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr
-                    key={user.pk}
-                    className="border-b border-border last:border-0 hover:bg-tetiary/40 transition-colors"
-                  >
-                    <td className="px-5 py-3.5 text-[#333333] font-medium">
-                      {user.full_name}
-                    </td>
-                    <td className="px-5 py-3.5 text-body-text">{user.email}</td>
-                    <td className="px-5 py-3.5 text-body-text">{user.phone_number}</td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold
-                          ${
-                            user.role === "admin"
-                              ? "bg-primary/10 text-primary"
-                              : user.role === "staff"
-                              ? "bg-[#D95C3E]/10 text-[#D95C3E]"
-                              : "bg-info/10 text-info"
-                          }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {user.is_verified ? (
-                        <span className="text-success text-xs font-semibold">✓ Verified</span>
-                      ) : (
-                        <span className="text-[#8a8a8a] text-xs">Pending</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-[#8a8a8a] text-xs">
-                      {
-                      formatDateTime(user.date_joined)
-                      }
-                    </td>
-                    <td className="px-5 py-3.5 text-[#8a8a8a] text-xs">
-                      {
-                      formatDateTime(user.last_login)
-                      }
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <DataTable
+        data={users ?? []}
+        columns={columns}
+        isLoading={isLoading}
+        isError={isError}
+        pageSize={10}
+      />
 
       <CreateStaffAdminModal
         isOpen={isModalOpen}

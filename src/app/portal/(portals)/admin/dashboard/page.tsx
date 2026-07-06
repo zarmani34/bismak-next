@@ -62,7 +62,7 @@ export default function AdminDashboardPortal() {
     refetch: refetchQuotes,
   } = useQuotes();
 
-  const projectList = useMemo(() => projectData?.results ?? [], [projectData]);
+  const projectList = useMemo(() => projectData ?? [], [projectData]);
   const serviceList = useMemo(
     () => (Array.isArray(serviceData) ? serviceData : serviceData?.results ?? []),
     [serviceData],
@@ -200,7 +200,7 @@ export default function AdminDashboardPortal() {
               View all
             </Link>
           </div>
-          <div className="p-4 space-y-3 max-h-[28rem] overflow-y-auto">
+          <div className="p-4 space-y-3 max-h-112 overflow-y-auto">
             {recentProjects.length === 0 ? (
               <p className="text-sm text-secondary-text">No projects available yet.</p>
             ) : (
@@ -230,7 +230,7 @@ export default function AdminDashboardPortal() {
           <div className="px-6 py-4 border-b border-border bg-primary-light/20">
             <h2 className="text-lg font-semibold text-primary-dark">Service Pulse</h2>
           </div>
-          <div className="p-4 space-y-3 max-h-[28rem] overflow-y-auto">
+          <div className="p-4 space-y-3 max-h-112 overflow-y-auto">
             {recentServices.length === 0 ? (
               <p className="text-sm text-secondary-text">No recent service requests.</p>
             ) : (

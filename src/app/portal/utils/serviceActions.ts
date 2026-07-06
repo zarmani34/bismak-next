@@ -30,7 +30,7 @@ const tableActionsByRoleStatus: Partial<
   Record<PortalRole, Partial<Record<ServiceStatus, ServiceAction[]>>>
 > = {
   admin: {
-    pending: [{ key: "mark_reviewed", label: "Mark Reviewed", tone: "primary" }],
+    pending: [{ key: "create_quote", label: "Create Quote", tone: "primary" }],
     in_progress: [{ key: "mark_completed", label: "Mark Completed", tone: "primary" }],
     completed: [{ key: "view_invoice", label: "View Invoice", tone: "secondary" }],
   },

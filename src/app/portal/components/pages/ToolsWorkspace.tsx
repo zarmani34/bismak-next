@@ -331,7 +331,7 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
               </h2>
             </div>
 
-            <div className="p-4 bg-primary-light/10 space-y-3 max-h-[32rem] overflow-y-auto">
+            <div className="p-4 bg-primary-light/10 space-y-3 max-h-128 overflow-y-auto">
               {isMaintenanceLoading ? (
                 Array.from({ length: 4 }).map((_, index) => (
                   <div
@@ -379,7 +379,7 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
               </h2>
             </div>
 
-            <div className="p-4 bg-primary-light/10 space-y-3 max-h-[20rem] overflow-y-auto">
+            <div className="p-4 bg-primary-light/10 space-y-3 max-h-80 overflow-y-auto">
               {requestActionError ? (
                 <p className="text-xs text-secondary-light">
                   {requestActionError}
