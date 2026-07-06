@@ -211,7 +211,7 @@ export default function CreateQuoteModal({
   );
 
   const projectOptions = useMemo(() => {
-    const items = projects?.results ?? [];
+    const items = projects ?? [];
     return items.filter((project) => {
       const projectCode = project.code;
       if (!projectCode) return false;
