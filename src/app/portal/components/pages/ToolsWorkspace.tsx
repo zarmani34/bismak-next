@@ -317,7 +317,7 @@ export default function ToolsWorkspace({ role }: ToolsWorkspaceProps) {
         isError={isEquipmentError}
         globalFilter={search}
         onGlobalFilterChange={setSearch}
-        onRowClick={(row) => router.push(`/portal/admin/equipment/${row.id}`)}
+        onRowClick={(row) => router.push(`/portal/admin/tools/${row.code}`)}
       />
         </div>
 

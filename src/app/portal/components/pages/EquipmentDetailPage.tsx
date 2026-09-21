@@ -118,7 +118,14 @@ export default function EquipmentDetailPage({ role }: EquipmentDetailPageProps) 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               <div className="rounded-xl border border-border bg-tetiary/80 p-4">
                 <p className="text-xs text-secondary-text">Category</p>
-                <p className="mt-1 text-sm font-semibold text-primary-dark">{equipment.category}</p>
+                <p className="mt-1 text-sm font-semibold text-primary-dark">
+                  {equipment.name ?? "--"}
+                </p>
+                {equipment.description ? (
+                  <p className="mt-1 text-xs text-secondary-text">
+                    {equipment.description}
+                  </p>
+                ) : null}
               </div>
               <div className="rounded-xl border border-border bg-tetiary/80 p-4">
                 <p className="text-xs text-secondary-text">Model</p>

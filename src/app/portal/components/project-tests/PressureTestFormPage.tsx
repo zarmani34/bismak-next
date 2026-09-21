@@ -186,9 +186,9 @@ export default function PressureTestFormPage({ role, mode = "create" }: Props) {
     refetch,
   } = usePressureTest(code);
   const createPressureTest = useCreatePressureTest(code);
-  const updatePressureTest = useUpdatePressureTest(code);
   const isNotFound = isAxiosNotFoundError(error);
   const existingPressureTest = resolvePressureTestRecord(pressureTestResponse ?? null);
+  const updatePressureTest = useUpdatePressureTest(code, existingPressureTest?.id);
 
   const {
     register,

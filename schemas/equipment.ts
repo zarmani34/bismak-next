@@ -9,6 +9,7 @@ export const EquipmentCategorySchema = z.object({
 
 export const EquipmentListItemSchema = z.object({
   id: z.string(),
+  code: z.string(),
   name: z.string(),
   serial_number: z.string(),
   model: z.string(),

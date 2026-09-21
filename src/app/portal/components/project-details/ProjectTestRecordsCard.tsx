@@ -57,7 +57,7 @@ export default function ProjectTestRecordsCard({
   const canExecuteTest = showAction && !hasRecord && !isExecutionLocked && canExecute;
   return (
     <div className="rounded-xl border border-border bg-primary-light/20 p-6">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col gap-2 items-center sm:flex-row sm:justify-between mb-3">
         <h2 className="text-lg font-semibold text-primary-dark">Test Records</h2>
         {canOpenRecord ? (
           <div className="flex items-center gap-2">

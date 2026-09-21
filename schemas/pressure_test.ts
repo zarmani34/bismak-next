@@ -1,15 +1,19 @@
-import {z} from "zod";
+import { z } from "zod";
+import { CreateSafetyValveCertificateSchema, SafetyValveCertificateSchema } from "./safety_valve";
+
+export const StorageTypeEnum = z.enum(["mobile", "normal"]);
 
 export const PressureTestSchema = z.object({
   id: z.string(),
   project: z.string(),
+  storage_type: StorageTypeEnum,
   client: z.string(),
   client_representative: z.string().nullable().optional(),
   location_address: z.string(),
   manufacturer: z.string(),
   manufacturing_date: z.string(),
   serial_no: z.string(),
-  truck_no: z.string(),
+  truck_no: z.string().nullable().optional(),
   tank_capacity: z.number(),
   product_stored: z.string(),
   tank_type: z.string(),
@@ -25,6 +29,7 @@ export const PressureTestSchema = z.object({
   next_test_date: z.string(),
   result: z.string(),
   result_display: z.string(),
+  safety_valve_certificate: SafetyValveCertificateSchema.optional(),
   created_at: z.string(),
 });
 
@@ -32,32 +37,41 @@ export const CreatePressureTestSchema = PressureTestSchema.omit({
   id: true,
   project: true,
   result_display: true,
+  safety_valve_certificate: true,
   created_at: true,
-}).extend({
-  client: z.string().min(1, "Client is required"),
-  client_representative: z.string().min(1, "Client representative is required"),
-  location_address: z.string().min(1, "Location is required"),
-  manufacturer: z.string().min(1, "Manufacturer is required"),
-  manufacturing_date: z.string().min(1, "Manufacturing date is required"),
-  serial_no: z.string().min(1, "Serial number is required"),
-  truck_no: z.string().min(1, "Truck number is required"),
-  tank_capacity: z.number({ error: "Tank capacity is required" }),
-  product_stored: z.string().min(1, "Product stored is required"),
-  tank_type: z.string().min(1, "Tank type is required"),
-  test_pressure: z.number({ error: "Test pressure is required" }),
-  working_pressure: z.number({ error: "Working pressure is required" }),
-  temperature: z.number({ error: "Temperature is required" }),
-  test_duration: z.number({ error: "Test duration is required" }),
-  test_medium: z.string().min(1, "Test medium is required"),
-  avrg_utm_gauge: z.number({ error: "Average UTM gauge is required" }),
-  safety_relief_valve_size: z.string().min(1, "Safety relief valve size is required"),
-  safety_relief_valve_no: z.string().min(1, "Safety relief valve number is required"),
-  date_of_test: z.string().min(1, "Date of test is required"),
-  next_test_date: z.string().min(1, "Next test date is required"),
-  result: z.string().min(1, "Result is required"),
-});
-
-
+})
+  .extend({
+    client: z.string().min(1, "Client is required"),
+    client_representative: z.string().min(1, "Client representative is required"),
+    location_address: z.string().min(1, "Location is required"),
+    manufacturer: z.string().min(1, "Manufacturer is required"),
+    manufacturing_date: z.string().min(1, "Manufacturing date is required"),
+    serial_no: z.string().min(1, "Serial number is required"),
+    tank_capacity: z.number({ error: "Tank capacity is required" }),
+    product_stored: z.string().min(1, "Product stored is required"),
+    tank_type: z.string().min(1, "Tank type is required"),
+    test_pressure: z.number({ error: "Test pressure is required" }),
+    working_pressure: z.number({ error: "Working pressure is required" }),
+    temperature: z.number({ error: "Temperature is required" }),
+    test_duration: z.number({ error: "Test duration is required" }),
+    test_medium: z.string().min(1, "Test medium is required"),
+    avrg_utm_gauge: z.number({ error: "Average UTM gauge is required" }),
+    safety_relief_valve_size: z.string().min(1, "Safety relief valve size is required"),
+    safety_relief_valve_no: z.string().min(1, "Safety relief valve number is required"),
+    date_of_test: z.string().min(1, "Date of test is required"),
+    next_test_date: z.string().min(1, "Next test date is required"),
+    result: z.string().min(1, "Result is required"),
+    safety_valve_certificate: CreateSafetyValveCertificateSchema,
+  })
+  .superRefine((data, ctx) => {
+    if (data.storage_type === "mobile" && !data.truck_no) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["truck_no"],
+        message: "Truck number is required for mobile storage",
+      });
+    }
+  });
 
 export type PressureTest = z.infer<typeof PressureTestSchema>;
 export type CreatePressureTestData = z.infer<typeof CreatePressureTestSchema>;

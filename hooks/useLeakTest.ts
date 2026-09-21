@@ -54,13 +54,17 @@ export function useCreateLeakTest(projectCode: string) {
   });
 }
 
-export function useUpdateLeakTest(projectCode: string) {
+export function useUpdateLeakTest(projectCode: string, recordId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (testData: Partial<CreateLeakTestData>) => {
-      const { data } = await api.patch(
-        `/projects/${projectCode}/leak-test/`,
+    mutationFn: async (testData: CreateLeakTestData) => {
+      if (!recordId) {
+        throw new Error("Leak test record id is required for updates.");
+      }
+
+      const { data } = await api.put(
+        `/projects/${projectCode}/leak-test/${recordId}/`,
         testData,
       );
       return data as LeakTest;

@@ -125,9 +125,9 @@ export default function LeakTestFormPage({ role, mode = "create" }: Props) {
     refetch,
   } = useLeakTest(code);
   const createLeakTest = useCreateLeakTest(code);
-  const updateLeakTest = useUpdateLeakTest(code);
   const isNotFound = isAxiosNotFoundError(error);
   const existingLeakTest = resolveLeakTestRecord(leakTestResponse ?? null);
+  const updateLeakTest = useUpdateLeakTest(code, existingLeakTest?.id);
 
   const {
     register,

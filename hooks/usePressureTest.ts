@@ -55,13 +55,17 @@ export function useCreatePressureTest(projectCode: string) {
   });
 }
 
-export function useUpdatePressureTest(projectCode: string) {
+export function useUpdatePressureTest(projectCode: string, recordId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (testData: Partial<CreatePressureTestData>) => {
-      const { data } = await api.patch(
-        `/projects/${projectCode}/pressure-test/`,
+    mutationFn: async (testData: CreatePressureTestData) => {
+      if (!recordId) {
+        throw new Error("Pressure test record id is required for updates.");
+      }
+
+      const { data } = await api.put(
+        `/projects/${projectCode}/pressure-test/${recordId}/`,
         testData
       );
       return data as PressureTest;

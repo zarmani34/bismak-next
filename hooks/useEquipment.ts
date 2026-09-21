@@ -178,7 +178,7 @@ export function useUpdateEquipmentRequestStatus() {
 
   return useMutation({
     mutationFn: async (input: { code: string; status: string }) => {
-      const { data } = await api.patch(`/equipment-requests/${input.code}/`, {
+      const { data } = await api.patch(`/equipment-requests/${input.code}/update-status/`, {
         status: input.status,
       });
       return data as EquipmentRequestDetail;

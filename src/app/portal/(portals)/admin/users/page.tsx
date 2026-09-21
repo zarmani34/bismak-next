@@ -50,7 +50,9 @@ const columns: ColumnDef<UserListItem>[] = [
             : "bg-info/10 text-info";
 
       return (
-        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${tone}`}>
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${tone}`}
+        >
           {role}
         </span>
       );
@@ -90,48 +92,32 @@ export default function UsersPage() {
   const [activeTab, setActiveTab] = useState<RoleTab>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: users, isLoading, isError } = useUsers(
-    activeTab === "all" ? undefined : { role: activeTab },
-  );
+  const {
+    data: users,
+    isLoading,
+    isError,
+  } = useUsers(activeTab === "all" ? undefined : { role: activeTab });
 
   return (
     <div className="md:p-8 space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-primary-dark">Users</h1>
-          <p className="text-secondary-text text-sm sm:text-base">
-            Manage admin, staff, and client accounts
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center"
-        >
-          <PrimaryButton tittle="+ Add Staff / Admin" />
-        </button>
-      </div>
-
       <div>
-        <div className="flex gap-1 overflow-x-auto rounded-tl-xl rounded-tr-xl border-b border-tetiary bg-primary-light/40">
-          {TABS.map((tab) => (
+        <div className="overflow-x-auto rounded-tl-xl rounded-tr-xl border-b border-tetiary bg-primary-light/40 p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-primary-dark">Users</h1>
+              <p className="text-secondary-text text-sm sm:text-base">
+                Manage admin, staff, and client accounts
+              </p>
+            </div>
+
             <button
-              key={tab.key}
               type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={`relative whitespace-nowrap px-4 py-2.5 text-sm transition-colors sm:text-base ${
-                activeTab === tab.key
-                  ? "text-primary"
-                  : "text-secondary-text hover:text-body-text"
-              }`}
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center justify-center"
             >
-              {tab.label}
-              {activeTab === tab.key && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary" />
-              )}
+              <PrimaryButton tittle="+ Add Staff / Admin" />
             </button>
-          ))}
+          </div>
         </div>
         <DataTable
           data={users ?? []}
