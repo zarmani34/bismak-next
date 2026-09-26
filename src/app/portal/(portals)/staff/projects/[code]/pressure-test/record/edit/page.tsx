@@ -1,8 +1,9 @@
 "use client";
 
-import PressureTestFormPage from "../../../../../../../components/project-tests/PressureTestFormPage";
+import PressureTestWizard from "@/src/app/portal/components/PressureTestWizard";
+
 
 export default function StaffPressureTestEditPage() {
-  return <PressureTestFormPage role="staff" mode="edit" />;
+  return <PressureTestWizard role="staff" mode="edit" />;
 }
 
